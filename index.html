@@ -150,13 +150,7 @@
             '<div class="loading">⏳ Загружаем данные...</div>';
 
         try {
-            const res = await fetch(`${API_URL}/api/profile?user_id=${user.id}`, {
-                method: "GET",
-                headers: {
-                    "ngrok-skip-browser-warning": "true",
-                    "Accept": "application/json"
-                }
-            });
+           const res = await fetch(`${API_URL}/api/profile?user_id=${user.id}`);
 
             if (!res.ok) {
                 throw new Error(`HTTP ${res.status}`);
