@@ -148,26 +148,43 @@
         // ЗАГРУЗКА ПРОФИЛЯ
         // ============================================================
         async function loadProfile() {
-        if (!user) {
+    if (!user) {
         document.getElementById("content").innerHTML =
-        '<div class="error">❌ Открой меня внутри Telegram!</div>';
+            '<div class="error">❌ Открой меня внутри Telegram!</div>';
         return;
-        }
+    }
 
-        document.getElementById("username").textContent =
+    document.getElementById("username").textContent =
         `${user.first_name} (@${user.username || "no_username"})`;
 
-        try {
-        const res = await fetch(`${API_URL}/api/profile?user_id=${user.id}`);
+    try {
+        const res = await fetch(`${API_URL}/api/profile?user_id=${user.id}`, {
+            method: 'GET',
+            headers: {
+                'ngrok-skip-browser-warning': 'true',
+                'Accept': 'application/json'
+            }
+        });
+
+        if (!res.ok) {
+            throw new Error(`HTTP ${res.status}`);
+        }
+
         const data = await res.json();
 
         if (!data.ok) {
-        document.getElementById("content").innerHTML =
-        `<div class="error">❌ ${escapeHtml(data.error)}</div>`;
-        return;
+            document.getElementById("content").innerHTML =
+                `<div class="error">❌ ${escapeHtml(data.error)}</div>`;
+            return;
         }
 
         const u = data.user;
+        document.getElementById("content").innerHTML = `...`;
+    } catch (err) {
+        document.getElementById("content").innerHTML =
+            `<div class="error">❌ Ошибка: ${escapeHtml(err.message)}</div>`;
+    }
+}
 
         document.getElementById("content").innerHTML = `
         <div class="card">
