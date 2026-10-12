@@ -108,21 +108,21 @@
     </div>
 
     <script>
-        // ============================================================
-        // НАСТРОЙКИ
-        // ============================================================
-        const API_URL = "https://preheated-playroom-detective.ngrok-free.dev";
+    // ============================================================
+    // НАСТРОЙКИ
+    // ============================================================
+    const API_URL = "https://preheated-playroom-detective.ngrok-free.dev";
 
-        const tg = window.Telegram.WebApp;
-        tg.ready();
-        tg.expand();
+    const tg = window.Telegram.WebApp;
+    tg.ready();
+    tg.expand();
 
-        const user = tg.initDataUnsafe?.user;
+    const user = tg.initDataUnsafe?.user;
 
-        // ============================================================
-        // УТИЛИТЫ
-        // ============================================================
-        function formatNumber(n) {
+    // ============================================================
+    // УТИЛИТЫ
+    // ============================================================
+    function formatNumber(n) {
         if (!n) return "0";
         n = Number(n);
         if (n < 1000) return n.toString();
@@ -131,96 +131,161 @@
         if (n < 1000000000000) return (n / 1000000000).toFixed(1) + "B";
         if (n < 1000000000000000) return (n / 1000000000000).toFixed(1) + "T";
         return (n / 1000000000000000).toFixed(1) + "Qa";
-        }
+    }
 
-        function escapeHtml(s) {
+    function escapeHtml(s) {
         const div = document.createElement("div");
         div.textContent = s;
         return div.innerHTML;
-        }
+    }
 
-        // ============================================================
-        // ЗАГРУЗКА ПРОФИЛЯ
-        // ============================================================
-        async function loadProfile() {
-        if (!user) {
-        document.getElementById("content").innerHTML =
-        '<div class="error">❌ Открой меня внутри Telegram!</div>';
-        return;
-        }
+    function getItemImageUrl(name) {
+        const filename = name.toLowerCase().replace(/ /g, "_").replace(/ё/g, "е") + ".png";
+        return `${API_URL}/images/${encodeURIComponent(filename)}`;
+    }
 
+    // ============================================================
+    // ВКЛАДКИ
+    // ============================================================
+    let currentTab = "profile";
+
+    function switchTab(tab) {
+        currentTab = tab;
+        document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+        document.querySelector(`[data-tab="${tab}"]`).classList.add("active");
+
+        if (tab === "profile") loadProfile();
+        if (tab === "inventory") loadInventory();
+    }
+
+    // ============================================================
+    // ПРОФИЛЬ
+    // ============================================================
+    async function loadProfile() {
+        if (!user) return;
         document.getElementById("username").textContent =
-        `${user.first_name} (@${user.username || "no_username"})`;
-
+            `${user.first_name} (@${user.username || "no_username"})`;
         document.getElementById("content").innerHTML =
-        '<div class="loading">⏳ Загружаем данные...</div>';
+            '<div class="loading">⏳ Загружаем данные...</div>';
 
         try {
-        const res = await fetch(`${API_URL}/api/profile?user_id=${user.id}`, {
-        headers: {
-        "ngrok-skip-browser-warning": "true"
-        }
-        });
+            const res = await fetch(`${API_URL}/api/profile?user_id=${user.id}`, {
+                headers: { "ngrok-skip-browser-warning": "true" }
+            });
+            const data = await res.json();
+            if (!data.ok) throw new Error(data.error);
 
-        if (!res.ok) {
-        throw new Error(`HTTP ${res.status}`);
-        }
-
-        const data = await res.json();
-
-        if (!data.ok) {
-        document.getElementById("content").innerHTML =
-        `<div class="error">❌ ${escapeHtml(data.error)}</div>`;
-        return;
-        }
-
-        const u = data.user;
-
-        document.getElementById("content").innerHTML = `
-        <div class="card">
-        <div class="label">💰 Баланс</div>
-        <div class="value">${formatNumber(u.balance)}₽</div>
-        </div>
-
-        <div class="card">
-        <div class="label">✨ Опыт</div>
-        <div class="value">${formatNumber(u.xp)} XP</div>
-        </div>
-
-        <div class="row">
-        <div class="card">
-        <div class="label">🏪 Ресторан</div>
-        <div class="value">${u.restaurant_level} ур.</div>
-        </div>
-        <div class="card">
-        <div class="label">🔥 Стрик</div>
-        <div class="value">${u.streak} дн.</div>
-        </div>
-        </div>
-
-        <div class="row">
-        <div class="card">
-        <div class="label">📦 Кейсов</div>
-        <div class="value">${formatNumber(u.total_cases)}</div>
-        </div>
-        <div class="card">
-        <div class="label">⭐ Репутация</div>
-        <div class="value">${u.reputation}</div>
-        </div>
-        </div>
-
-        <button onclick="loadProfile()">🔄 Обновить</button>
-        `;
+            const u = data.user;
+            document.getElementById("content").innerHTML = `
+                <div class="card">
+                    <div class="label">💰 Баланс</div>
+                    <div class="value">${formatNumber(u.balance)}₽</div>
+                </div>
+                <div class="card">
+                    <div class="label">✨ Опыт</div>
+                    <div class="value">${formatNumber(u.xp)} XP</div>
+                </div>
+                <div class="row">
+                    <div class="card">
+                        <div class="label">🏪 Ресторан</div>
+                        <div class="value">${u.restaurant_level} ур.</div>
+                    </div>
+                    <div class="card">
+                        <div class="label">🔥 Стрик</div>
+                        <div class="value">${u.streak} дн.</div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="card">
+                        <div class="label">📦 Кейсов</div>
+                        <div class="value">${formatNumber(u.total_cases)}</div>
+                    </div>
+                    <div class="card">
+                        <div class="label">⭐ Репутация</div>
+                        <div class="value">${u.reputation}</div>
+                    </div>
+                </div>
+                <button onclick="loadProfile()">🔄 Обновить</button>
+            `;
         } catch (err) {
-        document.getElementById("content").innerHTML =
-        `<div class="error">❌ Ошибка: ${escapeHtml(err.message)}</div>
-        <button onclick="loadProfile()">🔄 Попробовать снова</button>`;
+            document.getElementById("content").innerHTML =
+                `<div class="error">❌ Ошибка: ${escapeHtml(err.message)}</div>`;
         }
-        }
+    }
 
-        // Запуск
-        loadProfile();
-    </script>
+    // ============================================================
+    // ИНВЕНТАРЬ
+    // ============================================================
+    async function loadInventory() {
+        if (!user) return;
+        document.getElementById("username").textContent =
+            `${user.first_name} (@${user.username || "no_username"})`;
+        document.getElementById("content").innerHTML =
+            '<div class="loading">⏳ Загружаем инвентарь...</div>';
+
+        try {
+            const res = await fetch(`${API_URL}/api/inventory?user_id=${user.id}`, {
+                headers: { "ngrok-skip-browser-warning": "true" }
+            });
+            const data = await res.json();
+            if (!data.ok) throw new Error(data.error);
+
+            if (data.count === 0) {
+                document.getElementById("content").innerHTML =
+                    '<div class="card"><div class="label">🎒 Инвентарь пуст</div></div>';
+                return;
+            }
+
+            let html = `<div class="card"><div class="label">🎒 Всего: ${data.count} предметов</div></div>`;
+            for (const item of data.items) {
+                const imgUrl = getItemImageUrl(item.name);
+                html += `
+                    <div class="item">
+                        <div class="item-img">
+                            <img src="${imgUrl}" 
+                                 onerror="this.style.display='none'; this.parentElement.innerHTML='${item.rarity}';"
+                                 alt="${escapeHtml(item.name)}">
+                        </div>
+                        <div class="item-info">
+                            <div class="item-name">${item.rarity} ${escapeHtml(item.name)}</div>
+                            <div class="item-price">${formatNumber(item.price)}₽</div>
+                            <div class="item-code">${item.code}</div>
+                        </div>
+                        <div class="item-buttons">
+                            <button class="btn-small btn-insure" onclick="insureItem('${item.code}')">🛡</button>
+                            <button class="btn-small btn-sell" onclick="sellItem('${item.code}', ${item.price})">💵</button>
+                            <button class="btn-small btn-gift" onclick="giftItem('${item.code}')">🎁</button>
+                        </div>
+                    </div>
+                `;
+            }
+            document.getElementById("content").innerHTML = html;
+        } catch (err) {
+            document.getElementById("content").innerHTML =
+                `<div class="error">❌ Ошибка: ${escapeHtml(err.message)}</div>`;
+        }
+    }
+
+    // ============================================================
+    // ДЕЙСТВИЯ (пока заглушки)
+    // ============================================================
+    function insureItem(code) {
+        alert("🛡 Застраховать " + code + " — функция в разработке");
+    }
+    function sellItem(code, price) {
+        if (confirm(`Продать за ${formatNumber(price)}₽?`)) {
+            alert("💵 Продать " + code + " — функция в разработке");
+        }
+    }
+    function giftItem(code) {
+        alert("🎁 Подарить " + code + " — функция в разработке");
+    }
+
+    // ============================================================
+    // ЗАПУСК
+    // ============================================================
+    switchTab("profile");
+</script>
 
 </body>
 </html>
