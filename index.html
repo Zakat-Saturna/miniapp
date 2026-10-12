@@ -14,22 +14,22 @@
         body { padding: 16px; background: var(--tg-theme-bg-color, #ffffff); color: var(--tg-theme-text-color, #000000); min-height: 100vh; font-size: 20px; line-height: 1.2; position: relative; }
         button, input, select, textarea { font-family: inherit; }
 
+                /* === ФОН === */
         body::before {
             content: "";
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
             background-image: url('https://piggychef.serveousercontent.com/images/background.png');
-            background-size: cover; background-position: center; background-repeat: no-repeat;
-            opacity: 0.12; z-index: -2; pointer-events: none;
-        }
-        body::after {
-            content: "";
-            position: fixed; inset: 0;
-            background: var(--tg-theme-bg-color, #ffffff);
-            opacity: 0.75; z-index: -1; pointer-events: none;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            opacity: 1;
+            z-index: -1;
+            pointer-events: none;
         }
         body.tg-dark::before {
             background-image: url('https://piggychef.serveousercontent.com/images/background_dark.png');
-            opacity: 0.2;
+            opacity: 1;
         }
 
         .header { text-align: center; margin-bottom: 16px; }
