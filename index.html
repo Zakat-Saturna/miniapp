@@ -242,9 +242,9 @@
     }
 
     function getItemImageUrl(name) {
-        const filename = name.toLowerCase().replace(/ /g, "_").replace(/ё/g, "е") + ".png";
-        return `${API_URL}/images/${encodeURIComponent(filename)}`;
-    }
+    const filename = name.toLowerCase().replace(/ /g, "_").replace(/ё/g, "е") + ".png";
+    return `${API_URL}/images/${filename}`;
+}
 
     // ============================================================
     // ВКЛАДКИ
