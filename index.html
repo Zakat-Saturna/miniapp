@@ -294,13 +294,55 @@
         return div.innerHTML;
     }
 
-    // ← ИЗМЕНЕНО: helper для картинок. Возвращает <img> или эмодзи-фолбэк.
+    // ← ИЗМЕНЕНО: helper для картинок
     function imgTag(item, extraClass = "") {
         if (item && item.image_url) {
             return `<img src="${API_URL}${item.image_url}" loading="lazy" decoding="async" alt="" class="${extraClass}">`;
         }
         return `<span>${item ? item.rarity : "❓"}</span>`;
     }
+
+    // ============================================================
+    // КЕШ ← НОВОЕ
+    // ============================================================
+    // staticCache — данные, которые НИКОГДА не меняются (список кейсов, превью)
+    const staticCache = new Map();
+    // dynamicCache — данные с TTL (топ, коллекция, достижения, крафт)
+    const dynamicCache = new Map();
+
+    async function fetchStatic(url) {
+        if (staticCache.has(url)) return staticCache.get(url);
+        const res = await fetch(url, { headers: { "ngrok-skip-browser-warning": "true" } });
+        const data = await res.json();
+        staticCache.set(url, data);
+        return data;
+    }
+
+    async function fetchCached(url, ttl = 15000) {
+        const now = Date.now();
+        const hit = dynamicCache.get(url);
+        if (hit && now - hit.time < ttl) return hit.data;
+        const res = await fetch(url, { headers: { "ngrok-skip-browser-warning": "true" } });
+        const data = await res.json();
+        dynamicCache.set(url, { data, time: now });
+        return data;
+    }
+
+    function clearDynamicCache() {
+        dynamicCache.clear();
+    }
+
+    function clearStaticCache() {
+        staticCache.clear();
+    }
+
+    function clearAllCache() {
+        staticCache.clear();
+        dynamicCache.clear();
+    }
+    // ============================================================
+    // КОНЕЦ КЕША
+    // ============================================================
 
     function updateBalance(b) {
         currentBalance = b;
@@ -323,7 +365,7 @@
     }
 
     // ============================================================
-    // ПРОФИЛЬ
+    // ПРОФИЛЬ — НЕ кешируем (баланс должен быть свежим)
     // ============================================================
     async function loadProfile() {
         if (!user) {
@@ -383,7 +425,6 @@
 
             let html = `<button class="btn-back" onclick="loadProfile()">⬅️ Назад в профиль</button>`;
 
-            // ← ИЗМЕНЕНО: API_URL + r.image, loading="lazy"
             if (r.image) html += `<img src="${API_URL}${r.image}" class="restaurant-image" alt="Ресторан" loading="lazy" decoding="async">`;
             else html += `<div class="restaurant-image-placeholder">🏪</div>`;
 
@@ -461,15 +502,13 @@
     }
 
     // ============================================================
-    // КРАФТ
+    // КРАФТ ← КЕШ
     // ============================================================
     async function openCraft() {
         document.getElementById("content").innerHTML = '<div class="loading">⏳ Загружаем крафт...</div>';
         try {
-            const res = await fetch(`${API_URL}/api/craft_available?user_id=${user.id}`, {
-                headers: { "ngrok-skip-browser-warning": "true" }
-            });
-            const data = await res.json();
+            // ← КЕШ: TTL 10 секунд
+            const data = await fetchCached(`${API_URL}/api/craft_available?user_id=${user.id}`, 10000);
             if (!data.ok) throw new Error(data.error);
 
             let html = `<button class="btn-back" onclick="loadProfile()">⬅️ Назад в профиль</button>`;
@@ -509,23 +548,22 @@
             const data = await res.json();
             if (data.ok) {
                 alert(`✅ Получено: ${data.rarity} ${data.name} (${formatNumber(data.price)}₽)`);
+                clearDynamicCache();  // ← КЕШ: сброс после крафта
                 openCraft();
             } else alert("❌ " + data.error);
         } catch (err) { alert("❌ Ошибка: " + err.message); }
     }
 
     // ============================================================
-    // КОЛЛЕКЦИЯ
+    // КОЛЛЕКЦИЯ ← КЕШ
     // ============================================================
     let collectionState = { collapsed: {} };
 
     async function openCollection() {
         document.getElementById("content").innerHTML = '<div class="loading">⏳ Загружаем коллекцию...</div>';
         try {
-            const res = await fetch(`${API_URL}/api/collection?user_id=${user.id}`, {
-                headers: { "ngrok-skip-browser-warning": "true" }
-            });
-            const data = await res.json();
+            // ← КЕШ: TTL 30 секунд
+            const data = await fetchCached(`${API_URL}/api/collection?user_id=${user.id}`, 30000);
             if (!data.ok) throw new Error(data.error);
 
             let html = `<button class="btn-back" onclick="loadProfile()">⬅️ Назад в профиль</button>`;
@@ -573,15 +611,13 @@
     }
 
     // ============================================================
-    // ДОСТИЖЕНИЯ
+    // ДОСТИЖЕНИЯ ← КЕШ
     // ============================================================
     async function openAchievements() {
         document.getElementById("content").innerHTML = '<div class="loading">⏳ Загружаем достижения...</div>';
         try {
-            const res = await fetch(`${API_URL}/api/achievements?user_id=${user.id}`, {
-                headers: { "ngrok-skip-browser-warning": "true" }
-            });
-            const data = await res.json();
+            // ← КЕШ: TTL 30 секунд
+            const data = await fetchCached(`${API_URL}/api/achievements?user_id=${user.id}`, 30000);
             if (!data.ok) throw new Error(data.error);
             let html = `<button class="btn-back" onclick="loadProfile()">⬅️ Назад в профиль</button>`;
             html += `<div class="card"><div class="label">🏅 Достижения</div><div class="value">${data.unlocked} / ${data.total}</div></div>`;
@@ -603,14 +639,14 @@
     }
 
     // ============================================================
-    // ТОП
+    // ТОП ← КЕШ
     // ============================================================
     async function loadTop() {
         document.getElementById("username").textContent = `${user.first_name} (@${user.username || "no_username"})`;
         document.getElementById("content").innerHTML = '<div class="loading">⏳ Загружаем топ...</div>';
         try {
-            const res = await fetch(`${API_URL}/api/top`, { headers: { "ngrok-skip-browser-warning": "true" } });
-            const data = await res.json();
+            // ← КЕШ: TTL 30 секунд
+            const data = await fetchCached(`${API_URL}/api/top`, 30000);
             if (!data.ok) throw new Error(data.error);
             let html = `<div class="card"><div class="label">🏆 Топ игроков по XP</div></div>`;
             for (let i = 0; i < data.top.length; i++) {
@@ -643,7 +679,7 @@
     }
 
     // ============================================================
-    // БОНУС
+    // БОНУС — НЕ кешируем (таймер точный нужен)
     // ============================================================
     async function loadBonus() {
         document.getElementById("username").textContent = `${user.first_name} (@${user.username || "no_username"})`;
@@ -696,13 +732,14 @@
             if (data.ok) {
                 updateBalance(data.new_balance);
                 alert(`🎁 +${formatNumber(data.bonus)}₽\n🔥 Стрик: ${data.new_streak} дн.`);
+                clearDynamicCache();  // ← КЕШ: сброс
                 loadBonus();
             } else alert("❌ " + data.error);
         } catch (err) { alert("❌ Ошибка: " + err.message); }
     }
 
     // ============================================================
-    // ВОРОВСТВО
+    // ВОРОВСТВО — НЕ кешируем (кулдаун)
     // ============================================================
     async function loadRob() {
         document.getElementById("username").textContent = `${user.first_name} (@${user.username || "no_username"})`;
@@ -987,7 +1024,7 @@
     function closeRoulette() { document.getElementById("roulette-root").innerHTML = ""; }
 
     // ============================================================
-    // ИНВЕНТАРЬ
+    // ИНВЕНТАРЬ — НЕ кешируем (постоянно меняется)
     // ============================================================
     async function loadInventory() {
         if (!user) return;
@@ -1034,7 +1071,6 @@
         for (const item of items) {
             const isSelected = cart.has(item.code);
             const isArtifact = item.is_artifact;
-            // ← ИЗМЕНЕНО: используем helper imgTag()
             const imgHtml = imgTag(item);
             const insuredBtn = item.insured
                 ? `<button class="btn-tiny btn-tiny-insure disabled" disabled>🛡</button>`
@@ -1131,6 +1167,7 @@
             if (data.ok) {
                 updateBalance(data.new_balance);
                 cart.clear();
+                clearDynamicCache();  // ← КЕШ: сброс после продажи
                 fetchInventoryPage(inventoryState.offset);
             } else alert("❌ " + data.error);
         } catch (err) { alert("❌ Ошибка: " + err.message); }
@@ -1148,6 +1185,7 @@
             if (data.ok) {
                 updateBalance(data.new_balance);
                 alert(`✅ Продано ${data.sold_count} предметов на ${formatNumber(data.total_price)}₽`);
+                clearDynamicCache();  // ← КЕШ: сброс
                 fetchInventoryPage(0);
             } else {
                 alert("❌ " + data.error);
@@ -1244,7 +1282,10 @@
                 body: JSON.stringify(body)
             });
             const data = await res.json();
-            if (data.ok) fetchInventoryPage(inventoryState.offset);
+            if (data.ok) {
+                clearDynamicCache();  // ← КЕШ: сброс
+                fetchInventoryPage(inventoryState.offset);
+            }
             else alert("❌ " + data.error);
         } catch (err) { alert("❌ Ошибка: " + err.message); }
     }
@@ -1252,15 +1293,15 @@
     function closeModal() { document.getElementById("modal-root").innerHTML = ""; }
 
     // ============================================================
-    // КЕЙСЫ
+    // КЕЙСЫ ← КЕШ
     // ============================================================
     async function loadCases() {
         if (!user) return;
         document.getElementById("username").textContent = `${user.first_name} (@${user.username || "no_username"})`;
         document.getElementById("content").innerHTML = '<div class="loading">⏳ Загружаем кейсы...</div>';
         try {
-            const res = await fetch(`${API_URL}/api/cases`, { headers: { "ngrok-skip-browser-warning": "true" } });
-            const data = await res.json();
+            // ← КЕШ: staticCache — список кейсов не меняется никогда
+            const data = await fetchStatic(`${API_URL}/api/cases`);
             if (!data.ok) throw new Error(data.error);
             casesData = data.categories;
             renderCategories();
@@ -1314,10 +1355,8 @@
 
         let pool = [], caseName = "";
         try {
-            const res = await fetch(`${API_URL}/api/case_preview?case_id=${caseId}`, {
-                headers: { "ngrok-skip-browser-warning": "true" }
-            });
-            const data = await res.json();
+            // ← КЕШ: staticCache — превью кейса не меняется
+            const data = await fetchStatic(`${API_URL}/api/case_preview?case_id=${caseId}`);
             if (!data.ok) { alert("❌ " + data.error); return; }
             pool = data.pool || [];
             caseName = data.case_name || "";
@@ -1337,6 +1376,7 @@
         } catch (err) { alert("❌ " + err.message); return; }
 
         updateBalance(openResult.new_balance);
+        clearDynamicCache();  // ← КЕШ: сброс после открытия кейса (коллекция обновилась)
 
         if (count === 1) {
             showSingleBigRoulette(caseName, pool, openResult.results[0], () => {
@@ -1358,7 +1398,6 @@
         strip.push(pool[targetIndex]);
         for (let i = 0; i < TOTAL_ITEMS - RANDOM_BEFORE - 1; i++) strip.push(pool[Math.floor(Math.random() * pool.length)]);
 
-        // ← ИЗМЕНЕНО: imgTag() + lazy
         let trackHtml = "";
         for (const item of strip) {
             trackHtml += `<div class="roulette-item">${imgTag(item, "r-emoji")}<div class="r-name">${escapeHtml(item.name)}</div></div>`;
@@ -1405,7 +1444,6 @@
             strip.push(pool[targetIndex]);
             for (let i = 0; i < TOTAL_ITEMS - RANDOM_BEFORE - 1; i++) strip.push(pool[Math.floor(Math.random() * pool.length)]);
 
-            // ← ИЗМЕНЕНО: imgTag() + lazy
             let trackHtml = "";
             for (const item of strip) {
                 trackHtml += `<div class="mini-roulette-item">${imgTag(item)}</div>`;
@@ -1455,7 +1493,6 @@
         let totalValue = 0;
         for (const r of results) {
             totalValue += r.price;
-            // ← ИЗМЕНЕНО: imgTag() + lazy
             listHtml += `
                 <div class="multi-result-row">
                     <div class="m-img">${imgTag(r)}</div>
@@ -1489,7 +1526,11 @@
                 body: JSON.stringify({ user_id: user.id, codes: codes })
             });
             const data = await res.json();
-            if (data.ok) { updateBalance(data.new_balance); closeRoulette(); }
+            if (data.ok) {
+                updateBalance(data.new_balance);
+                clearDynamicCache();  // ← КЕШ: сброс
+                closeRoulette();
+            }
             else alert("❌ " + data.error);
         } catch (err) { alert("❌ Ошибка: " + err.message); }
     }
