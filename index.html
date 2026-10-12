@@ -101,6 +101,14 @@
             margin-bottom: 12px;
         }
 
+        .success {
+            background: #27ae60;
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+
         button {
             width: 100%;
             padding: 14px;
@@ -344,8 +352,6 @@
             let html = `<div class="card"><div class="label">🎒 Всего: ${data.count} предметов</div></div>`;
 
             for (const item of data.items) {
-                // Если есть base64-картинка — показываем её
-                // Если нет — показываем эмодзи редкости
                 const imgHtml = item.image
                     ? `<img src="${item.image}" alt="${escapeHtml(item.name)}">`
                     : `<span>${item.rarity}</span>`;
@@ -375,20 +381,98 @@
     }
 
     // ============================================================
-    // ДЕЙСТВИЯ (пока заглушки)
+    // ДЕЙСТВИЯ
     // ============================================================
-    function insureItem(code) {
-        alert("🛡 Застраховать " + code + " — функция в разработке");
-    }
+    async function insureItem(code) {
+        if (!confirm("🛡 Застраховать предмет на 24 часа?\nСтоимость: 12% от цены.")) return;
 
-    function sellItem(code, price) {
-        if (confirm(`Продать за ${formatNumber(price)}₽?`)) {
-            alert("💵 Продать " + code + " — функция в разработке");
+        try {
+            const res = await fetch(`${API_URL}/api/insure_item`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "ngrok-skip-browser-warning": "true"
+                },
+                body: JSON.stringify({
+                    user_id: user.id,
+                    item_code: code
+                })
+            });
+            const data = await res.json();
+
+            if (data.ok) {
+                alert("✅ " + data.message);
+                loadInventory();
+            } else {
+                alert("❌ " + data.error);
+            }
+        } catch (err) {
+            alert("❌ Ошибка: " + err.message);
         }
     }
 
-    function giftItem(code) {
-        alert("🎁 Подарить " + code + " — функция в разработке");
+    async function sellItem(code, price) {
+        if (!confirm(`💵 Продать за ${formatNumber(price)}₽?`)) return;
+
+        try {
+            const res = await fetch(`${API_URL}/api/sell_item`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "ngrok-skip-browser-warning": "true"
+                },
+                body: JSON.stringify({
+                    user_id: user.id,
+                    item_code: code
+                })
+            });
+            const data = await res.json();
+
+            if (data.ok) {
+                alert("✅ " + data.message);
+                loadInventory();
+            } else {
+                alert("❌ " + data.error);
+            }
+        } catch (err) {
+            alert("❌ Ошибка: " + err.message);
+        }
+    }
+
+    async function giftItem(code) {
+        const toUserId = prompt("🎁 Введи ID игрока, которому подарить:");
+        if (!toUserId) return;
+
+        const toId = parseInt(toUserId);
+        if (!toId || isNaN(toId)) {
+            alert("❌ Неверный ID");
+            return;
+        }
+
+        try {
+            const res = await fetch(`${API_URL}/api/gift_item`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "ngrok-skip-browser-warning": "true"
+                },
+                body: JSON.stringify({
+                    user_id: user.id,
+                    item_code: code,
+                    to_user_id: toId
+                })
+            });
+            const data = await res.json();
+
+            if (data.ok) {
+                alert("✅ " + data.message);
+                loadInventory();
+            } else {
+                alert("❌ " + data.error);
+            }
+        } catch (err) {
+            alert("❌ Ошибка: " + err.message);
+        }
     }
 
     // ============================================================
