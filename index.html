@@ -118,53 +118,62 @@
             opacity: 0.8;
         }
 
+        /* ============================================================
+           КАРТОЧКА ПРЕДМЕТА — ВЕРТИКАЛЬНАЯ
+           ============================================================ */
         .item {
             display: flex;
-            align-items: center;
-            gap: 14px;
+            flex-direction: column;
             background: var(--tg-theme-secondary-bg-color, #f5f5f5);
-            border-radius: 14px;
-            padding: 14px;
-            margin-bottom: 10px;
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 14px;
         }
 
+        /* Строка 1: название */
+        .item-name {
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 12px;
+            color: var(--tg-theme-text-color, #000);
+        }
+
+        /* Строка 2: картинка по центру */
         .item-img {
-            width: 64px;
-            height: 64px;
-            background: rgba(0, 0, 0, 0.1);
-            border-radius: 12px;
+            width: 100%;
+            max-width: 200px;
+            height: 200px;
+            margin: 0 auto 12px;
+            background: rgba(0, 0, 0, 0.08);
+            border-radius: 16px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 32px;
-            flex-shrink: 0;
+            font-size: 80px;
             overflow: hidden;
+            flex-shrink: 0;
         }
 
         .item-img img {
             width: 100%;
             height: 100%;
-            object-fit: cover;
+            object-fit: contain;
         }
 
+        /* Строка 3: цена и код */
         .item-info {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .item-name {
-            font-size: 16px;
-            font-weight: bold;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            margin-bottom: 2px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            padding: 0 4px;
         }
 
         .item-price {
-            font-size: 14px;
-            color: var(--tg-theme-hint-color, #999);
-            margin-bottom: 2px;
+            font-size: 16px;
+            font-weight: bold;
+            color: var(--tg-theme-text-color, #000);
         }
 
         .item-code {
@@ -173,20 +182,19 @@
             font-family: monospace;
         }
 
+        /* Строка 4: кнопки в ряд */
         .item-buttons {
             display: flex;
-            flex-direction: column;
-            gap: 6px;
-            flex-shrink: 0;
+            gap: 8px;
         }
 
         .btn-small {
-            width: 56px;
-            height: 48px;
-            font-size: 20px;
+            flex: 1;
+            height: 52px;
+            font-size: 22px;
             padding: 0;
             margin: 0;
-            border-radius: 10px;
+            border-radius: 12px;
             border: none;
             cursor: pointer;
             color: white;
@@ -197,7 +205,7 @@
         }
 
         .btn-small:active {
-            transform: scale(0.92);
+            transform: scale(0.95);
             opacity: 0.85;
         }
 
@@ -362,9 +370,9 @@
 
                 html += `
                     <div class="item">
+                        <div class="item-name">${item.rarity} ${escapeHtml(item.name)}</div>
                         <div class="item-img">${imgHtml}</div>
                         <div class="item-info">
-                            <div class="item-name">${item.rarity} ${escapeHtml(item.name)}</div>
                             <div class="item-price">${formatNumber(item.price)}₽</div>
                             <div class="item-code">${item.code}</div>
                         </div>
