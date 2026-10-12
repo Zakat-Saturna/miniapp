@@ -379,7 +379,7 @@
         }
 
         /* ============================================================
-           АНИМАЦИЯ КЕЙСА (рулетка)
+           РУЛЕТКА С РЕАЛЬНЫМИ БЛЮДАМИ
            ============================================================ */
         .roulette-container {
             position: fixed;
@@ -387,7 +387,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.92);
+            background: rgba(0, 0, 0, 0.95);
             z-index: 2000;
             display: flex;
             flex-direction: column;
@@ -401,15 +401,16 @@
             font-size: 20px;
             font-weight: bold;
             margin-bottom: 20px;
+            text-align: center;
         }
 
         .roulette-viewport {
             width: 100%;
             max-width: 500px;
-            height: 140px;
+            height: 160px;
             overflow: hidden;
             position: relative;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0, 0, 0, 0.6);
             border-top: 3px solid #f1c40f;
             border-bottom: 3px solid #f1c40f;
             border-radius: 8px;
@@ -419,42 +420,46 @@
             display: flex;
             height: 100%;
             align-items: center;
-            transition: transform 4s cubic-bezier(0.15, 0.7, 0.2, 1);
+            transition: transform 5s cubic-bezier(0.15, 0.7, 0.1, 1);
             will-change: transform;
         }
 
         .roulette-item {
-            width: 120px;
-            height: 120px;
+            width: 130px;
+            height: 140px;
             flex-shrink: 0;
             margin: 0 5px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             color: white;
-            font-size: 40px;
             position: relative;
-            border: 2px solid rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            overflow: hidden;
         }
 
         .roulette-item img {
-            width: 70px;
-            height: 70px;
+            width: 90px;
+            height: 90px;
             object-fit: contain;
         }
 
-        .roulette-item .roulette-item-name {
+        .roulette-item .r-emoji {
+            font-size: 60px;
+        }
+
+        .roulette-item .r-name {
             font-size: 10px;
             text-align: center;
-            padding: 0 4px;
-            margin-top: 4px;
+            padding: 2px 4px;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
             width: 100%;
+            margin-top: 4px;
         }
 
         .roulette-pointer {
@@ -466,7 +471,7 @@
             background: #f1c40f;
             transform: translateX(-50%);
             z-index: 10;
-            box-shadow: 0 0 15px #f1c40f;
+            box-shadow: 0 0 20px #f1c40f;
         }
 
         .roulette-pointer::before {
@@ -475,9 +480,9 @@
             top: -10px;
             left: 50%;
             transform: translateX(-50%);
-            border-left: 8px solid transparent;
-            border-right: 8px solid transparent;
-            border-top: 12px solid #f1c40f;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-top: 14px solid #f1c40f;
         }
 
         .roulette-pointer::after {
@@ -486,9 +491,9 @@
             bottom: -10px;
             left: 50%;
             transform: translateX(-50%);
-            border-left: 8px solid transparent;
-            border-right: 8px solid transparent;
-            border-bottom: 12px solid #f1c40f;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-bottom: 14px solid #f1c40f;
         }
 
         .result-container {
@@ -594,7 +599,17 @@
             margin-bottom: 6px;
         }
 
-        .multi-result-row img {
+        .multi-result-row .m-img {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+
+        .multi-result-row .m-img img {
             width: 40px;
             height: 40px;
             object-fit: contain;
@@ -1013,19 +1028,17 @@
     }
 
     // ============================================================
-    // ОТКРЫТИЕ КЕЙСА + АНИМАЦИЯ
+    // ОТКРЫТИЕ КЕЙСА + АНИМАЦИЯ (реальные блюда)
     // ============================================================
-    function openCase(caseId, count) {
+    async function openCase(caseId, count) {
         if (!user) return;
 
         // Находим цену
         let casePrice = 0;
-        let caseName = "";
         for (const cat of casesData) {
             for (const c of cat.cases) {
                 if (c.id === caseId) {
                     casePrice = c.price;
-                    caseName = c.name;
                     break;
                 }
             }
@@ -1037,51 +1050,96 @@
             return;
         }
 
-        showRouletteAnimation(caseName, count);
-        doOpenCase(caseId, count);
-    }
+        // 1. Загружаем пул блюд для этого кейса
+        let pool = [];
+        let caseName = "";
+        try {
+            const res = await fetch(`${API_URL}/api/case_preview?case_id=${caseId}`, {
+                headers: { "ngrok-skip-browser-warning": "true" }
+            });
+            const data = await res.json();
+            if (!data.ok) {
+                alert("❌ " + data.error);
+                return;
+            }
+            pool = data.pool || [];
+            caseName = data.case_name || "";
+        } catch (err) {
+            alert("❌ Ошибка загрузки кейса: " + err.message);
+            return;
+        }
 
-    async function doOpenCase(caseId, count) {
+        if (pool.length === 0) {
+            alert("❌ Кейс пустой");
+            return;
+        }
+
+        // 2. Открываем кейс на сервере → получаем результат (индексы в пуле)
+        let openResult;
         try {
             const res = await fetch(`${API_URL}/api/open_case`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
                 body: JSON.stringify({ user_id: user.id, case_id: caseId, count })
             });
-            const data = await res.json();
-
-            if (!data.ok) {
-                closeRoulette();
-                alert("❌ " + data.error);
+            openResult = await res.json();
+            if (!openResult.ok) {
+                alert("❌ " + openResult.error);
                 return;
             }
-
-            updateBalance(data.new_balance);
-
-            // Показываем результат после анимации (4 сек)
-            setTimeout(() => {
-                closeRoulette();
-                showResult(data.results, caseId, count);
-            }, 4000);
         } catch (err) {
-            closeRoulette();
             alert("❌ Ошибка: " + err.message);
+            return;
         }
+
+        // 3. Обновляем баланс сразу (списали деньги)
+        updateBalance(openResult.new_balance);
+
+        // 4. Запускаем анимацию, передавая результат
+        runRoulette(caseName, count, pool, openResult.results, () => {
+            closeRoulette();
+            showResult(openResult.results, caseId, count);
+        });
     }
 
-    function showRouletteAnimation(caseName, count) {
+    // ============================================================
+    // РУЛЕТКА — реальные блюда
+    // ============================================================
+    function runRoulette(caseName, count, pool, results, onFinish) {
         const rouletteRoot = document.getElementById("roulette-root");
 
-        // Твои 8 редкостей
-        const emojis = ["⚪", "🟢", "🔵", "🟣", "🟡", "🔴", "🔶", "🔷"];
-        const items = [];
-        for (let i = 0; i < 50; i++) {
-            items.push(emojis[Math.floor(Math.random() * emojis.length)]);
+        // Для ×1 — одна рулетка, для ×3/×10 — упростим: прокрутим один раз и покажем результаты
+        // (для нескольких открытий анимация одна, но результат — на конкретном блюде)
+        const targetIndex = results[0].pool_index !== undefined
+            ? results[0].pool_index
+            : Math.floor(Math.random() * pool.length);
+
+        const ITEMS_IN_STRIP = 60;
+        const RANDOM_BEFORE = 40; // сколько случайных до финального
+        const strip = [];
+
+        // Набиваем случайными
+        for (let i = 0; i < RANDOM_BEFORE; i++) {
+            strip.push(pool[Math.floor(Math.random() * pool.length)]);
+        }
+        // Финальный (то, что выпало)
+        strip.push(pool[targetIndex]);
+        // Ещё немного после
+        for (let i = 0; i < ITEMS_IN_STRIP - RANDOM_BEFORE - 1; i++) {
+            strip.push(pool[Math.floor(Math.random() * pool.length)]);
         }
 
         let trackHtml = "";
-        for (const e of items) {
-            trackHtml += `<div class="roulette-item">${e}</div>`;
+        for (const item of strip) {
+            const img = item.image
+                ? `<img src="${item.image}" alt="">`
+                : `<span class="r-emoji">${item.rarity}</span>`;
+            trackHtml += `
+                <div class="roulette-item">
+                    ${img}
+                    <div class="r-name">${escapeHtml(item.name)}</div>
+                </div>
+            `;
         }
 
         rouletteRoot.innerHTML = `
@@ -1096,12 +1154,31 @@
             </div>
         `;
 
+        // Каждая карточка = 130px + margin 10px = 140px
+        const ITEM_WIDTH = 140;
+
+        // Позиция выигрышного элемента (RANDOM_BEFORE) — надо её поставить под указатель (центр)
+        const viewportWidth = Math.min(window.innerWidth - 40, 500);
+        const pointerPos = viewportWidth / 2;
+
+        // Смещение: проматываем так, чтобы центр winning item был под указателем
+        // Выигрышный элемент центр = RANDOM_BEFORE * ITEM_WIDTH + ITEM_WIDTH/2
+        // Надо чтобы он оказался в pointerPos от левого края трека
+        const winningCenter = RANDOM_BEFORE * ITEM_WIDTH + ITEM_WIDTH / 2;
+        const offset = winningCenter - pointerPos;
+
+        // Плюс небольшой рандомный сдвиг внутри карточки (±30px)
+        const randomShift = (Math.random() - 0.5) * 60;
+        const finalOffset = offset + randomShift;
+
         setTimeout(() => {
             const track = document.getElementById("roulette-track");
             if (!track) return;
-            const distance = 2500 + Math.random() * 800;
-            track.style.transform = `translateX(-${distance}px)`;
+            track.style.transform = `translateX(-${finalOffset}px)`;
         }, 100);
+
+        // Завершение через 5.2 сек (анимация 5 сек + запас)
+        setTimeout(onFinish, 5300);
     }
 
     function closeRoulette() {
@@ -1145,7 +1222,7 @@
                     : `<span>${r.rarity}</span>`;
                 listHtml += `
                     <div class="multi-result-row">
-                        <div style="width:40px;height:40px;display:flex;align-items:center;justify-content:center;font-size:24px;">${imgHtml}</div>
+                        <div class="m-img">${imgHtml}</div>
                         <div class="multi-result-info">
                             <div class="multi-result-name">${r.rarity} ${escapeHtml(r.name)}</div>
                             <div class="multi-result-price">${formatNumber(r.price)}₽</div>
