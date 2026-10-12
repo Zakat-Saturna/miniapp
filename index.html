@@ -1,40 +1,1501 @@
-@app.route("/api/rob_search", methods=["GET", "OPTIONS"])
-def api_rob_search():
-    if request.method == "OPTIONS":
-        return "", 204
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Piggy Chef</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Jersey+10&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body { font-family: 'Jersey 10', -apple-system, Arial, sans-serif; overflow-x: hidden; -webkit-font-smoothing: none; -moz-osx-font-smoothing: grayscale; }
+        body { padding: 16px; background: var(--tg-theme-bg-color, #ffffff); color: var(--tg-theme-text-color, #000000); min-height: 100vh; font-size: 20px; line-height: 1.2; }
+        button, input, select, textarea { font-family: inherit; }
 
-    try:
-        by_id = request.args.get("by_id", type=int)
-        username = request.args.get("username")
+        .header { text-align: center; margin-bottom: 16px; }
+        .header h1 { font-size: 38px; margin-bottom: 8px; }
+        .header .username { color: var(--tg-theme-hint-color, #999); font-size: 18px; }
 
-        conn = get_db()
+        .balance-bar { display: flex; justify-content: space-between; align-items: center; background: var(--tg-theme-secondary-bg-color, #f5f5f5); border-radius: 12px; padding: 12px 16px; margin-bottom: 16px; font-size: 20px; }
+        .balance-bar .balance { color: #27ae60; font-size: 24px; }
 
-        if by_id:
-            row = conn.execute(
-                "SELECT user_id, username, first_name FROM users WHERE user_id = ?",
-                (by_id,)
-            ).fetchone()
-        elif username:
-            clean = username.lstrip("@").strip().lower()
-            row = conn.execute(
-                "SELECT user_id, username, first_name FROM users "
-                "WHERE LOWER(username) = ?",
-                (clean,)
-            ).fetchone()
-        else:
-            conn.close()
-            return jsonify({"ok": False, "error": "нужен by_id или username"}), 400
+        .tabs-row { display: flex; gap: 6px; margin-bottom: 6px; }
+        .tabs-row:last-of-type { margin-bottom: 16px; }
+        .tab {
+            flex: 1;
+            padding: 14px 6px;
+            background: var(--tg-theme-secondary-bg-color, #f5f5f5);
+            color: var(--tg-theme-text-color, #000);
+            border: none;
+            border-radius: 10px;
+            font-size: 26px;
+            cursor: pointer;
+            font-family: inherit;
+            line-height: 1;
+            min-width: 0;
+        }
+        .tab.active {
+            background: var(--tg-theme-button-color, #2481cc);
+            color: var(--tg-theme-button-text-color, #fff);
+            transform: scale(1.05);
+        }
 
-        conn.close()
+        .card { background: var(--tg-theme-secondary-bg-color, #f5f5f5); border-radius: 12px; padding: 16px; margin-bottom: 12px; }
+        .card .label { font-size: 17px; color: var(--tg-theme-hint-color, #999); margin-bottom: 6px; }
+        .card .value { font-size: 30px; }
 
-        if not row:
-            return jsonify({"ok": False, "error": "игрок не найден"}), 404
+        .row { display: flex; gap: 12px; margin-bottom: 12px; }
+        .row .card { flex: 1; margin-bottom: 0; }
 
-        return jsonify({
-            "ok": True,
-            "user_id": row["user_id"],
-            "username": row["username"] or "",
-            "first_name": row["first_name"] or "",
+        .loading { text-align: center; padding: 40px; color: var(--tg-theme-hint-color, #999); font-size: 20px; }
+
+        .error { background: #ff4444; color: white; padding: 12px; border-radius: 8px; margin-bottom: 12px; }
+
+        button { width: 100%; padding: 14px; font-size: 20px; background: var(--tg-theme-button-color, #2481cc); color: var(--tg-theme-button-text-color, #ffffff); border: none; border-radius: 10px; cursor: pointer; margin-top: 8px; font-family: inherit; letter-spacing: 0.3px; }
+        button:active { opacity: 0.8; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* ИНВЕНТАРЬ */
+        .inv-header { display: flex; justify-content: space-between; align-items: center; background: var(--tg-theme-secondary-bg-color, #f5f5f5); border-radius: 12px; padding: 10px 14px; margin-bottom: 10px; font-size: 19px; }
+        .inv-header .total-value { color: #27ae60; }
+
+        .sort-bar { display: flex; gap: 6px; margin-bottom: 10px; overflow-x: auto; padding-bottom: 4px; }
+        .sort-btn { padding: 8px 12px; font-size: 17px; border-radius: 8px; border: 1px solid #888; background: transparent; color: var(--tg-theme-text-color, #000); cursor: pointer; white-space: nowrap; width: auto; margin: 0; font-family: inherit; }
+        .sort-btn.active { background: var(--tg-theme-button-color, #2481cc); color: var(--tg-theme-button-text-color, #fff); border-color: var(--tg-theme-button-color, #2481cc); }
+
+        .item { display: flex; align-items: center; gap: 12px; background: var(--tg-theme-secondary-bg-color, #f5f5f5); border-radius: 14px; padding: 12px; margin-bottom: 8px; transition: background 0.15s; }
+        .item.selected { background: rgba(39, 174, 96, 0.25); border: 2px solid #27ae60; }
+
+        .item-checkbox { width: 28px; height: 28px; border-radius: 8px; border: 2px solid #888; display: flex; align-items: center; justify-content: center; flex-shrink: 0; cursor: pointer; font-size: 22px; color: white; background: transparent; transition: all 0.15s; }
+        .item-checkbox.checked { background: #27ae60; border-color: #27ae60; }
+        .item-checkbox-placeholder { width: 28px; height: 28px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 24px; }
+
+        .item-img { width: 56px; height: 56px; background: rgba(0, 0, 0, 0.08); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 28px; flex-shrink: 0; overflow: hidden; }
+        .item-img img { width: 100%; height: 100%; object-fit: contain; }
+        .item-info { flex: 1; min-width: 0; }
+        .item-name { font-size: 19px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px; }
+        .item-price { font-size: 17px; color: #27ae60; }
+        .item-code { font-size: 14px; color: var(--tg-theme-hint-color, #999); font-family: monospace; }
+
+        .item-actions { display: flex; flex-direction: column; gap: 4px; }
+        .btn-tiny { width: 40px; height: 36px; font-size: 20px; padding: 0; margin: 0; border-radius: 8px; border: none; cursor: pointer; color: white; font-family: inherit; }
+        .btn-tiny-insure { background: #4a90e2; }
+        .btn-tiny-gift { background: #e67e22; }
+        .btn-tiny-insure.disabled { background: #555; opacity: 0.5; cursor: not-allowed; }
+
+        .inv-pagination { display: flex; align-items: center; justify-content: center; gap: 12px; margin-top: 14px; margin-bottom: 14px; }
+        .inv-pagination button { width: 50px; height: 50px; padding: 0; margin: 0; border-radius: 12px; font-size: 24px; background: var(--tg-theme-button-color, #2481cc); font-family: inherit; }
+        .inv-pagination button:disabled { background: #555; opacity: 0.4; cursor: not-allowed; }
+        .inv-pagination .page-info { font-size: 20px; }
+
+        .sell-all-btn { background: #27ae60; margin-bottom: 100px; }
+
+        /* КОРЗИНА */
+        .cart-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--tg-theme-secondary-bg-color, #232e3c); border-top: 2px solid #27ae60; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; gap: 12px; z-index: 100; box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3); }
+        .cart-info { flex: 1; font-size: 19px; }
+        .cart-info .cart-count { color: #fff; }
+        .cart-info .cart-total { color: #27ae60; font-size: 20px; }
+        .cart-btn { width: auto; padding: 12px 20px; margin: 0; background: #27ae60; color: white; border-radius: 10px; border: none; cursor: pointer; font-size: 19px; font-family: inherit; }
+
+        /* КЕЙСЫ */
+        .case-category { background: var(--tg-theme-secondary-bg-color, #f5f5f5); border-radius: 12px; padding: 14px; margin-bottom: 10px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-size: 20px; }
+        .case-item { background: var(--tg-theme-secondary-bg-color, #f5f5f5); border-radius: 12px; padding: 16px; margin-bottom: 10px; text-align: center; }
+        .case-name { font-size: 24px; margin-bottom: 6px; }
+        .case-price { font-size: 19px; color: var(--tg-theme-hint-color, #999); margin-bottom: 12px; }
+        .case-buttons { display: flex; gap: 8px; }
+        .btn-case { flex: 1; padding: 12px; border-radius: 10px; border: none; font-size: 20px; cursor: pointer; color: white; font-family: inherit; }
+        .btn-x1 { background: #3498db; }
+        .btn-x3 { background: #9b59b6; }
+        .btn-x10 { background: #e74c3c; }
+        .btn-back { background: #666; color: white; margin-bottom: 12px; font-family: inherit; }
+
+        /* РЕСТОРАН */
+        .restaurant-image { width: 100%; max-width: 400px; height: auto; margin: 0 auto 16px; display: block; border-radius: 16px; background: rgba(0,0,0,0.05); min-height: 200px; object-fit: contain; }
+        .restaurant-image-placeholder { width: 100%; max-width: 400px; height: 200px; margin: 0 auto 16px; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.05); border-radius: 16px; font-size: 80px; }
+        .upgrade-block { background: var(--tg-theme-secondary-bg-color, #f5f5f5); border-radius: 12px; padding: 14px; margin-bottom: 10px; }
+        .upgrade-block .upgrade-title { font-size: 20px; margin-bottom: 6px; }
+        .upgrade-block .upgrade-info { font-size: 17px; color: var(--tg-theme-hint-color, #999); margin-bottom: 10px; }
+        .upgrade-block button { margin-top: 0; font-size: 18px; padding: 12px; }
+        .worker-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: rgba(0,0,0,0.05); border-radius: 8px; margin-bottom: 6px; font-size: 17px; }
+
+        /* КРАФТ */
+        .craft-row { display: flex; justify-content: space-between; align-items: center; background: var(--tg-theme-secondary-bg-color, #f5f5f5); border-radius: 12px; padding: 14px; margin-bottom: 8px; }
+        .craft-info { flex: 1; }
+        .craft-title { font-size: 20px; margin-bottom: 4px; }
+        .craft-count { font-size: 16px; color: var(--tg-theme-hint-color, #999); }
+        .craft-btn { width: auto; padding: 10px 16px; margin: 0; font-size: 18px; }
+
+        /* КОЛЛЕКЦИЯ */
+        .coll-rarity-block { margin-bottom: 16px; }
+        .coll-rarity-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; background: var(--tg-theme-secondary-bg-color, #f5f5f5); border-radius: 12px; cursor: pointer; font-size: 20px; margin-bottom: 6px; }
+        .coll-rarity-progress { font-size: 17px; color: var(--tg-theme-hint-color, #999); }
+        .coll-dish { display: flex; justify-content: space-between; align-items: center; padding: 8px 14px; margin-bottom: 4px; background: rgba(0,0,0,0.03); border-radius: 8px; font-size: 17px; }
+        .coll-dish.opened { background: rgba(39, 174, 96, 0.12); }
+        .coll-dish .name { flex: 1; }
+        .coll-dish .price { color: #f1c40f; font-size: 15px; }
+        .coll-dish .check { width: 24px; text-align: center; font-size: 20px; }
+
+        /* ДОСТИЖЕНИЯ */
+        .ach-row { display: flex; justify-content: space-between; align-items: center; background: var(--tg-theme-secondary-bg-color, #f5f5f5); border-radius: 12px; padding: 14px; margin-bottom: 8px; }
+        .ach-row.unlocked { background: rgba(39, 174, 96, 0.15); }
+        .ach-info { flex: 1; }
+        .ach-name { font-size: 19px; margin-bottom: 2px; }
+        .ach-desc { font-size: 15px; color: var(--tg-theme-hint-color, #999); }
+        .ach-reward { font-size: 17px; color: #f1c40f; text-align: right; }
+
+        /* БОНУС */
+        .bonus-card { background: var(--tg-theme-secondary-bg-color, #f5f5f5); border-radius: 16px; padding: 24px; text-align: center; margin-bottom: 12px; }
+        .bonus-card .bonus-amount { font-size: 60px; color: #27ae60; margin: 10px 0; }
+        .bonus-card .bonus-label { font-size: 17px; color: var(--tg-theme-hint-color, #999); }
+
+        /* ТОП */
+        .top-row { display: flex; align-items: center; gap: 12px; background: var(--tg-theme-secondary-bg-color, #f5f5f5); border-radius: 12px; padding: 12px 14px; margin-bottom: 8px; }
+        .top-row.top1 { background: linear-gradient(90deg, rgba(255, 215, 0, 0.3), rgba(255, 215, 0, 0.1)); }
+        .top-row.top2 { background: linear-gradient(90deg, rgba(192, 192, 192, 0.3), rgba(192, 192, 192, 0.1)); }
+        .top-row.top3 { background: linear-gradient(90deg, rgba(205, 127, 50, 0.3), rgba(205, 127, 50, 0.1)); }
+        .top-rank { font-size: 28px; min-width: 40px; text-align: center; }
+        .top-info { flex: 1; min-width: 0; }
+        .top-name { font-size: 19px; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .top-stats { font-size: 15px; color: var(--tg-theme-hint-color, #999); }
+        .top-balance { font-size: 17px; color: #27ae60; text-align: right; white-space: nowrap; }
+
+        /* ВОРОВСТВО */
+        .rob-section { background: var(--tg-theme-secondary-bg-color, #f5f5f5); border-radius: 12px; padding: 14px; margin-bottom: 10px; }
+        .rob-section .rob-title { font-size: 19px; margin-bottom: 8px; color: var(--tg-theme-hint-color, #999); }
+        .rob-btn-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
+        .rob-friend-btn { padding: 10px 14px; margin: 0; width: auto; font-size: 17px; background: #4a90e2; }
+
+        /* МОДАЛЬНЫЕ ОКНА */
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.85); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
+        .modal { background: var(--tg-theme-bg-color, #ffffff); border-radius: 16px; padding: 20px; width: 100%; max-width: 400px; max-height: 80vh; overflow-y: auto; }
+        .modal h3 { font-size: 24px; margin-bottom: 16px; text-align: center; }
+        .modal-btn { width: 100%; padding: 14px; margin-bottom: 8px; font-size: 19px; border: none; border-radius: 10px; cursor: pointer; text-align: left; background: var(--tg-theme-secondary-bg-color, #f5f5f5); color: var(--tg-theme-text-color, #000); font-family: inherit; }
+        .modal-btn.primary { background: var(--tg-theme-button-color, #2481cc); color: var(--tg-theme-button-text-color, #fff); text-align: center; }
+        .modal-btn.cancel { background: #666; color: white; text-align: center; margin-top: 8px; }
+        .friend-username { color: var(--tg-theme-hint-color, #999); font-size: 17px; margin-left: 6px; }
+        .modal-input { width: 100%; padding: 12px; font-size: 20px; border: 2px solid var(--tg-theme-secondary-bg-color, #f5f5f5); border-radius: 10px; background: var(--tg-theme-bg-color, #fff); color: var(--tg-theme-text-color, #000); margin-bottom: 12px; font-family: inherit; }
+
+        /* РУЛЕТКИ */
+        .roulette-container { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.96); z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; overflow: hidden; }
+        .roulette-title { color: white; font-size: 28px; margin-bottom: 16px; text-align: center; }
+        .roulette-viewport { width: 100%; max-width: 500px; height: 160px; overflow: hidden; position: relative; background: rgba(0, 0, 0, 0.6); border-top: 3px solid #f1c40f; border-bottom: 3px solid #f1c40f; border-radius: 8px; }
+        .roulette-track { display: flex; height: 100%; align-items: center; transition: transform 4s cubic-bezier(0.15, 0.7, 0.1, 1); will-change: transform; }
+        .roulette-item { width: 130px; height: 140px; flex-shrink: 0; margin: 0 5px; background: rgba(255, 255, 255, 0.08); border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; position: relative; border: 2px solid rgba(255, 255, 255, 0.15); overflow: hidden; }
+        .roulette-item img { width: 90px; height: 90px; object-fit: contain; }
+        .roulette-item .r-emoji { font-size: 60px; }
+        .roulette-item .r-name { font-size: 14px; text-align: center; padding: 2px 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; width: 100%; margin-top: 4px; }
+
+        .roulette-pointer { position: absolute; top: 0; bottom: 0; left: 50%; width: 4px; background: #f1c40f; transform: translateX(-50%); z-index: 50; box-shadow: 0 0 20px #f1c40f, 0 0 40px #f1c40f; pointer-events: none; }
+        .roulette-pointer::before { content: ""; position: absolute; top: -10px; left: 50%; transform: translateX(-50%); border-left: 10px solid transparent; border-right: 10px solid transparent; border-top: 14px solid #f1c40f; }
+        .roulette-pointer::after { content: ""; position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%); border-left: 10px solid transparent; border-right: 10px solid transparent; border-bottom: 14px solid #f1c40f; }
+
+        .multi-roulette-container { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.96); z-index: 2000; display: flex; flex-direction: column; padding: 12px; overflow-y: auto; overflow-x: hidden; }
+        .multi-roulette-title { color: white; font-size: 26px; text-align: center; margin-bottom: 12px; flex-shrink: 0; }
+        .multi-roulette-list { display: flex; flex-direction: column; gap: 10px; width: 100%; }
+        .multi-roulette-list.cols-1 .mini-roulette { width: 100%; }
+        .multi-roulette-list.cols-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .mini-roulette { background: rgba(255, 255, 255, 0.05); border-radius: 10px; padding: 4px; overflow: hidden; min-width: 0; }
+        .mini-roulette-viewport { width: 100%; height: 70px; overflow: hidden; position: relative; background: rgba(0, 0, 0, 0.5); border-top: 2px solid #f1c40f; border-bottom: 2px solid #f1c40f; border-radius: 6px; }
+        .mini-roulette-track { display: flex; height: 100%; align-items: center; transition: transform 3.5s cubic-bezier(0.15, 0.7, 0.1, 1); will-change: transform; }
+        .mini-roulette-item { width: 60px; height: 60px; flex-shrink: 0; margin: 0 2px; display: flex; align-items: center; justify-content: center; background: rgba(255, 255, 255, 0.08); border-radius: 6px; overflow: hidden; }
+        .mini-roulette-item img { width: 100%; height: 100%; object-fit: contain; }
+        .mini-roulette-item span { font-size: 30px; }
+        .mini-roulette-pointer { position: absolute; top: -4px; bottom: -4px; left: 50%; width: 3px; background: #f1c40f; transform: translateX(-50%); z-index: 50; box-shadow: 0 0 10px #f1c40f, 0 0 20px #f1c40f; pointer-events: none; }
+        .mini-roulette-pointer::before { content: ""; position: absolute; top: -2px; left: 50%; transform: translateX(-50%); border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 8px solid #f1c40f; }
+        .mini-roulette-pointer::after { content: ""; position: absolute; bottom: -2px; left: 50%; transform: translateX(-50%); border-left: 6px solid transparent; border-right: 6px solid transparent; border-bottom: 8px solid #f1c40f; }
+
+        /* РЕЗУЛЬТАТ */
+        .result-container { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.92); z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; color: white; text-align: center; overflow-y: auto; }
+        .result-header { font-size: 26px; margin-bottom: 16px; }
+        .multi-result-list { max-height: 55vh; overflow-y: auto; width: 100%; max-width: 400px; margin-bottom: 16px; }
+        .multi-result-row { display: flex; align-items: center; gap: 12px; background: rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; }
+        .multi-result-row .m-img { width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; font-size: 30px; flex-shrink: 0; }
+        .multi-result-row .m-img img { width: 50px; height: 50px; object-fit: contain; }
+        .multi-result-info { flex: 1; text-align: left; min-width: 0; }
+        .multi-result-name { font-size: 19px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .multi-result-price { font-size: 16px; color: #f1c40f; }
+        .result-total { font-size: 22px; margin-bottom: 16px; color: #f1c40f; }
+        .result-buttons { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 320px; }
+        .result-btn { padding: 16px; border-radius: 12px; border: none; font-size: 20px; cursor: pointer; color: white; font-family: inherit; }
+        .result-btn.sell { background: #27ae60; }
+        .result-btn.again { background: #3498db; }
+        .result-btn.close { background: #666; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>🍽 Piggy Chef</h1>
+    <div class="username" id="username">Загрузка...</div>
+</div>
+
+<div class="balance-bar">
+    <span>💰 Баланс:</span>
+    <span class="balance" id="balance-display">...</span>
+</div>
+
+<div class="tabs-row">
+    <button class="tab active" data-tab="profile" onclick="switchTab('profile')">👤</button>
+    <button class="tab" data-tab="inventory" onclick="switchTab('inventory')">🎒</button>
+    <button class="tab" data-tab="bonus" onclick="switchTab('bonus')">🎁</button>
+</div>
+<div class="tabs-row">
+    <button class="tab" data-tab="cases" onclick="switchTab('cases')">📦</button>
+    <button class="tab" data-tab="top" onclick="switchTab('top')">🏆</button>
+    <button class="tab" data-tab="rob" onclick="switchTab('rob')">⚔️</button>
+</div>
+
+<div id="content">
+    <div class="loading">⏳ Загружаем данные...</div>
+</div>
+
+<div id="modal-root"></div>
+<div id="roulette-root"></div>
+
+<script>
+    const API_URL = "https://piggychef.serveousercontent.com";
+
+    const tg = window.Telegram.WebApp;
+    tg.ready();
+    tg.expand();
+
+    const user = tg.initDataUnsafe?.user;
+
+    let currentBalance = 0;
+    let casesData = null;
+    let robState = {};
+
+    let inventoryState = {
+        offset: 0,
+        limit: 20,
+        totalCount: 0,
+        totalValue: 0,
+        items: [],
+        cart: new Set(),
+        sort: "price_desc",
+    };
+
+    function formatNumber(n) {
+        if (!n) return "0";
+        n = Number(n);
+        if (n < 1000) return n.toString();
+        if (n < 1000000) return (n / 1000).toFixed(1) + "K";
+        if (n < 1000000000) return (n / 1000000).toFixed(1) + "M";
+        if (n < 1000000000000) return (n / 1000000000).toFixed(1) + "B";
+        if (n < 1000000000000000) return (n / 1000000000000).toFixed(1) + "T";
+        return (n / 1000000000000000).toFixed(1) + "Qa";
+    }
+
+    function escapeHtml(s) {
+        const div = document.createElement("div");
+        div.textContent = s;
+        return div.innerHTML;
+    }
+
+    function updateBalance(b) {
+        currentBalance = b;
+        document.getElementById("balance-display").textContent = formatNumber(b) + "₽";
+    }
+
+    function switchTab(tab) {
+        document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+        document.querySelector(`[data-tab="${tab}"]`).classList.add("active");
+
+        const oldCart = document.getElementById("cart-bar");
+        if (oldCart) oldCart.remove();
+
+        if (tab === "profile") loadProfile();
+        if (tab === "inventory") loadInventory();
+        if (tab === "cases") loadCases();
+        if (tab === "top") loadTop();
+        if (tab === "bonus") loadBonus();
+        if (tab === "rob") loadRob();
+    }
+
+    // ============================================================
+    // ПРОФИЛЬ
+    // ============================================================
+    async function loadProfile() {
+        if (!user) {
+            document.getElementById("content").innerHTML = '<div class="error">❌ Открой меня внутри Telegram!</div>';
+            return;
+        }
+
+        document.getElementById("username").textContent = `${user.first_name} (@${user.username || "no_username"})`;
+        document.getElementById("content").innerHTML = '<div class="loading">⏳ Загружаем данные...</div>';
+
+        try {
+            const res = await fetch(`${API_URL}/api/profile?user_id=${user.id}`, {
+                headers: { "ngrok-skip-browser-warning": "true" }
+            });
+            const data = await res.json();
+            if (!data.ok) throw new Error(data.error);
+
+            const u = data.user;
+            updateBalance(u.balance);
+
+            document.getElementById("content").innerHTML = `
+                <div class="card"><div class="label">💰 Баланс</div><div class="value">${formatNumber(u.balance)}₽</div></div>
+                <div class="card"><div class="label">✨ Опыт</div><div class="value">${formatNumber(u.xp)} XP</div></div>
+                <div class="row">
+                    <div class="card"><div class="label">🏪 Ресторан</div><div class="value">${u.restaurant_level} ур.</div></div>
+                    <div class="card"><div class="label">🔥 Стрик</div><div class="value">${u.streak} дн.</div></div>
+                </div>
+                <div class="row">
+                    <div class="card"><div class="label">📦 Кейсов</div><div class="value">${formatNumber(u.total_cases)}</div></div>
+                    <div class="card"><div class="label">⭐ Репутация</div><div class="value">${u.reputation}</div></div>
+                </div>
+                <button onclick="openRestaurant()">🏪 Ресторан</button>
+                <button onclick="openCraft()">🔨 Крафт</button>
+                <button onclick="openCollection()">📖 Коллекция</button>
+                <button onclick="openAchievements()">🏅 Достижения</button>
+                <button onclick="loadProfile()">🔄 Обновить</button>
+            `;
+        } catch (err) {
+            document.getElementById("content").innerHTML = `<div class="error">❌ Ошибка: ${escapeHtml(err.message)}</div>`;
+        }
+    }
+
+    // ============================================================
+    // РЕСТОРАН
+    // ============================================================
+    async function openRestaurant() {
+        document.getElementById("content").innerHTML = '<div class="loading">⏳ Загружаем ресторан...</div>';
+        try {
+            const res = await fetch(`${API_URL}/api/restaurant?user_id=${user.id}`, {
+                headers: { "ngrok-skip-browser-warning": "true" }
+            });
+            const data = await res.json();
+            if (!data.ok) throw new Error(data.error);
+
+            const r = data.restaurant;
+            updateBalance(r.balance);
+
+            let html = `<button class="btn-back" onclick="loadProfile()">⬅️ Назад в профиль</button>`;
+
+            if (r.image) html += `<img src="${r.image}" class="restaurant-image" alt="Ресторан">`;
+            else html += `<div class="restaurant-image-placeholder">🏪</div>`;
+
+            html += `<div class="card"><div class="label">🏪 Ресторан</div><div class="value">Уровень ${r.level} / 10</div></div>`;
+
+            if (r.level > 0) {
+                html += `<div class="card"><div class="label">💰 Доход в час</div><div class="value">${formatNumber(r.income)}₽</div>${r.inventory_bonus > 0 ? `<div style="font-size:15px;color:#999;margin-top:4px;">с инвентаря: +${formatNumber(r.inventory_bonus)}₽</div>` : ''}</div>`;
+                html += `<div class="card" style="background: rgba(39, 174, 96, 0.15);"><div class="label">⏳ Накоплено</div><div class="value" style="color:#27ae60;">${formatNumber(r.total_pending)}₽</div>${r.pending_worker_bonus > 0 ? `<div style="font-size:15px;color:#999;margin-top:4px;">в т.ч. с поваров: ${formatNumber(r.pending_worker_bonus)}₽</div>` : ''}</div>`;
+                if (r.total_pending > 0) html += `<button onclick="collectIncome()">💰 Собрать доход (${formatNumber(r.total_pending)}₽)</button>`;
+                else html += `<button disabled>💰 Собрать (пока пусто)</button>`;
+            }
+
+            html += `<div class="card"><div class="label">📈 Улучшения</div></div>`;
+
+            if (r.next_restaurant_cost !== null) {
+                html += `<div class="upgrade-block"><div class="upgrade-title">🏪 Ресторан → ур. ${r.level + 1}</div><div class="upgrade-info">Стоимость: ${formatNumber(r.next_restaurant_cost)}₽</div><button onclick="upgradeRestaurant('restaurant')">🏗 Улучшить</button></div>`;
+            } else {
+                html += `<div class="upgrade-block"><div class="upgrade-title">🏪 Ресторан</div><div class="upgrade-info">МАКСИМУМ</div></div>`;
+            }
+
+            if (r.next_workplaces_cost !== null) {
+                html += `<div class="upgrade-block"><div class="upgrade-title">🪑 Рабочие места → ур. ${r.workplaces_level + 1}</div><div class="upgrade-info">${r.workplaces_bonus}% с поваров · Стоимость: ${formatNumber(r.next_workplaces_cost)}₽</div><button onclick="upgradeRestaurant('workplaces')">🪑 Улучшить</button></div>`;
+            } else {
+                html += `<div class="upgrade-block"><div class="upgrade-title">🪑 Рабочие места</div><div class="upgrade-info">МАКСИМУМ (${r.workplaces_bonus}%)</div></div>`;
+            }
+
+            if (r.next_menu_cost !== null) {
+                html += `<div class="upgrade-block"><div class="upgrade-title">📖 Меню → ур. ${r.menu_level + 1}</div><div class="upgrade-info">${r.menu_bonus}% от блюд · Стоимость: ${formatNumber(r.next_menu_cost)}₽</div><button onclick="upgradeRestaurant('menu')">📖 Улучшить</button></div>`;
+            } else {
+                html += `<div class="upgrade-block"><div class="upgrade-title">📖 Меню</div><div class="upgrade-info">МАКСИМУМ (${r.menu_bonus}%)</div></div>`;
+            }
+
+            if (r.workers.length > 0) {
+                html += `<div class="card"><div class="label">👨‍🍳 Повара (${r.workers.length} / ${r.max_workers})</div></div>`;
+                for (const w of r.workers) {
+                    html += `<div class="worker-row"><span>👨‍🍳 ${escapeHtml(w.name)} (ур. ${w.level})</span><span style="color:#27ae60;">+${formatNumber(w.bonus)}₽/час</span></div>`;
+                }
+                html += `<div class="card" style="background: rgba(39, 174, 96, 0.15);"><div class="label">💰 Всего с поваров</div><div class="value" style="color:#27ae60;">+${formatNumber(r.total_owner_bonus)}₽/час</div></div>`;
+            } else {
+                html += `<div class="card"><div class="label">👨‍🍳 Поваров пока нет</div></div>`;
+            }
+
+            document.getElementById("content").innerHTML = html;
+        } catch (err) {
+            document.getElementById("content").innerHTML = `<div class="error">❌ Ошибка: ${escapeHtml(err.message)}</div><button onclick="loadProfile()">⬅️ Назад</button>`;
+        }
+    }
+
+    async function collectIncome() {
+        try {
+            const res = await fetch(`${API_URL}/api/collect_income`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
+                body: JSON.stringify({ user_id: user.id })
+            });
+            const data = await res.json();
+            if (data.ok) { updateBalance(data.new_balance); openRestaurant(); }
+            else alert("❌ " + data.error);
+        } catch (err) { alert("❌ Ошибка: " + err.message); }
+    }
+
+    async function upgradeRestaurant(type) {
+        const names = { "restaurant": "ресторан", "menu": "меню", "workplaces": "рабочие места" };
+        if (!confirm(`Улучшить ${names[type]}?`)) return;
+        try {
+            const res = await fetch(`${API_URL}/api/upgrade`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
+                body: JSON.stringify({ user_id: user.id, type: type })
+            });
+            const data = await res.json();
+            if (data.ok) { updateBalance(data.new_balance); openRestaurant(); }
+            else alert("❌ " + data.error);
+        } catch (err) { alert("❌ Ошибка: " + err.message); }
+    }
+
+    // ============================================================
+    // КРАФТ
+    // ============================================================
+    async function openCraft() {
+        document.getElementById("content").innerHTML = '<div class="loading">⏳ Загружаем крафт...</div>';
+        try {
+            const res = await fetch(`${API_URL}/api/craft_available?user_id=${user.id}`, {
+                headers: { "ngrok-skip-browser-warning": "true" }
+            });
+            const data = await res.json();
+            if (!data.ok) throw new Error(data.error);
+
+            let html = `<button class="btn-back" onclick="loadProfile()">⬅️ Назад в профиль</button>`;
+            html += `<div class="card"><div class="label">🔨 Крафт</div><div style="font-size:16px;color:#999;margin-top:6px;">X предметов одной редкости → 1 предмет следующей</div></div>`;
+
+            for (const item of data.available) {
+                const need = item.need;
+                const canCraft = item.count >= need && item.next_rarity;
+                const btn = canCraft
+                    ? `<button class="craft-btn" onclick="doCraft('${item.rarity}')">🔨</button>`
+                    : `<button class="craft-btn" disabled>🔨</button>`;
+                html += `
+                    <div class="craft-row">
+                        <div class="craft-info">
+                            <div class="craft-title">${item.rarity} → ${item.next_rarity || '—'}</div>
+                            <div class="craft-count">${item.count} / ${need}</div>
+                        </div>
+                        ${btn}
+                    </div>
+                `;
+            }
+
+            document.getElementById("content").innerHTML = html;
+        } catch (err) {
+            document.getElementById("content").innerHTML = `<div class="error">❌ Ошибка: ${escapeHtml(err.message)}</div><button onclick="loadProfile()">⬅️ Назад</button>`;
+        }
+    }
+
+    async function doCraft(rarity) {
+        if (!confirm(`Скрафтить 10 × ${rarity}?`)) return;
+        try {
+            const res = await fetch(`${API_URL}/api/craft`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
+                body: JSON.stringify({ user_id: user.id, rarity: rarity })
+            });
+            const data = await res.json();
+            if (data.ok) {
+                alert(`✅ Получено: ${data.rarity} ${data.name} (${formatNumber(data.price)}₽)`);
+                openCraft();
+            } else alert("❌ " + data.error);
+        } catch (err) { alert("❌ Ошибка: " + err.message); }
+    }
+
+    // ============================================================
+    // КОЛЛЕКЦИЯ
+    // ============================================================
+    let collectionState = { collapsed: {} };
+
+    async function openCollection() {
+        document.getElementById("content").innerHTML = '<div class="loading">⏳ Загружаем коллекцию...</div>';
+        try {
+            const res = await fetch(`${API_URL}/api/collection?user_id=${user.id}`, {
+                headers: { "ngrok-skip-browser-warning": "true" }
+            });
+            const data = await res.json();
+            if (!data.ok) throw new Error(data.error);
+
+            let html = `<button class="btn-back" onclick="loadProfile()">⬅️ Назад в профиль</button>`;
+            html += `<div class="card"><div class="label">📖 Коллекция</div><div class="value">${data.total_opened} / ${data.total_all}</div></div>`;
+
+            for (const block of data.by_rarity) {
+                const isCollapsed = collectionState.collapsed[block.rarity] !== false;
+                const arrow = isCollapsed ? '▶️' : '🔽';
+                html += `
+                    <div class="coll-rarity-block">
+                        <div class="coll-rarity-header" onclick="toggleCollapse('${block.rarity}')">
+                            <span>${arrow} ${block.rarity}</span>
+                            <span class="coll-rarity-progress">${block.opened} / ${block.total}</span>
+                        </div>
+                        <div id="coll-${block.rarity}" style="display: ${isCollapsed ? 'none' : 'block'};">
+                `;
+                for (const dish of block.items) {
+                    html += `
+                        <div class="coll-dish ${dish.opened ? 'opened' : ''}">
+                            <span class="check">${dish.opened ? '✅' : '⬜'}</span>
+                            <span class="name">${escapeHtml(dish.name)}</span>
+                            <span class="price">${formatNumber(dish.price)}₽</span>
+                        </div>
+                    `;
+                }
+                html += `</div></div>`;
+            }
+            document.getElementById("content").innerHTML = html;
+        } catch (err) {
+            document.getElementById("content").innerHTML = `<div class="error">❌ Ошибка: ${escapeHtml(err.message)}</div><button onclick="loadProfile()">⬅️ Назад</button>`;
+        }
+    }
+
+    function toggleCollapse(rarity) {
+        collectionState.collapsed[rarity] = !collectionState.collapsed[rarity];
+        const el = document.getElementById(`coll-${rarity}`);
+        const header = el.previousElementSibling;
+        if (el.style.display === 'none') {
+            el.style.display = 'block';
+            header.querySelector('span').textContent = '🔽 ' + rarity;
+        } else {
+            el.style.display = 'none';
+            header.querySelector('span').textContent = '▶️ ' + rarity;
+        }
+    }
+
+    // ============================================================
+    // ДОСТИЖЕНИЯ
+    // ============================================================
+    async function openAchievements() {
+        document.getElementById("content").innerHTML = '<div class="loading">⏳ Загружаем достижения...</div>';
+        try {
+            const res = await fetch(`${API_URL}/api/achievements?user_id=${user.id}`, {
+                headers: { "ngrok-skip-browser-warning": "true" }
+            });
+            const data = await res.json();
+            if (!data.ok) throw new Error(data.error);
+            let html = `<button class="btn-back" onclick="loadProfile()">⬅️ Назад в профиль</button>`;
+            html += `<div class="card"><div class="label">🏅 Достижения</div><div class="value">${data.unlocked} / ${data.total}</div></div>`;
+            for (const ach of data.achievements) {
+                html += `
+                    <div class="ach-row ${ach.unlocked ? 'unlocked' : ''}">
+                        <div class="ach-info">
+                            <div class="ach-name">${ach.unlocked ? '✅' : '⬜'} ${escapeHtml(ach.name)}</div>
+                            <div class="ach-desc">${escapeHtml(ach.desc)}</div>
+                        </div>
+                        <div class="ach-reward">+${formatNumber(ach.reward)}₽</div>
+                    </div>
+                `;
+            }
+            document.getElementById("content").innerHTML = html;
+        } catch (err) {
+            document.getElementById("content").innerHTML = `<div class="error">❌ Ошибка: ${escapeHtml(err.message)}</div><button onclick="loadProfile()">⬅️ Назад</button>`;
+        }
+    }
+
+    // ============================================================
+    // ТОП
+    // ============================================================
+    async function loadTop() {
+        document.getElementById("username").textContent = `${user.first_name} (@${user.username || "no_username"})`;
+        document.getElementById("content").innerHTML = '<div class="loading">⏳ Загружаем топ...</div>';
+        try {
+            const res = await fetch(`${API_URL}/api/top`, { headers: { "ngrok-skip-browser-warning": "true" } });
+            const data = await res.json();
+            if (!data.ok) throw new Error(data.error);
+            let html = `<div class="card"><div class="label">🏆 Топ игроков по XP</div></div>`;
+            for (let i = 0; i < data.top.length; i++) {
+                const u = data.top[i];
+                const rank = i + 1;
+                let medal = '', rowClass = '';
+                if (rank === 1) { medal = '🥇'; rowClass = 'top1'; }
+                else if (rank === 2) { medal = '🥈'; rowClass = 'top2'; }
+                else if (rank === 3) { medal = '🥉'; rowClass = 'top3'; }
+                else { medal = `#${rank}`; }
+                let name = u.username ? `@${u.username}` : (u.first_name || `id${u.user_id}`);
+                if (u.has_crown) name = '👑 ' + name;
+                if (u.reputation >= 100) name = '😇 ' + name;
+                else if (u.reputation <= -100) name = '🎭 ' + name;
+                html += `
+                    <div class="top-row ${rowClass}">
+                        <div class="top-rank">${medal}</div>
+                        <div class="top-info">
+                            <div class="top-name">${escapeHtml(name)}</div>
+                            <div class="top-stats">Ур. ${u.level} · ✨ ${formatNumber(u.xp)} XP</div>
+                        </div>
+                        <div class="top-balance">${formatNumber(u.balance)}₽</div>
+                    </div>
+                `;
+            }
+            document.getElementById("content").innerHTML = html;
+        } catch (err) {
+            document.getElementById("content").innerHTML = `<div class="error">❌ Ошибка: ${escapeHtml(err.message)}</div>`;
+        }
+    }
+
+    // ============================================================
+    // БОНУС
+    // ============================================================
+    async function loadBonus() {
+        document.getElementById("username").textContent = `${user.first_name} (@${user.username || "no_username"})`;
+        document.getElementById("content").innerHTML = '<div class="loading">⏳ Загружаем бонус...</div>';
+        try {
+            const res = await fetch(`${API_URL}/api/bonus_status?user_id=${user.id}`, {
+                headers: { "ngrok-skip-browser-warning": "true" }
+            });
+            const data = await res.json();
+            if (!data.ok) throw new Error(data.error);
+            let html = '';
+            if (data.can_claim) {
+                html += `
+                    <div class="bonus-card">
+                        <div class="bonus-label">🎁 Ежедневный бонус</div>
+                        <div class="bonus-amount">+${formatNumber(data.current_bonus)}₽</div>
+                        <div class="bonus-label">🔥 Стрик: ${data.next_streak} дн.</div>
+                        <button onclick="claimBonus()">🎁 Забрать бонус</button>
+                    </div>
+                    <div class="card"><div class="label">Завтра бонус будет</div><div class="value">+${formatNumber(data.next_bonus)}₽</div></div>
+                `;
+            } else {
+                const totalSec = data.time_left_sec;
+                const hours = Math.floor(totalSec / 3600);
+                const minutes = Math.floor((totalSec % 3600) / 60);
+                html += `
+                    <div class="bonus-card">
+                        <div class="bonus-label">⏳ Бонус уже забран</div>
+                        <div class="bonus-amount" style="color: #999; font-size: 36px;">${hours}ч ${minutes}м</div>
+                        <div class="bonus-label">до следующего</div>
+                    </div>
+                    <div class="card"><div class="label">🔥 Стрик</div><div class="value">${data.current_streak} дн.</div></div>
+                    <div class="card"><div class="label">Следующий бонус</div><div class="value">+${formatNumber(data.next_bonus)}₽</div></div>
+                `;
+            }
+            document.getElementById("content").innerHTML = html;
+        } catch (err) {
+            document.getElementById("content").innerHTML = `<div class="error">❌ Ошибка: ${escapeHtml(err.message)}</div>`;
+        }
+    }
+
+    async function claimBonus() {
+        try {
+            const res = await fetch(`${API_URL}/api/claim_bonus`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
+                body: JSON.stringify({ user_id: user.id })
+            });
+            const data = await res.json();
+            if (data.ok) {
+                updateBalance(data.new_balance);
+                alert(`🎁 +${formatNumber(data.bonus)}₽\n🔥 Стрик: ${data.new_streak} дн.`);
+                loadBonus();
+            } else alert("❌ " + data.error);
+        } catch (err) { alert("❌ Ошибка: " + err.message); }
+    }
+
+    // ============================================================
+    // ВОРОВСТВО
+    // ============================================================
+    async function loadRob() {
+        document.getElementById("username").textContent = `${user.first_name} (@${user.username || "no_username"})`;
+        document.getElementById("content").innerHTML = '<div class="loading">⏳ Загружаем воровство...</div>';
+
+        try {
+            const statRes = await fetch(`${API_URL}/api/rob_status?user_id=${user.id}`, {
+                headers: { "ngrok-skip-browser-warning": "true" }
+            });
+            const stat = await statRes.json();
+
+            if (!stat.ok) throw new Error(stat.error);
+
+            let html = '';
+
+            if (!stat.can_steal) {
+                html += `<div class="card"><div class="label">⚔️ Воровство</div><div style="font-size:17px;color:#999;margin-top:8px;">Доступно с ${stat.min_level} уровня. У тебя — ${stat.level}.</div></div>`;
+                document.getElementById("content").innerHTML = html;
+                return;
+            }
+
+            if (stat.cooldown_left > 0) {
+                html += `<div class="card"><div class="label">⚔️ Воровство</div><div style="font-size:17px;color:#999;margin-top:8px;">⏳ Кулдаун: осталось ${stat.cooldown_left} мин.</div></div>`;
+                document.getElementById("content").innerHTML = html;
+                return;
+            }
+
+            html += `<div class="card"><div class="label">⚔️ Воровство</div><div style="font-size:16px;color:#999;margin-top:6px;">Выбери жертву из друзей или введи @username</div></div>`;
+
+            // Друзья
+            const frRes = await fetch(`${API_URL}/api/rob_friends?user_id=${user.id}`, {
+                headers: { "ngrok-skip-browser-warning": "true" }
+            });
+            const frData = await frRes.json();
+
+            if (frData.ok && frData.friends.length > 0) {
+                html += `<div class="rob-section"><div class="rob-title">👥 Друзья</div><div class="rob-btn-row">`;
+                for (const f of frData.friends) {
+                    const name = f.first_name || f.username || `id${f.user_id}`;
+                    html += `<button class="rob-friend-btn" onclick="selectVictim(${f.user_id}, '${escapeHtml(name)}')">⚔️ ${escapeHtml(name)}</button>`;
+                }
+                html += `</div></div>`;
+            } else {
+                html += `<div class="card"><div class="label">👥 Друзей нет</div></div>`;
+            }
+
+            html += `<button onclick="manualVictim()">✏️ Ввести @username / ID</button>`;
+
+            document.getElementById("content").innerHTML = html;
+        } catch (err) {
+            document.getElementById("content").innerHTML = `<div class="error">❌ Ошибка: ${escapeHtml(err.message)}</div>`;
+        }
+    }
+
+    function manualVictim() {
+        const raw = prompt("Введи @username или ID игрока:");
+        if (!raw) return;
+        selectVictim(null, null, raw.trim());
+    }
+
+    async function selectVictim(victimId, victimName, rawInput) {
+        document.getElementById("content").innerHTML = '<div class="loading">⏳ Ищем жертву...</div>';
+
+        try {
+            let url;
+            if (victimId) {
+                url = `${API_URL}/api/victim_inventory?victim_id=${victimId}`;
+            } else {
+                // Ищем по username/ID
+                let cleanRaw = rawInput;
+                if (cleanRaw.startsWith("@")) cleanRaw = cleanRaw.slice(1);
+                const searchUrl = /^\d+$/.test(cleanRaw)
+                    ? `${API_URL}/api/rob_search?by_id=${cleanRaw}`
+                    : `${API_URL}/api/rob_search?username=${encodeURIComponent(cleanRaw)}`;
+
+                const searchRes = await fetch(searchUrl, { headers: { "ngrok-skip-browser-warning": "true" } });
+                const searchData = await searchRes.json();
+                if (!searchData.ok) { alert("❌ " + searchData.error); loadRob(); return; }
+                victimId = searchData.user_id;
+                url = `${API_URL}/api/victim_inventory?victim_id=${victimId}`;
+            }
+
+            const res = await fetch(url, { headers: { "ngrok-skip-browser-warning": "true" } });
+            const data = await res.json();
+            if (!data.ok) { alert("❌ " + data.error); loadRob(); return; }
+
+            if (data.items.length === 0) { alert("🛡 У жертвы нет доступных предметов"); loadRob(); return; }
+
+            robState.victimId = victimId;
+            robState.victimName = data.victim_name;
+            robState.victimItems = data.items;
+
+            renderVictimItems();
+        } catch (err) {
+            alert("❌ Ошибка: " + err.message);
+            loadRob();
+        }
+    }
+
+    function renderVictimItems() {
+        let html = `<button class="btn-back" onclick="loadRob()">⬅️ Назад</button>`;
+        html += `<div class="card"><div class="label">⚔️ Жертва: ${escapeHtml(robState.victimName)}</div><div style="font-size:16px;color:#999;margin-top:6px;">Выбери, что украсть</div></div>`;
+
+        for (const item of robState.victimItems) {
+            const imgUrl = item.image ? `<img src="${item.image}">` : '';
+            html += `
+                <div class="item" onclick="pickMyItem('${item.code}')">
+                    <div class="item-img">${imgUrl || item.rarity}</div>
+                    <div class="item-info">
+                        <div class="item-name">${item.rarity} ${escapeHtml(item.name)}</div>
+                        <div class="item-price">${formatNumber(item.price)}₽</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        document.getElementById("content").innerHTML = html;
+    }
+
+    async function pickMyItem(victimItemCode) {
+        robState.victimItemCode = victimItemCode;
+        document.getElementById("content").innerHTML = '<div class="loading">⏳ Загружаем твой инвентарь...</div>';
+
+        try {
+            const res = await fetch(`${API_URL}/api/inventory?user_id=${user.id}&offset=0&limit=50&sort=price_desc`, {
+                headers: { "ngrok-skip-browser-warning": "true" }
+            });
+            const data = await res.json();
+            if (!data.ok) throw new Error(data.error);
+
+            // Фильтруем: только не артефакты, не застрахованные
+            const available = data.items.filter(i => !i.is_artifact && !i.insured);
+
+            if (available.length === 0) {
+                alert("❌ Нет доступных предметов для ставки");
+                loadRob();
+                return;
+            }
+
+            let html = `<button class="btn-back" onclick="renderVictimItems()">⬅️ Назад</button>`;
+            html += `<div class="card"><div class="label">⚔️ Выбери свою ставку</div></div>`;
+
+            for (const item of available) {
+                const imgUrl = item.image ? `<img src="${item.image}">` : '';
+                html += `
+                    <div class="item" onclick="doSteal('${item.code}')">
+                        <div class="item-img">${imgUrl || item.rarity}</div>
+                        <div class="item-info">
+                            <div class="item-name">${item.rarity} ${escapeHtml(item.name)}</div>
+                            <div class="item-price">${formatNumber(item.price)}₽</div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            document.getElementById("content").innerHTML = html;
+        } catch (err) {
+            alert("❌ Ошибка: " + err.message);
+            loadRob();
+        }
+    }
+
+    async function doSteal(thiefItemCode) {
+        try {
+            const res = await fetch(`${API_URL}/api/steal`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
+                body: JSON.stringify({
+                    user_id: user.id,
+                    victim_id: robState.victimId,
+                    thief_item_code: thiefItemCode,
+                    victim_item_code: robState.victimItemCode,
+                })
+            });
+            const data = await res.json();
+            if (!data.ok) { alert("❌ " + data.error); return; }
+
+            showStealRoulette(data);
+
+        } catch (err) {
+            alert("❌ Ошибка: " + err.message);
+        }
+    }
+
+    function showStealRoulette(result) {
+        const rouletteRoot = document.getElementById("roulette-root");
+
+        // Строим ленту: 40 случайных + результат + хвост
+        const RANDOM_BEFORE = 35;
+        const TOTAL_ITEMS = 55;
+        const strip = [];
+
+        // Пул — перемешанные предметы из обоих игроков
+        const pool = [];
+        for (let i = 0; i < 10; i++) {
+            pool.push({
+                name: result.thief_item.name,
+                rarity: result.thief_item.rarity,
+                is_winner: false,
+            });
+            pool.push({
+                name: result.victim_item.name,
+                rarity: result.victim_item.rarity,
+                is_winner: false,
+            });
+        }
+
+        for (let i = 0; i < RANDOM_BEFORE; i++) {
+            strip.push(pool[Math.floor(Math.random() * pool.length)]);
+        }
+        // Победный элемент
+        strip.push({
+            name: result.success ? result.victim_item.name : result.thief_item.name,
+            rarity: result.success ? result.victim_item.rarity : result.thief_item.rarity,
+            is_winner: true,
+        });
+        for (let i = 0; i < TOTAL_ITEMS - RANDOM_BEFORE - 1; i++) {
+            strip.push(pool[Math.floor(Math.random() * pool.length)]);
+        }
+
+        let trackHtml = "";
+        for (const item of strip) {
+            trackHtml += `
+                <div class="roulette-item">
+                    <span class="r-emoji">${item.rarity}</span>
+                    <div class="r-name">${escapeHtml(item.name)}</div>
+                </div>
+            `;
+        }
+
+        const title = result.success ? '⚔️ Победа!' : '💀 Провал...';
+
+        rouletteRoot.innerHTML = `
+            <div class="roulette-container">
+                <div class="roulette-title">${title}</div>
+                <div class="roulette-viewport">
+                    <div class="roulette-pointer"></div>
+                    <div class="roulette-track" id="roulette-track">${trackHtml}</div>
+                </div>
+            </div>
+        `;
+
+        const ITEM_WIDTH = 140;
+        const viewportWidth = Math.min(window.innerWidth - 40, 500);
+        const pointerPos = viewportWidth / 2;
+        const winningCenter = RANDOM_BEFORE * ITEM_WIDTH + ITEM_WIDTH / 2;
+        const offset = winningCenter - pointerPos;
+        const randomShift = (Math.random() - 0.5) * 60;
+        const finalOffset = offset + randomShift;
+
+        setTimeout(() => {
+            const track = document.getElementById("roulette-track");
+            if (track) track.style.transform = `translateX(-${finalOffset}px)`;
+        }, 100);
+
+        setTimeout(() => {
+            showStealResult(result);
+        }, 4300);
+    }
+
+    function showStealResult(result) {
+        const rouletteRoot = document.getElementById("roulette-root");
+
+        let header, detail, color;
+        if (result.success) {
+            header = "🏆 Победа!";
+            detail = `Ты украл ${result.victim_item.rarity} <b>${escapeHtml(result.victim_item.name)}</b> (${formatNumber(result.victim_item.price)}₽)`;
+            color = "#27ae60";
+        } else {
+            header = "💀 Провал";
+            detail = `Ты проиграл свою ставку ${result.thief_item.rarity} <b>${escapeHtml(result.thief_item.name)}</b> (${formatNumber(result.thief_item.price)}₽)`;
+            color = "#e74c3c";
+        }
+
+        rouletteRoot.innerHTML = `
+            <div class="result-container">
+                <div class="result-header" style="color: ${color};">${header}</div>
+                <div style="font-size: 19px; margin-bottom: 20px; line-height: 1.4;">
+                    ${detail}<br><br>
+                    🎲 Шанс победы: ${result.chance}%
+                </div>
+                <div class="result-buttons">
+                    <button class="result-btn again" onclick="closeRoulette(); loadRob()">⚔️ Ещё раз</button>
+                    <button class="result-btn close" onclick="closeRoulette(); loadProfile()">⬅️ В профиль</button>
+                </div>
+            </div>
+        `;
+
+        // Обновляем баланс (не менялся, но XP мог)
+    }
+
+    function closeRoulette() { document.getElementById("roulette-root").innerHTML = ""; }
+
+    // ============================================================
+    // ИНВЕНТАРЬ
+    // ============================================================
+    async function loadInventory() {
+        if (!user) return;
+        document.getElementById("username").textContent = `${user.first_name} (@${user.username || "no_username"})`;
+        await fetchInventoryPage(inventoryState.offset);
+    }
+
+    async function fetchInventoryPage(offset) {
+        document.getElementById("content").innerHTML = '<div class="loading">⏳ Загружаем инвентарь...</div>';
+        try {
+            const res = await fetch(
+                `${API_URL}/api/inventory?user_id=${user.id}&offset=${offset}&limit=${inventoryState.limit}&sort=${inventoryState.sort}`,
+                { headers: { "ngrok-skip-browser-warning": "true" } }
+            );
+            const data = await res.json();
+            if (!data.ok) throw new Error(data.error);
+            inventoryState.offset = data.offset;
+            inventoryState.totalCount = data.total_count;
+            inventoryState.totalValue = data.total_value;
+            inventoryState.items = data.items;
+            renderInventory();
+        } catch (err) {
+            document.getElementById("content").innerHTML = `<div class="error">❌ Ошибка: ${escapeHtml(err.message)}</div>`;
+        }
+    }
+
+    function renderInventory() {
+        const { items, offset, limit, totalCount, totalValue, cart } = inventoryState;
+        if (totalCount === 0) {
+            document.getElementById("content").innerHTML = '<div class="card"><div class="label">🎒 Инвентарь пуст</div></div>';
+            return;
+        }
+
+        let html = `
+            <div class="inv-header"><div>🎒 Всего: ${totalCount}</div><div class="total-value">💰 ${formatNumber(totalValue)}₽</div></div>
+            <div class="sort-bar">
+                <button class="sort-btn ${inventoryState.sort === 'price_desc' ? 'active' : ''}" onclick="changeSort('price_desc')">💰 Дорогие</button>
+                <button class="sort-btn ${inventoryState.sort === 'price_asc' ? 'active' : ''}" onclick="changeSort('price_asc')">💰 Дешёвые</button>
+                <button class="sort-btn ${inventoryState.sort === 'new' ? 'active' : ''}" onclick="changeSort('new')">🆕 Новые</button>
+                <button class="sort-btn ${inventoryState.sort === 'old' ? 'active' : ''}" onclick="changeSort('old')">🕐 Старые</button>
+            </div>
+        `;
+
+        for (const item of items) {
+            const isSelected = cart.has(item.code);
+            const isArtifact = item.is_artifact;
+            const imgHtml = item.image ? `<img src="${item.image}" alt="${escapeHtml(item.name)}">` : `<span>${item.rarity}</span>`;
+            const insuredBtn = item.insured
+                ? `<button class="btn-tiny btn-tiny-insure disabled" disabled>🛡</button>`
+                : `<button class="btn-tiny btn-tiny-insure" onclick="insureItem('${item.code}')">🛡</button>`;
+            const checkboxHtml = isArtifact
+                ? `<div class="item-checkbox-placeholder">⭐</div>`
+                : `<div class="item-checkbox ${isSelected ? 'checked' : ''}" onclick="toggleCart('${item.code}')">${isSelected ? '✓' : ''}</div>`;
+            const actionsHtml = isArtifact
+                ? `<button class="btn-tiny btn-tiny-gift" onclick="giftItem('${item.code}')">🎁</button>`
+                : `${insuredBtn}<button class="btn-tiny btn-tiny-gift" onclick="giftItem('${item.code}')">🎁</button>`;
+
+            html += `
+                <div class="item ${isSelected ? 'selected' : ''}">
+                    ${checkboxHtml}
+                    <div class="item-img">${imgHtml}</div>
+                    <div class="item-info">
+                        <div class="item-name">${item.rarity} ${escapeHtml(item.name)}</div>
+                        <div class="item-price">${formatNumber(item.price)}₽</div>
+                        <div class="item-code">${item.code}${item.insured ? ' 🛡' : ''}${isArtifact ? ' ⭐' : ''}</div>
+                    </div>
+                    <div class="item-actions">${actionsHtml}</div>
+                </div>
+            `;
+        }
+
+        const currentPage = Math.floor(offset / limit) + 1;
+        const totalPages = Math.ceil(totalCount / limit);
+
+        html += `
+            <div class="inv-pagination">
+                <button onclick="changePage(-1)" ${offset === 0 ? 'disabled' : ''}>⬅️</button>
+                <div class="page-info">${currentPage} / ${totalPages}</div>
+                <button onclick="changePage(1)" ${offset + limit >= totalCount ? 'disabled' : ''}>➡️</button>
+            </div>
+            <button class="sell-all-btn" onclick="sellInventory()">💵 Продать ВСЁ (кроме артефактов и застрахованных)</button>
+        `;
+
+        document.getElementById("content").innerHTML = html;
+        renderCartBar();
+    }
+
+    function changeSort(newSort) {
+        inventoryState.sort = newSort;
+        inventoryState.offset = 0;
+        fetchInventoryPage(0);
+    }
+
+    function changePage(delta) {
+        const newOffset = inventoryState.offset + delta * inventoryState.limit;
+        if (newOffset < 0 || newOffset >= inventoryState.totalCount) return;
+        fetchInventoryPage(newOffset);
+    }
+
+    function toggleCart(code) {
+        const cart = inventoryState.cart;
+        if (cart.has(code)) cart.delete(code);
+        else cart.add(code);
+        renderInventory();
+    }
+
+    function renderCartBar() {
+        const oldCart = document.getElementById("cart-bar");
+        if (oldCart) oldCart.remove();
+        const cart = inventoryState.cart;
+        if (cart.size === 0) return;
+        let total = 0;
+        for (const item of inventoryState.items) {
+            if (cart.has(item.code)) total += item.price;
+        }
+        const cartBar = document.createElement("div");
+        cartBar.className = "cart-bar";
+        cartBar.id = "cart-bar";
+        cartBar.innerHTML = `
+            <div class="cart-info">
+                <div>🛒 В корзине: ${cart.size}</div>
+                <div>💰 Всего: <span class="cart-total">${formatNumber(total)}₽</span></div>
+            </div>
+            <button class="cart-btn" onclick="sellCart()">💵 Продать</button>
+        `;
+        document.body.appendChild(cartBar);
+    }
+
+    async function sellCart() {
+        const cart = inventoryState.cart;
+        if (cart.size === 0) return;
+        if (!confirm(`💵 Продать ${cart.size} предметов?`)) return;
+        try {
+            const res = await fetch(`${API_URL}/api/sell_bulk`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
+                body: JSON.stringify({ user_id: user.id, codes: Array.from(cart) })
+            });
+            const data = await res.json();
+            if (data.ok) {
+                updateBalance(data.new_balance);
+                cart.clear();
+                fetchInventoryPage(inventoryState.offset);
+            } else alert("❌ " + data.error);
+        } catch (err) { alert("❌ Ошибка: " + err.message); }
+    }
+
+    async function sellInventory() {
+        if (!confirm("💵 Продать ВСЁ, кроме застрахованных и артефактов?")) return;
+        try {
+            const res = await fetch(`${API_URL}/api/sell_inventory`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
+                body: JSON.stringify({ user_id: user.id })
+            });
+            const data = await res.json();
+            if (data.ok) {
+                updateBalance(data.new_balance);
+                alert(`✅ Продано ${data.sold_count} предметов на ${formatNumber(data.total_price)}₽`);
+                fetchInventoryPage(0);
+            } else {
+                alert("❌ " + data.error);
+            }
+        } catch (err) { alert("❌ Ошибка: " + err.message); }
+    }
+
+    async function insureItem(code) {
+        if (!confirm("🛡 Застраховать предмет на 24 часа?\nСтоимость: 12% от цены.")) return;
+        try {
+            const res = await fetch(`${API_URL}/api/insure_item`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
+                body: JSON.stringify({ user_id: user.id, item_code: code })
+            });
+            const data = await res.json();
+            if (data.ok) {
+                if (data.new_balance !== undefined) updateBalance(data.new_balance);
+                fetchInventoryPage(inventoryState.offset);
+            } else alert("❌ " + data.error);
+        } catch (err) { alert("❌ Ошибка: " + err.message); }
+    }
+
+    function giftItem(code) {
+        fetch(`${API_URL}/api/friends?user_id=${user.id}`, {
+            headers: { "ngrok-skip-browser-warning": "true" }
         })
-    except Exception as e:
-        return jsonify({"ok": False, "error": str(e)}), 500
+        .then(r => r.json())
+        .then(data => {
+            if (!data.ok) { alert("❌ " + data.error); return; }
+            showGiftModal(code, data.friends || []);
+        })
+        .catch(err => alert("❌ Ошибка: " + err.message));
+    }
+
+    function showGiftModal(code, friends) {
+        const modalRoot = document.getElementById("modal-root");
+        let friendsHtml = "";
+        if (friends.length === 0) {
+            friendsHtml = '<div style="text-align:center;color:#999;padding:10px;">Нет друзей</div>';
+        } else {
+            for (const f of friends) {
+                const displayName = f.first_name || f.username || `id${f.user_id}`;
+                const uname = f.username ? `@${f.username}` : `id${f.user_id}`;
+                friendsHtml += `<button class="modal-btn" onclick="sendGift('${code}', ${f.user_id}, null)">${escapeHtml(displayName)}<span class="friend-username">${escapeHtml(uname)}</span></button>`;
+            }
+        }
+        modalRoot.innerHTML = `
+            <div class="modal-overlay" onclick="if(event.target === this) closeModal()">
+                <div class="modal">
+                    <h3>🎁 Кому подарить?</h3>
+                    <button class="modal-btn primary" onclick="showUsernameInput('${code}')">✏️ Ввести @username</button>
+                    <div style="margin-top:12px;margin-bottom:8px;font-size:15px;color:#999;text-align:center;">или выбери из друзей:</div>
+                    ${friendsHtml}
+                    <button class="modal-btn cancel" onclick="closeModal()">❌ Отмена</button>
+                </div>
+            </div>
+        `;
+    }
+
+    function showUsernameInput(code) {
+        const modalRoot = document.getElementById("modal-root");
+        modalRoot.innerHTML = `
+            <div class="modal-overlay" onclick="if(event.target === this) closeModal()">
+                <div class="modal">
+                    <h3>🎁 Введи @username</h3>
+                    <input type="text" id="gift-username-input" class="modal-input" placeholder="@username или ID" autocomplete="off">
+                    <button class="modal-btn primary" onclick="sendGiftByUsername('${code}')">✅ Отправить</button>
+                    <button class="modal-btn cancel" onclick="giftItem('${code}')">⬅️ Назад</button>
+                </div>
+            </div>
+        `;
+        setTimeout(() => document.getElementById("gift-username-input").focus(), 100);
+    }
+
+    function sendGiftByUsername(code) {
+        const input = document.getElementById("gift-username-input");
+        const value = input.value.trim().replace("@", "");
+        if (!value) { alert("❌ Введи username или ID"); return; }
+        const isId = /^\d+$/.test(value);
+        if (isId) sendGift(code, parseInt(value), null);
+        else sendGift(code, null, value);
+    }
+
+    async function sendGift(code, toUserId, toUsername) {
+        closeModal();
+        const body = { user_id: user.id, item_code: code };
+        if (toUserId) body.to_user_id = toUserId;
+        if (toUsername) body.to_username = toUsername;
+        try {
+            const res = await fetch(`${API_URL}/api/gift_item`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
+                body: JSON.stringify(body)
+            });
+            const data = await res.json();
+            if (data.ok) fetchInventoryPage(inventoryState.offset);
+            else alert("❌ " + data.error);
+        } catch (err) { alert("❌ Ошибка: " + err.message); }
+    }
+
+    function closeModal() { document.getElementById("modal-root").innerHTML = ""; }
+
+    // ============================================================
+    // КЕЙСЫ
+    // ============================================================
+    async function loadCases() {
+        if (!user) return;
+        document.getElementById("username").textContent = `${user.first_name} (@${user.username || "no_username"})`;
+        document.getElementById("content").innerHTML = '<div class="loading">⏳ Загружаем кейсы...</div>';
+        try {
+            const res = await fetch(`${API_URL}/api/cases`, { headers: { "ngrok-skip-browser-warning": "true" } });
+            const data = await res.json();
+            if (!data.ok) throw new Error(data.error);
+            casesData = data.categories;
+            renderCategories();
+        } catch (err) {
+            document.getElementById("content").innerHTML = `<div class="error">❌ Ошибка: ${escapeHtml(err.message)}</div>`;
+        }
+    }
+
+    function renderCategories() {
+        let html = '<div class="card"><div class="label">📦 Выбери категорию</div></div>';
+        for (const cat of casesData) {
+            html += `<div class="case-category" onclick="renderCaseList('${cat.id}')"><span>${escapeHtml(cat.name)}</span><span>▶️</span></div>`;
+        }
+        document.getElementById("content").innerHTML = html;
+    }
+
+    function renderCaseList(catId) {
+        const cat = casesData.find(c => c.id === catId);
+        if (!cat) return;
+        let html = `<button class="btn-back" onclick="renderCategories()">⬅️ Назад к категориям</button>`;
+        html += `<div class="card"><div class="label">${escapeHtml(cat.name)}</div></div>`;
+        for (const c of cat.cases) {
+            html += `
+                <div class="case-item">
+                    <div class="case-name">${escapeHtml(c.name)}</div>
+                    <div class="case-price">${formatNumber(c.price)}₽</div>
+                    <div class="case-buttons">
+                        <button class="btn-case btn-x1" onclick="openCase('${c.id}', 1)">×1</button>
+                        <button class="btn-case btn-x3" onclick="openCase('${c.id}', 3)">×3</button>
+                        <button class="btn-case btn-x10" onclick="openCase('${c.id}', 10)">×10</button>
+                    </div>
+                </div>
+            `;
+        }
+        document.getElementById("content").innerHTML = html;
+    }
+
+    async function openCase(caseId, count) {
+        if (!user) return;
+        let casePrice = 0;
+        for (const cat of casesData) {
+            for (const c of cat.cases) {
+                if (c.id === caseId) { casePrice = c.price; break; }
+            }
+        }
+        const total = casePrice * count;
+        if (currentBalance < total) {
+            alert(`❌ Нужно ${formatNumber(total)}₽, у тебя ${formatNumber(currentBalance)}₽`);
+            return;
+        }
+
+        let pool = [], caseName = "";
+        try {
+            const res = await fetch(`${API_URL}/api/case_preview?case_id=${caseId}`, {
+                headers: { "ngrok-skip-browser-warning": "true" }
+            });
+            const data = await res.json();
+            if (!data.ok) { alert("❌ " + data.error); return; }
+            pool = data.pool || [];
+            caseName = data.case_name || "";
+        } catch (err) { alert("❌ " + err.message); return; }
+
+        if (pool.length === 0) { alert("❌ Кейс пустой"); return; }
+
+        let openResult;
+        try {
+            const res = await fetch(`${API_URL}/api/open_case`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
+                body: JSON.stringify({ user_id: user.id, case_id: caseId, count })
+            });
+            openResult = await res.json();
+            if (!openResult.ok) { alert("❌ " + openResult.error); return; }
+        } catch (err) { alert("❌ " + err.message); return; }
+
+        updateBalance(openResult.new_balance);
+
+        if (count === 1) {
+            showSingleBigRoulette(caseName, pool, openResult.results[0], () => {
+                showMultiResult(openResult.results, caseId, count);
+            });
+        } else {
+            showAllMiniRoulettes(caseName, count, pool, openResult.results, () => {
+                showMultiResult(openResult.results, caseId, count);
+            });
+        }
+    }
+
+    function showSingleBigRoulette(caseName, pool, result, onDone) {
+        const rouletteRoot = document.getElementById("roulette-root");
+        const targetIndex = result.pool_index !== undefined ? result.pool_index : Math.floor(Math.random() * pool.length);
+        const RANDOM_BEFORE = 40, TOTAL_ITEMS = 60;
+        const strip = [];
+        for (let i = 0; i < RANDOM_BEFORE; i++) strip.push(pool[Math.floor(Math.random() * pool.length)]);
+        strip.push(pool[targetIndex]);
+        for (let i = 0; i < TOTAL_ITEMS - RANDOM_BEFORE - 1; i++) strip.push(pool[Math.floor(Math.random() * pool.length)]);
+
+        let trackHtml = "";
+        for (const item of strip) {
+            const img = item.image ? `<img src="${item.image}" alt="">` : `<span class="r-emoji">${item.rarity}</span>`;
+            trackHtml += `<div class="roulette-item">${img}<div class="r-name">${escapeHtml(item.name)}</div></div>`;
+        }
+
+        rouletteRoot.innerHTML = `
+            <div class="roulette-container">
+                <div class="roulette-title">🎰 ${escapeHtml(caseName)}</div>
+                <div class="roulette-viewport">
+                    <div class="roulette-pointer"></div>
+                    <div class="roulette-track" id="roulette-track">${trackHtml}</div>
+                </div>
+            </div>
+        `;
+
+        const ITEM_WIDTH = 140;
+        const viewportWidth = Math.min(window.innerWidth - 40, 500);
+        const pointerPos = viewportWidth / 2;
+        const winningCenter = RANDOM_BEFORE * ITEM_WIDTH + ITEM_WIDTH / 2;
+        const offset = winningCenter - pointerPos;
+        const randomShift = (Math.random() - 0.5) * 60;
+        const finalOffset = offset + randomShift;
+
+        setTimeout(() => {
+            const track = document.getElementById("roulette-track");
+            if (track) track.style.transform = `translateX(-${finalOffset}px)`;
+        }, 100);
+        setTimeout(onDone, 4300);
+    }
+
+    function showAllMiniRoulettes(caseName, count, pool, results, onDone) {
+        const rouletteRoot = document.getElementById("roulette-root");
+        const isTwoCols = count >= 6;
+        const listClass = isTwoCols ? "multi-roulette-list cols-2" : "multi-roulette-list cols-1";
+        let roulettesHtml = "";
+        const configs = [];
+
+        for (let idx = 0; idx < count; idx++) {
+            const result = results[idx];
+            const targetIndex = result.pool_index !== undefined ? result.pool_index : Math.floor(Math.random() * pool.length);
+            const RANDOM_BEFORE = 30, TOTAL_ITEMS = 45;
+            const strip = [];
+            for (let i = 0; i < RANDOM_BEFORE; i++) strip.push(pool[Math.floor(Math.random() * pool.length)]);
+            strip.push(pool[targetIndex]);
+            for (let i = 0; i < TOTAL_ITEMS - RANDOM_BEFORE - 1; i++) strip.push(pool[Math.floor(Math.random() * pool.length)]);
+
+            let trackHtml = "";
+            for (const item of strip) {
+                const img = item.image ? `<img src="${item.image}" alt="">` : `<span>${item.rarity}</span>`;
+                trackHtml += `<div class="mini-roulette-item">${img}</div>`;
+            }
+
+            roulettesHtml += `
+                <div class="mini-roulette">
+                    <div class="mini-roulette-viewport">
+                        <div class="mini-roulette-pointer"></div>
+                        <div class="mini-roulette-track" id="mini-track-${idx}">${trackHtml}</div>
+                    </div>
+                </div>
+            `;
+            configs.push({ idx });
+        }
+
+        rouletteRoot.innerHTML = `
+            <div class="multi-roulette-container">
+                <div class="multi-roulette-title">🎰 ${escapeHtml(caseName)} ×${count}</div>
+                <div class="${listClass}">${roulettesHtml}</div>
+            </div>
+        `;
+
+        setTimeout(() => {
+            const ITEM_WIDTH = 64;
+            for (const cfg of configs) {
+                const track = document.getElementById(`mini-track-${cfg.idx}`);
+                if (!track) continue;
+                const viewport = track.parentElement;
+                const viewportWidth = viewport.clientWidth;
+                const pointerPos = viewportWidth / 2;
+                const winningCenter = 30 * ITEM_WIDTH + ITEM_WIDTH / 2;
+                const offset = winningCenter - pointerPos;
+                const randomShift = (Math.random() - 0.5) * 40;
+                const finalOffset = offset + randomShift;
+                track.style.transform = `translateX(-${finalOffset}px)`;
+            }
+        }, 100);
+        setTimeout(onDone, 4300);
+    }
+
+    function closeRoulette() { document.getElementById("roulette-root").innerHTML = ""; }
+
+    function showMultiResult(results, caseId, count) {
+        const rouletteRoot = document.getElementById("roulette-root");
+        let listHtml = "";
+        let totalValue = 0;
+        for (const r of results) {
+            totalValue += r.price;
+            const imgHtml = r.image ? `<img src="${r.image}">` : `<span>${r.rarity}</span>`;
+            listHtml += `
+                <div class="multi-result-row">
+                    <div class="m-img">${imgHtml}</div>
+                    <div class="multi-result-info">
+                        <div class="multi-result-name">${r.rarity} ${escapeHtml(r.name)}</div>
+                        <div class="multi-result-price">${formatNumber(r.price)}₽</div>
+                    </div>
+                </div>
+            `;
+        }
+        rouletteRoot.innerHTML = `
+            <div class="result-container">
+                <div class="result-header">🎁 Открыто ${count} кейсов</div>
+                <div class="result-total">💰 Всего: ${formatNumber(totalValue)}₽</div>
+                <div class="multi-result-list">${listHtml}</div>
+                <div class="result-buttons">
+                    <button class="result-btn sell" onclick="sellAllResults(${JSON.stringify(results.map(r => r.code)).replace(/"/g, '&quot;')})">💵 Продать всё за ${formatNumber(totalValue)}₽</button>
+                    <button class="result-btn again" onclick="closeRoulette(); openCase('${caseId}', ${count})">🔁 Открыть ещё ×${count}</button>
+                    <button class="result-btn close" onclick="closeRoulette()">⬅️ К кейсам</button>
+                </div>
+            </div>
+        `;
+    }
+
+    async function sellAllResults(codes) {
+        if (!confirm(`💵 Продать всё за ${codes.length} предметов?`)) return;
+        try {
+            const res = await fetch(`${API_URL}/api/sell_bulk`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
+                body: JSON.stringify({ user_id: user.id, codes: codes })
+            });
+            const data = await res.json();
+            if (data.ok) { updateBalance(data.new_balance); closeRoulette(); }
+            else alert("❌ " + data.error);
+        } catch (err) { alert("❌ Ошибка: " + err.message); }
+    }
+
+    switchTab("profile");
+</script>
+
+</body>
+</html>
