@@ -8,6 +8,10 @@
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
+        html, body {
+            overflow-x: hidden;
+        }
+
         body {
             font-family: -apple-system, Arial, sans-serif;
             padding: 16px;
@@ -67,9 +71,7 @@
         }
         button:active { opacity: 0.8; }
 
-        /* ============================================================
-           ИНВЕНТАРЬ
-           ============================================================ */
+        /* ИНВЕНТАРЬ */
         .inv-header {
             display: flex; justify-content: space-between; align-items: center;
             background: var(--tg-theme-secondary-bg-color, #f5f5f5);
@@ -83,17 +85,12 @@
             overflow-x: auto; padding-bottom: 4px;
         }
         .sort-btn {
-            padding: 8px 12px;
-            font-size: 13px;
-            border-radius: 8px;
-            border: 1px solid #888;
+            padding: 8px 12px; font-size: 13px;
+            border-radius: 8px; border: 1px solid #888;
             background: transparent;
             color: var(--tg-theme-text-color, #000);
-            cursor: pointer;
-            white-space: nowrap;
-            width: auto;
-            margin: 0;
-            font-weight: normal;
+            cursor: pointer; white-space: nowrap;
+            width: auto; margin: 0; font-weight: normal;
         }
         .sort-btn.active {
             background: var(--tg-theme-button-color, #2481cc);
@@ -106,40 +103,27 @@
             display: flex; align-items: center; gap: 12px;
             background: var(--tg-theme-secondary-bg-color, #f5f5f5);
             border-radius: 14px; padding: 12px; margin-bottom: 8px;
-            position: relative;
             transition: background 0.15s;
         }
-
         .item.selected {
             background: rgba(39, 174, 96, 0.25);
             border: 2px solid #27ae60;
         }
 
         .item-checkbox {
-            width: 28px; height: 28px;
-            border-radius: 8px;
+            width: 28px; height: 28px; border-radius: 8px;
             border: 2px solid #888;
             display: flex; align-items: center; justify-content: center;
-            flex-shrink: 0;
-            cursor: pointer;
-            font-size: 18px;
-            color: white;
-            background: transparent;
-            transition: all 0.15s;
+            flex-shrink: 0; cursor: pointer; font-size: 18px;
+            color: white; background: transparent; transition: all 0.15s;
         }
         .item-checkbox.checked {
-            background: #27ae60;
-            border-color: #27ae60;
+            background: #27ae60; border-color: #27ae60;
         }
 
-        /* Заглушка для артефактов — вместо чекбокса */
         .item-checkbox-placeholder {
-            width: 28px;
-            height: 28px;
-            flex-shrink: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            width: 28px; height: 28px; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
             font-size: 22px;
         }
 
@@ -148,9 +132,7 @@
             background: rgba(0, 0, 0, 0.08);
             border-radius: 10px;
             display: flex; align-items: center; justify-content: center;
-            font-size: 28px;
-            flex-shrink: 0;
-            overflow: hidden;
+            font-size: 28px; flex-shrink: 0; overflow: hidden;
         }
         .item-img img { width: 100%; height: 100%; object-fit: contain; }
 
@@ -183,10 +165,8 @@
             gap: 12px; margin-top: 14px; margin-bottom: 100px;
         }
         .inv-pagination button {
-            width: 50px; height: 50px;
-            padding: 0; margin: 0;
-            border-radius: 12px;
-            font-size: 20px;
+            width: 50px; height: 50px; padding: 0; margin: 0;
+            border-radius: 12px; font-size: 20px;
             background: var(--tg-theme-button-color, #2481cc);
         }
         .inv-pagination button:disabled {
@@ -196,9 +176,7 @@
             font-size: 15px; font-weight: bold;
         }
 
-        /* ============================================================
-           КОРЗИНА
-           ============================================================ */
+        /* КОРЗИНА */
         .cart-bar {
             position: fixed;
             bottom: 0; left: 0; right: 0;
@@ -206,36 +184,25 @@
             border-top: 2px solid #27ae60;
             padding: 12px 16px;
             display: flex; justify-content: space-between; align-items: center;
-            gap: 12px;
-            z-index: 100;
+            gap: 12px; z-index: 100;
             box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
         }
         .cart-info { flex: 1; font-size: 14px; }
         .cart-info .cart-count { font-weight: bold; }
         .cart-info .cart-total { color: #27ae60; font-weight: bold; font-size: 16px; }
         .cart-btn {
-            width: auto; padding: 12px 20px;
-            margin: 0;
-            background: #27ae60;
-            color: white;
-            font-weight: bold;
-            border-radius: 10px;
-            border: none;
-            cursor: pointer;
-            font-size: 15px;
+            width: auto; padding: 12px 20px; margin: 0;
+            background: #27ae60; color: white; font-weight: bold;
+            border-radius: 10px; border: none; cursor: pointer; font-size: 15px;
         }
-        .cart-btn:disabled { background: #555; opacity: 0.5; cursor: not-allowed; }
 
-        /* ============================================================
-           КЕЙСЫ
-           ============================================================ */
+        /* КЕЙСЫ */
         .case-category {
             background: var(--tg-theme-secondary-bg-color, #f5f5f5);
             border-radius: 12px; padding: 14px; margin-bottom: 10px;
             cursor: pointer; display: flex; justify-content: space-between;
             align-items: center; font-size: 15px; font-weight: bold;
         }
-        .case-category:active { opacity: 0.7; }
 
         .case-item {
             background: var(--tg-theme-secondary-bg-color, #f5f5f5);
@@ -255,9 +222,7 @@
 
         .btn-back { background: #666; color: white; margin-bottom: 12px; }
 
-        /* ============================================================
-           МОДАЛЬНЫЕ ОКНА
-           ============================================================ */
+        /* МОДАЛЬНЫЕ ОКНА */
         .modal-overlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(0, 0, 0, 0.85);
@@ -298,16 +263,16 @@
             color: var(--tg-theme-text-color, #000);
             margin-bottom: 12px;
         }
-        .modal-input:focus { outline: none; border-color: var(--tg-theme-button-color, #2481cc); }
 
         /* ============================================================
-           РУЛЕТКИ
+           РУЛЕТКА ×1 — БОЛЬШАЯ
            ============================================================ */
         .roulette-container {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(0, 0, 0, 0.96); z-index: 2000;
             display: flex; flex-direction: column;
             align-items: center; justify-content: center; padding: 20px;
+            overflow: hidden;
         }
         .roulette-title {
             color: white; font-size: 20px; font-weight: bold;
@@ -345,11 +310,16 @@
             text-overflow: ellipsis; white-space: nowrap;
             width: 100%; margin-top: 4px;
         }
+
+        /* Общий стиль указателя */
         .roulette-pointer {
-            position: absolute; top: 0; bottom: 0; left: 50%;
+            position: absolute; top: 0; bottom: 0;
+            left: 50%;
             width: 4px; background: #f1c40f;
-            transform: translateX(-50%); z-index: 10;
-            box-shadow: 0 0 20px #f1c40f;
+            transform: translateX(-50%);
+            z-index: 50;
+            box-shadow: 0 0 20px #f1c40f, 0 0 40px #f1c40f;
+            pointer-events: none;
         }
         .roulette-pointer::before {
             content: ""; position: absolute;
@@ -367,62 +337,113 @@
         }
 
         /* ============================================================
-           МНОГО РУЛЕТОК — СЕТКА
+           МНОГО РУЛЕТОК (×3, ×10) — ФЛЕКС
            ============================================================ */
         .multi-roulette-container {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(0, 0, 0, 0.96); z-index: 2000;
             display: flex; flex-direction: column;
-            padding: 12px; overflow-y: auto;
+            padding: 12px;
+            overflow-y: auto;
+            overflow-x: hidden;
         }
         .multi-roulette-title {
             color: white; font-size: 18px; font-weight: bold;
             text-align: center; margin-bottom: 12px; flex-shrink: 0;
         }
-        .multi-roulette-grid {
-            display: grid;
-            grid-template-columns: 1fr;
+        .multi-roulette-list {
+            display: flex;
+            flex-direction: column;
             gap: 10px;
+            width: 100%;
         }
-        /* Для ×3 и ×10 — сетка в 2 колонки */
-        .multi-roulette-grid.grid-2 {
+
+        /* ×3 — одна колонка */
+        .multi-roulette-list.cols-1 .mini-roulette {
+            width: 100%;
+        }
+
+        /* ×10 — две колонки */
+        .multi-roulette-list.cols-2 {
+            display: grid;
             grid-template-columns: 1fr 1fr;
+            gap: 8px;
         }
+
         .mini-roulette {
             background: rgba(255, 255, 255, 0.05);
-            border-radius: 10px; padding: 4px;
+            border-radius: 10px;
+            padding: 4px;
+            overflow: hidden;
+            min-width: 0;
         }
         .mini-roulette-viewport {
-            width: 100%; height: 70px; overflow: hidden;
-            position: relative; background: rgba(0, 0, 0, 0.5);
+            width: 100%;
+            height: 70px;
+            overflow: hidden;
+            position: relative;
+            background: rgba(0, 0, 0, 0.5);
             border-top: 2px solid #f1c40f;
             border-bottom: 2px solid #f1c40f;
             border-radius: 6px;
         }
         .mini-roulette-track {
-            display: flex; height: 100%; align-items: center;
-            transition: transform 4s cubic-bezier(0.15, 0.7, 0.1, 1);
+            display: flex;
+            height: 100%;
+            align-items: center;
+            transition: transform 3.5s cubic-bezier(0.15, 0.7, 0.1, 1);
             will-change: transform;
         }
         .mini-roulette-item {
-            width: 60px; height: 60px; flex-shrink: 0;
+            width: 60px;
+            height: 60px;
+            flex-shrink: 0;
             margin: 0 2px;
-            display: flex; align-items: center; justify-content: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             background: rgba(255, 255, 255, 0.08);
-            border-radius: 6px; overflow: hidden;
+            border-radius: 6px;
+            overflow: hidden;
         }
         .mini-roulette-item img { width: 100%; height: 100%; object-fit: contain; }
         .mini-roulette-item span { font-size: 30px; }
+
+        /* Мини-указатель (для ×3, ×10) — тонкая полоска */
         .mini-roulette-pointer {
-            position: absolute; top: 0; bottom: 0; left: 50%;
-            width: 2px; background: #f1c40f;
-            transform: translateX(-50%); z-index: 10;
-            box-shadow: 0 0 10px #f1c40f;
+            position: absolute;
+            top: -4px;
+            bottom: -4px;
+            left: 50%;
+            width: 3px;
+            background: #f1c40f;
+            transform: translateX(-50%);
+            z-index: 50;
+            box-shadow: 0 0 10px #f1c40f, 0 0 20px #f1c40f;
+            pointer-events: none;
+        }
+        .mini-roulette-pointer::before {
+            content: "";
+            position: absolute;
+            top: -2px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-top: 8px solid #f1c40f;
+        }
+        .mini-roulette-pointer::after {
+            content: "";
+            position: absolute;
+            bottom: -2px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-bottom: 8px solid #f1c40f;
         }
 
-        /* ============================================================
-           РЕЗУЛЬТАТ
-           ============================================================ */
+        /* РЕЗУЛЬТАТ */
         .result-container {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(0, 0, 0, 0.92); z-index: 2000;
@@ -494,9 +515,6 @@
 <div id="roulette-root"></div>
 
 <script>
-    // ============================================================
-    // НАСТРОЙКИ
-    // ============================================================
     const API_URL = "https://preheated-playroom-detective.ngrok-free.dev";
 
     const tg = window.Telegram.WebApp;
@@ -515,12 +533,9 @@
         totalValue: 0,
         items: [],
         cart: new Set(),
-        sort: "price_desc",  // price_desc / price_asc / new / old
+        sort: "price_desc",
     };
 
-    // ============================================================
-    // УТИЛИТЫ
-    // ============================================================
     function formatNumber(n) {
         if (!n) return "0";
         n = Number(n);
@@ -543,16 +558,11 @@
         document.getElementById("balance-display").textContent = formatNumber(b) + "₽";
     }
 
-    // ============================================================
-    // ВКЛАДКИ
-    // ============================================================
     function switchTab(tab) {
         document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
         document.querySelector(`[data-tab="${tab}"]`).classList.add("active");
-
         const oldCart = document.getElementById("cart-bar");
         if (oldCart) oldCart.remove();
-
         if (tab === "profile") loadProfile();
         if (tab === "inventory") loadInventory();
         if (tab === "cases") loadCases();
@@ -567,7 +577,6 @@
                 '<div class="error">❌ Открой меня внутри Telegram!</div>';
             return;
         }
-
         document.getElementById("username").textContent =
             `${user.first_name} (@${user.username || "no_username"})`;
         document.getElementById("content").innerHTML =
@@ -579,38 +588,19 @@
             });
             const data = await res.json();
             if (!data.ok) throw new Error(data.error);
-
             const u = data.user;
             updateBalance(u.balance);
 
             document.getElementById("content").innerHTML = `
-                <div class="card">
-                    <div class="label">💰 Баланс</div>
-                    <div class="value">${formatNumber(u.balance)}₽</div>
-                </div>
-                <div class="card">
-                    <div class="label">✨ Опыт</div>
-                    <div class="value">${formatNumber(u.xp)} XP</div>
+                <div class="card"><div class="label">💰 Баланс</div><div class="value">${formatNumber(u.balance)}₽</div></div>
+                <div class="card"><div class="label">✨ Опыт</div><div class="value">${formatNumber(u.xp)} XP</div></div>
+                <div class="row">
+                    <div class="card"><div class="label">🏪 Ресторан</div><div class="value">${u.restaurant_level} ур.</div></div>
+                    <div class="card"><div class="label">🔥 Стрик</div><div class="value">${u.streak} дн.</div></div>
                 </div>
                 <div class="row">
-                    <div class="card">
-                        <div class="label">🏪 Ресторан</div>
-                        <div class="value">${u.restaurant_level} ур.</div>
-                    </div>
-                    <div class="card">
-                        <div class="label">🔥 Стрик</div>
-                        <div class="value">${u.streak} дн.</div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="card">
-                        <div class="label">📦 Кейсов</div>
-                        <div class="value">${formatNumber(u.total_cases)}</div>
-                    </div>
-                    <div class="card">
-                        <div class="label">⭐ Репутация</div>
-                        <div class="value">${u.reputation}</div>
-                    </div>
+                    <div class="card"><div class="label">📦 Кейсов</div><div class="value">${formatNumber(u.total_cases)}</div></div>
+                    <div class="card"><div class="label">⭐ Репутация</div><div class="value">${u.reputation}</div></div>
                 </div>
                 <button onclick="loadProfile()">🔄 Обновить</button>
             `;
@@ -641,12 +631,10 @@
             );
             const data = await res.json();
             if (!data.ok) throw new Error(data.error);
-
             inventoryState.offset = data.offset;
             inventoryState.totalCount = data.total_count;
             inventoryState.totalValue = data.total_value;
             inventoryState.items = data.items;
-
             renderInventory();
         } catch (err) {
             document.getElementById("content").innerHTML =
@@ -656,64 +644,45 @@
 
     function renderInventory() {
         const { items, offset, limit, totalCount, totalValue, cart } = inventoryState;
-
         if (totalCount === 0) {
             document.getElementById("content").innerHTML =
                 '<div class="card"><div class="label">🎒 Инвентарь пуст</div></div>';
             return;
         }
 
-        // Шапка
         let html = `
             <div class="inv-header">
                 <div>🎒 Всего: <b>${totalCount}</b></div>
                 <div class="total-value">💰 ${formatNumber(totalValue)}₽</div>
             </div>
-        `;
-
-        // Сортировка
-        html += `
             <div class="sort-bar">
-                <button class="sort-btn ${inventoryState.sort === 'price_desc' ? 'active' : ''}"
-                        onclick="changeSort('price_desc')">💰 Дорогие</button>
-                <button class="sort-btn ${inventoryState.sort === 'price_asc' ? 'active' : ''}"
-                        onclick="changeSort('price_asc')">💰 Дешёвые</button>
-                <button class="sort-btn ${inventoryState.sort === 'new' ? 'active' : ''}"
-                        onclick="changeSort('new')">🆕 Новые</button>
-                <button class="sort-btn ${inventoryState.sort === 'old' ? 'active' : ''}"
-                        onclick="changeSort('old')">🕐 Старые</button>
+                <button class="sort-btn ${inventoryState.sort === 'price_desc' ? 'active' : ''}" onclick="changeSort('price_desc')">💰 Дорогие</button>
+                <button class="sort-btn ${inventoryState.sort === 'price_asc' ? 'active' : ''}" onclick="changeSort('price_asc')">💰 Дешёвые</button>
+                <button class="sort-btn ${inventoryState.sort === 'new' ? 'active' : ''}" onclick="changeSort('new')">🆕 Новые</button>
+                <button class="sort-btn ${inventoryState.sort === 'old' ? 'active' : ''}" onclick="changeSort('old')">🕐 Старые</button>
             </div>
         `;
 
-        // Список
         for (const item of items) {
             const isSelected = cart.has(item.code);
             const isArtifact = item.is_artifact;
-
             const imgHtml = item.image
                 ? `<img src="${item.image}" alt="${escapeHtml(item.name)}">`
                 : `<span>${item.rarity}</span>`;
-
             const insuredBtn = item.insured
                 ? `<button class="btn-tiny btn-tiny-insure disabled" disabled>🛡</button>`
                 : `<button class="btn-tiny btn-tiny-insure" onclick="insureItem('${item.code}')">🛡</button>`;
 
-            // Для артефактов — нет чекбокса
             const checkboxHtml = isArtifact
                 ? `<div class="item-checkbox-placeholder">⭐</div>`
-                : `<div class="item-checkbox ${isSelected ? 'checked' : ''}"
-                        onclick="toggleCart('${item.code}')">
-                     ${isSelected ? '✓' : ''}
-                   </div>`;
+                : `<div class="item-checkbox ${isSelected ? 'checked' : ''}" onclick="toggleCart('${item.code}')">${isSelected ? '✓' : ''}</div>`;
 
-            // Для артефактов — нет страховки
             const actionsHtml = isArtifact
                 ? `<button class="btn-tiny btn-tiny-gift" onclick="giftItem('${item.code}')">🎁</button>`
-                : `${insuredBtn}
-                   <button class="btn-tiny btn-tiny-gift" onclick="giftItem('${item.code}')">🎁</button>`;
+                : `${insuredBtn}<button class="btn-tiny btn-tiny-gift" onclick="giftItem('${item.code}')">🎁</button>`;
 
             html += `
-                <div class="item ${isSelected ? 'selected' : ''}" data-code="${item.code}">
+                <div class="item ${isSelected ? 'selected' : ''}">
                     ${checkboxHtml}
                     <div class="item-img">${imgHtml}</div>
                     <div class="item-info">
@@ -721,14 +690,11 @@
                         <div class="item-price">${formatNumber(item.price)}₽</div>
                         <div class="item-code">${item.code}${item.insured ? ' 🛡' : ''}${isArtifact ? ' ⭐' : ''}</div>
                     </div>
-                    <div class="item-actions">
-                        ${actionsHtml}
-                    </div>
+                    <div class="item-actions">${actionsHtml}</div>
                 </div>
             `;
         }
 
-        // Пагинация
         const currentPage = Math.floor(offset / limit) + 1;
         const totalPages = Math.ceil(totalCount / limit);
 
@@ -752,8 +718,7 @@
 
     function changePage(delta) {
         const newOffset = inventoryState.offset + delta * inventoryState.limit;
-        if (newOffset < 0) return;
-        if (newOffset >= inventoryState.totalCount) return;
+        if (newOffset < 0 || newOffset >= inventoryState.totalCount) return;
         fetchInventoryPage(newOffset);
     }
 
@@ -767,19 +732,12 @@
     function renderCartBar() {
         const oldCart = document.getElementById("cart-bar");
         if (oldCart) oldCart.remove();
-
         const cart = inventoryState.cart;
         if (cart.size === 0) return;
-
-        // Сумма корзины — считаем по всем предметам с сервера
-        // (для точности — нужен отдельный API, но пока считаем по текущей странице + кэш)
         let total = 0;
         for (const item of inventoryState.items) {
             if (cart.has(item.code)) total += item.price;
         }
-        // Внимание: если предметы в корзине не на текущей странице, сумма будет меньше.
-        // Для правильного подсчёта всех — можно добавить API. Пока так.
-
         const cartBar = document.createElement("div");
         cartBar.className = "cart-bar";
         cartBar.id = "cart-bar";
@@ -813,11 +771,8 @@
         } catch (err) { alert("❌ Ошибка: " + err.message); }
     }
 
-    // ============================================================
-    // ДЕЙСТВИЯ
-    // ============================================================
     async function insureItem(code) {
-        if (!confirm("🛡 Застраховать предмет на 24 часа?\nСтоимость: 12% от цены.")) return;
+        if (!confirm("🛡 Застраховать предмет на 24 часа?")) return;
         try {
             const res = await fetch(`${API_URL}/api/insure_item`, {
                 method: "POST",
@@ -832,9 +787,6 @@
         } catch (err) { alert("❌ Ошибка: " + err.message); }
     }
 
-    // ============================================================
-    // ПОДАРОК
-    // ============================================================
     function giftItem(code) {
         fetch(`${API_URL}/api/friends?user_id=${user.id}`, {
             headers: { "ngrok-skip-browser-warning": "true" }
@@ -863,7 +815,6 @@
                 `;
             }
         }
-
         modalRoot.innerHTML = `
             <div class="modal-overlay" onclick="if(event.target === this) closeModal()">
                 <div class="modal">
@@ -906,7 +857,6 @@
         const body = { user_id: user.id, item_code: code };
         if (toUserId) body.to_user_id = toUserId;
         if (toUsername) body.to_username = toUsername;
-
         try {
             const res = await fetch(`${API_URL}/api/gift_item`, {
                 method: "POST",
@@ -914,9 +864,8 @@
                 body: JSON.stringify(body)
             });
             const data = await res.json();
-            if (data.ok) {
-                fetchInventoryPage(inventoryState.offset);
-            } else alert("❌ " + data.error);
+            if (data.ok) fetchInventoryPage(inventoryState.offset);
+            else alert("❌ " + data.error);
         } catch (err) { alert("❌ Ошибка: " + err.message); }
     }
 
@@ -933,7 +882,6 @@
             `${user.first_name} (@${user.username || "no_username"})`;
         document.getElementById("content").innerHTML =
             '<div class="loading">⏳ Загружаем кейсы...</div>';
-
         try {
             const res = await fetch(`${API_URL}/api/cases`, {
                 headers: { "ngrok-skip-browser-warning": "true" }
@@ -953,8 +901,7 @@
         for (const cat of casesData) {
             html += `
                 <div class="case-category" onclick="renderCaseList('${cat.id}')">
-                    <span>${escapeHtml(cat.name)}</span>
-                    <span>▶️</span>
+                    <span>${escapeHtml(cat.name)}</span><span>▶️</span>
                 </div>
             `;
         }
@@ -964,10 +911,8 @@
     function renderCaseList(catId) {
         const cat = casesData.find(c => c.id === catId);
         if (!cat) return;
-
         let html = `<button class="btn-back" onclick="renderCategories()">⬅️ Назад к категориям</button>`;
         html += `<div class="card"><div class="label">${escapeHtml(cat.name)}</div></div>`;
-
         for (const c of cat.cases) {
             html += `
                 <div class="case-item">
@@ -989,22 +934,19 @@
     // ============================================================
     async function openCase(caseId, count) {
         if (!user) return;
-
         let casePrice = 0;
         for (const cat of casesData) {
             for (const c of cat.cases) {
                 if (c.id === caseId) { casePrice = c.price; break; }
             }
         }
-
         const total = casePrice * count;
         if (currentBalance < total) {
             alert(`❌ Нужно ${formatNumber(total)}₽, у тебя ${formatNumber(currentBalance)}₽`);
             return;
         }
 
-        let pool = [];
-        let caseName = "";
+        let pool = [], caseName = "";
         try {
             const res = await fetch(`${API_URL}/api/case_preview?case_id=${caseId}`, {
                 headers: { "ngrok-skip-browser-warning": "true" }
@@ -1013,10 +955,7 @@
             if (!data.ok) { alert("❌ " + data.error); return; }
             pool = data.pool || [];
             caseName = data.case_name || "";
-        } catch (err) {
-            alert("❌ Ошибка загрузки кейса: " + err.message);
-            return;
-        }
+        } catch (err) { alert("❌ " + err.message); return; }
 
         if (pool.length === 0) { alert("❌ Кейс пустой"); return; }
 
@@ -1029,10 +968,7 @@
             });
             openResult = await res.json();
             if (!openResult.ok) { alert("❌ " + openResult.error); return; }
-        } catch (err) {
-            alert("❌ Ошибка: " + err.message);
-            return;
-        }
+        } catch (err) { alert("❌ " + err.message); return; }
 
         updateBalance(openResult.new_balance);
 
@@ -1047,6 +983,9 @@
         }
     }
 
+    // ============================================================
+    // ×1 — БОЛЬШАЯ РУЛЕТКА
+    // ============================================================
     function showSingleBigRoulette(caseName, pool, result, onDone) {
         const rouletteRoot = document.getElementById("roulette-root");
         const targetIndex = result.pool_index !== undefined
@@ -1091,10 +1030,16 @@
     }
 
     // ============================================================
-    // МНОГО РУЛЕТОК — СЕТКА В 2 КОЛОНКИ
+    // ×3, ×10 — МНОГО РУЛЕТОК ОДНОВРЕМЕННО
     // ============================================================
     function showAllMiniRoulettes(caseName, count, pool, results, onDone) {
         const rouletteRoot = document.getElementById("roulette-root");
+
+        // ×3 — 1 колонка (большие рулетки)
+        // ×10 — 2 колонки (по 5 в каждой)
+        const isTwoCols = count >= 6;
+        const listClass = isTwoCols ? "multi-roulette-list cols-2" : "multi-roulette-list cols-1";
+
         let roulettesHtml = "";
         const configs = [];
 
@@ -1123,32 +1068,30 @@
                     </div>
                 </div>
             `;
-            configs.push({ idx: idx, randomBefore: RANDOM_BEFORE });
+            configs.push({ idx });
         }
-
-        // Для ×3 — 1 колонка (большие), для ×10 — 2 колонки
-        const gridClass = count >= 6 ? "multi-roulette-grid grid-2" : "multi-roulette-grid";
 
         rouletteRoot.innerHTML = `
             <div class="multi-roulette-container">
                 <div class="multi-roulette-title">🎰 ${escapeHtml(caseName)} ×${count}</div>
-                <div class="${gridClass}">
+                <div class="${listClass}">
                     ${roulettesHtml}
                 </div>
             </div>
         `;
 
+        // Анимация
         setTimeout(() => {
+            const ITEM_WIDTH = 64;  // 60px + 2*2px margin
+
             for (const cfg of configs) {
                 const track = document.getElementById(`mini-track-${cfg.idx}`);
                 if (!track) continue;
 
-                // Ширина карточки зависит от кол-ва колонок
                 const viewport = track.parentElement;
                 const viewportWidth = viewport.clientWidth;
-                const itemWidth = 64;  // 60px + margin 4px
                 const pointerPos = viewportWidth / 2;
-                const winningCenter = cfg.randomBefore * itemWidth + itemWidth / 2;
+                const winningCenter = 30 * ITEM_WIDTH + ITEM_WIDTH / 2;
                 const offset = winningCenter - pointerPos;
                 const randomShift = (Math.random() - 0.5) * 40;
                 const finalOffset = offset + randomShift;
@@ -1180,7 +1123,6 @@
                 </div>
             `;
         }
-
         rouletteRoot.innerHTML = `
             <div class="result-container">
                 <div class="result-header">🎁 Открыто ${count} кейсов</div>
@@ -1196,7 +1138,7 @@
     }
 
     async function sellAllResults(codes) {
-        if (!confirm(`💵 Продать всё за ${codes.length} предметов?`)) return;
+        if (!confirm(`💵 Продать всё?`)) return;
         try {
             const res = await fetch(`${API_URL}/api/sell_bulk`, {
                 method: "POST",
@@ -1208,12 +1150,9 @@
                 updateBalance(data.new_balance);
                 closeRoulette();
             } else alert("❌ " + data.error);
-        } catch (err) { alert("❌ Ошибка: " + err.message); }
+        } catch (err) { alert("❌ " + err.message); }
     }
 
-    // ============================================================
-    // ЗАПУСК
-    // ============================================================
     switchTab("profile");
 </script>
 
