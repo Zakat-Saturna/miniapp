@@ -76,8 +76,31 @@
             border-radius: 12px; padding: 10px 14px; margin-bottom: 10px;
             font-size: 14px;
         }
-
         .inv-header .total-value { color: #27ae60; font-weight: bold; }
+
+        .sort-bar {
+            display: flex; gap: 6px; margin-bottom: 10px;
+            overflow-x: auto; padding-bottom: 4px;
+        }
+        .sort-btn {
+            padding: 8px 12px;
+            font-size: 13px;
+            border-radius: 8px;
+            border: 1px solid #888;
+            background: transparent;
+            color: var(--tg-theme-text-color, #000);
+            cursor: pointer;
+            white-space: nowrap;
+            width: auto;
+            margin: 0;
+            font-weight: normal;
+        }
+        .sort-btn.active {
+            background: var(--tg-theme-button-color, #2481cc);
+            color: var(--tg-theme-button-text-color, #fff);
+            border-color: var(--tg-theme-button-color, #2481cc);
+            font-weight: bold;
+        }
 
         .item {
             display: flex; align-items: center; gap: 12px;
@@ -107,6 +130,17 @@
         .item-checkbox.checked {
             background: #27ae60;
             border-color: #27ae60;
+        }
+
+        /* Заглушка для артефактов — вместо чекбокса */
+        .item-checkbox-placeholder {
+            width: 28px;
+            height: 28px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
         }
 
         .item-img {
@@ -160,11 +194,10 @@
         }
         .inv-pagination .page-info {
             font-size: 15px; font-weight: bold;
-            color: var(--tg-theme-text-color, #000);
         }
 
         /* ============================================================
-           КОРЗИНА (снизу фиксированная)
+           КОРЗИНА
            ============================================================ */
         .cart-bar {
             position: fixed;
@@ -177,19 +210,9 @@
             z-index: 100;
             box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
         }
-        .cart-info {
-            flex: 1;
-            font-size: 14px;
-        }
-        .cart-info .cart-count {
-            font-weight: bold;
-            color: var(--tg-theme-text-color, #000);
-        }
-        .cart-info .cart-total {
-            color: #27ae60;
-            font-weight: bold;
-            font-size: 16px;
-        }
+        .cart-info { flex: 1; font-size: 14px; }
+        .cart-info .cart-count { font-weight: bold; }
+        .cart-info .cart-total { color: #27ae60; font-weight: bold; font-size: 16px; }
         .cart-btn {
             width: auto; padding: 12px 20px;
             margin: 0;
@@ -201,12 +224,10 @@
             cursor: pointer;
             font-size: 15px;
         }
-        .cart-btn:disabled {
-            background: #555; opacity: 0.5; cursor: not-allowed;
-        }
+        .cart-btn:disabled { background: #555; opacity: 0.5; cursor: not-allowed; }
 
         /* ============================================================
-           КЕЙСЫ (как было)
+           КЕЙСЫ
            ============================================================ */
         .case-category {
             background: var(--tg-theme-secondary-bg-color, #f5f5f5);
@@ -345,6 +366,9 @@
             border-bottom: 14px solid #f1c40f;
         }
 
+        /* ============================================================
+           МНОГО РУЛЕТОК — СЕТКА
+           ============================================================ */
         .multi-roulette-container {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(0, 0, 0, 0.96); z-index: 2000;
@@ -355,13 +379,18 @@
             color: white; font-size: 18px; font-weight: bold;
             text-align: center; margin-bottom: 12px; flex-shrink: 0;
         }
-        .multi-roulette-list {
-            display: flex; flex-direction: column; gap: 10px;
-            padding-bottom: 20px;
+        .multi-roulette-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+        /* Для ×3 и ×10 — сетка в 2 колонки */
+        .multi-roulette-grid.grid-2 {
+            grid-template-columns: 1fr 1fr;
         }
         .mini-roulette {
             background: rgba(255, 255, 255, 0.05);
-            border-radius: 10px; padding: 6px;
+            border-radius: 10px; padding: 4px;
         }
         .mini-roulette-viewport {
             width: 100%; height: 70px; overflow: hidden;
@@ -479,14 +508,14 @@
     let currentBalance = 0;
     let casesData = null;
 
-    // Инвентарь — состояние
     let inventoryState = {
         offset: 0,
         limit: 20,
         totalCount: 0,
         totalValue: 0,
         items: [],
-        cart: new Set(),   // множество кодов выбранных предметов
+        cart: new Set(),
+        sort: "price_desc",  // price_desc / price_asc / new / old
     };
 
     // ============================================================
@@ -521,7 +550,6 @@
         document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
         document.querySelector(`[data-tab="${tab}"]`).classList.add("active");
 
-        // Убираем корзину при переключении
         const oldCart = document.getElementById("cart-bar");
         if (oldCart) oldCart.remove();
 
@@ -593,14 +621,12 @@
     }
 
     // ============================================================
-    // ИНВЕНТАРЬ (с пагинацией и корзиной)
+    // ИНВЕНТАРЬ
     // ============================================================
     async function loadInventory() {
         if (!user) return;
-
         document.getElementById("username").textContent =
             `${user.first_name} (@${user.username || "no_username"})`;
-
         await fetchInventoryPage(inventoryState.offset);
     }
 
@@ -610,7 +636,7 @@
 
         try {
             const res = await fetch(
-                `${API_URL}/api/inventory?user_id=${user.id}&offset=${offset}&limit=${inventoryState.limit}`,
+                `${API_URL}/api/inventory?user_id=${user.id}&offset=${offset}&limit=${inventoryState.limit}&sort=${inventoryState.sort}`,
                 { headers: { "ngrok-skip-browser-warning": "true" } }
             );
             const data = await res.json();
@@ -645,9 +671,24 @@
             </div>
         `;
 
-        // Список предметов
+        // Сортировка
+        html += `
+            <div class="sort-bar">
+                <button class="sort-btn ${inventoryState.sort === 'price_desc' ? 'active' : ''}"
+                        onclick="changeSort('price_desc')">💰 Дорогие</button>
+                <button class="sort-btn ${inventoryState.sort === 'price_asc' ? 'active' : ''}"
+                        onclick="changeSort('price_asc')">💰 Дешёвые</button>
+                <button class="sort-btn ${inventoryState.sort === 'new' ? 'active' : ''}"
+                        onclick="changeSort('new')">🆕 Новые</button>
+                <button class="sort-btn ${inventoryState.sort === 'old' ? 'active' : ''}"
+                        onclick="changeSort('old')">🕐 Старые</button>
+            </div>
+        `;
+
+        // Список
         for (const item of items) {
             const isSelected = cart.has(item.code);
+            const isArtifact = item.is_artifact;
 
             const imgHtml = item.image
                 ? `<img src="${item.image}" alt="${escapeHtml(item.name)}">`
@@ -657,21 +698,31 @@
                 ? `<button class="btn-tiny btn-tiny-insure disabled" disabled>🛡</button>`
                 : `<button class="btn-tiny btn-tiny-insure" onclick="insureItem('${item.code}')">🛡</button>`;
 
+            // Для артефактов — нет чекбокса
+            const checkboxHtml = isArtifact
+                ? `<div class="item-checkbox-placeholder">⭐</div>`
+                : `<div class="item-checkbox ${isSelected ? 'checked' : ''}"
+                        onclick="toggleCart('${item.code}')">
+                     ${isSelected ? '✓' : ''}
+                   </div>`;
+
+            // Для артефактов — нет страховки
+            const actionsHtml = isArtifact
+                ? `<button class="btn-tiny btn-tiny-gift" onclick="giftItem('${item.code}')">🎁</button>`
+                : `${insuredBtn}
+                   <button class="btn-tiny btn-tiny-gift" onclick="giftItem('${item.code}')">🎁</button>`;
+
             html += `
                 <div class="item ${isSelected ? 'selected' : ''}" data-code="${item.code}">
-                    <div class="item-checkbox ${isSelected ? 'checked' : ''}"
-                         onclick="toggleCart('${item.code}')">
-                        ${isSelected ? '✓' : ''}
-                    </div>
+                    ${checkboxHtml}
                     <div class="item-img">${imgHtml}</div>
                     <div class="item-info">
                         <div class="item-name">${item.rarity} ${escapeHtml(item.name)}</div>
                         <div class="item-price">${formatNumber(item.price)}₽</div>
-                        <div class="item-code">${item.code}${item.insured ? ' 🛡' : ''}</div>
+                        <div class="item-code">${item.code}${item.insured ? ' 🛡' : ''}${isArtifact ? ' ⭐' : ''}</div>
                     </div>
                     <div class="item-actions">
-                        ${insuredBtn}
-                        <button class="btn-tiny btn-tiny-gift" onclick="giftItem('${item.code}')">🎁</button>
+                        ${actionsHtml}
                     </div>
                 </div>
             `;
@@ -690,12 +741,15 @@
         `;
 
         document.getElementById("content").innerHTML = html;
-
-        // Корзина снизу
         renderCartBar();
     }
 
-    // Переключение страницы
+    function changeSort(newSort) {
+        inventoryState.sort = newSort;
+        inventoryState.offset = 0;
+        fetchInventoryPage(0);
+    }
+
     function changePage(delta) {
         const newOffset = inventoryState.offset + delta * inventoryState.limit;
         if (newOffset < 0) return;
@@ -703,18 +757,13 @@
         fetchInventoryPage(newOffset);
     }
 
-    // Тоггл корзины
     function toggleCart(code) {
         const cart = inventoryState.cart;
-        if (cart.has(code)) {
-            cart.delete(code);
-        } else {
-            cart.add(code);
-        }
+        if (cart.has(code)) cart.delete(code);
+        else cart.add(code);
         renderInventory();
     }
 
-    // Отрисовка корзины
     function renderCartBar() {
         const oldCart = document.getElementById("cart-bar");
         if (oldCart) oldCart.remove();
@@ -722,16 +771,14 @@
         const cart = inventoryState.cart;
         if (cart.size === 0) return;
 
-        // Считаем сумму выбранного (по items текущей страницы)
-        // + пробуем найти в items других страниц
-        // Упростим: суммируем только те, что на текущей странице
-        // (в будущем — можно запрашивать с сервера)
+        // Сумма корзины — считаем по всем предметам с сервера
+        // (для точности — нужен отдельный API, но пока считаем по текущей странице + кэш)
         let total = 0;
         for (const item of inventoryState.items) {
-            if (cart.has(item.code)) {
-                total += item.price;
-            }
+            if (cart.has(item.code)) total += item.price;
         }
+        // Внимание: если предметы в корзине не на текущей странице, сумма будет меньше.
+        // Для правильного подсчёта всех — можно добавить API. Пока так.
 
         const cartBar = document.createElement("div");
         cartBar.className = "cart-bar";
@@ -746,37 +793,24 @@
         document.body.appendChild(cartBar);
     }
 
-    // Продажа корзины
     async function sellCart() {
         const cart = inventoryState.cart;
         if (cart.size === 0) return;
-
         if (!confirm(`💵 Продать ${cart.size} предметов?`)) return;
 
         try {
             const res = await fetch(`${API_URL}/api/sell_bulk`, {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "ngrok-skip-browser-warning": "true"
-                },
-                body: JSON.stringify({
-                    user_id: user.id,
-                    codes: Array.from(cart)
-                })
+                headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
+                body: JSON.stringify({ user_id: user.id, codes: Array.from(cart) })
             });
             const data = await res.json();
             if (data.ok) {
                 updateBalance(data.new_balance);
                 cart.clear();
-                // Обновляем текущую страницу
                 fetchInventoryPage(inventoryState.offset);
-            } else {
-                alert("❌ " + data.error);
-            }
-        } catch (err) {
-            alert("❌ Ошибка: " + err.message);
-        }
+            } else alert("❌ " + data.error);
+        } catch (err) { alert("❌ Ошибка: " + err.message); }
     }
 
     // ============================================================
@@ -895,7 +929,6 @@
     // ============================================================
     async function loadCases() {
         if (!user) return;
-
         document.getElementById("username").textContent =
             `${user.first_name} (@${user.username || "no_username"})`;
         document.getElementById("content").innerHTML =
@@ -907,7 +940,6 @@
             });
             const data = await res.json();
             if (!data.ok) throw new Error(data.error);
-
             casesData = data.categories;
             renderCategories();
         } catch (err) {
@@ -961,10 +993,7 @@
         let casePrice = 0;
         for (const cat of casesData) {
             for (const c of cat.cases) {
-                if (c.id === caseId) {
-                    casePrice = c.price;
-                    break;
-                }
+                if (c.id === caseId) { casePrice = c.price; break; }
             }
         }
 
@@ -974,7 +1003,6 @@
             return;
         }
 
-        // 1. Пул
         let pool = [];
         let caseName = "";
         try {
@@ -990,12 +1018,8 @@
             return;
         }
 
-        if (pool.length === 0) {
-            alert("❌ Кейс пустой");
-            return;
-        }
+        if (pool.length === 0) { alert("❌ Кейс пустой"); return; }
 
-        // 2. Открываем
         let openResult;
         try {
             const res = await fetch(`${API_URL}/api/open_case`, {
@@ -1004,10 +1028,7 @@
                 body: JSON.stringify({ user_id: user.id, case_id: caseId, count })
             });
             openResult = await res.json();
-            if (!openResult.ok) {
-                alert("❌ " + openResult.error);
-                return;
-            }
+            if (!openResult.ok) { alert("❌ " + openResult.error); return; }
         } catch (err) {
             alert("❌ Ошибка: " + err.message);
             return;
@@ -1015,7 +1036,6 @@
 
         updateBalance(openResult.new_balance);
 
-        // 3. Рулетки
         if (count === 1) {
             showSingleBigRoulette(caseName, pool, openResult.results[0], () => {
                 showMultiResult(openResult.results, caseId, count);
@@ -1030,11 +1050,9 @@
     function showSingleBigRoulette(caseName, pool, result, onDone) {
         const rouletteRoot = document.getElementById("roulette-root");
         const targetIndex = result.pool_index !== undefined
-            ? result.pool_index
-            : Math.floor(Math.random() * pool.length);
+            ? result.pool_index : Math.floor(Math.random() * pool.length);
 
-        const RANDOM_BEFORE = 40;
-        const TOTAL_ITEMS = 60;
+        const RANDOM_BEFORE = 40, TOTAL_ITEMS = 60;
         const strip = [];
         for (let i = 0; i < RANDOM_BEFORE; i++) strip.push(pool[Math.floor(Math.random() * pool.length)]);
         strip.push(pool[targetIndex]);
@@ -1072,6 +1090,9 @@
         setTimeout(onDone, 4300);
     }
 
+    // ============================================================
+    // МНОГО РУЛЕТОК — СЕТКА В 2 КОЛОНКИ
+    // ============================================================
     function showAllMiniRoulettes(caseName, count, pool, results, onDone) {
         const rouletteRoot = document.getElementById("roulette-root");
         let roulettesHtml = "";
@@ -1080,11 +1101,9 @@
         for (let idx = 0; idx < count; idx++) {
             const result = results[idx];
             const targetIndex = result.pool_index !== undefined
-                ? result.pool_index
-                : Math.floor(Math.random() * pool.length);
+                ? result.pool_index : Math.floor(Math.random() * pool.length);
 
-            const RANDOM_BEFORE = 30;
-            const TOTAL_ITEMS = 45;
+            const RANDOM_BEFORE = 30, TOTAL_ITEMS = 45;
             const strip = [];
             for (let i = 0; i < RANDOM_BEFORE; i++) strip.push(pool[Math.floor(Math.random() * pool.length)]);
             strip.push(pool[targetIndex]);
@@ -1107,22 +1126,29 @@
             configs.push({ idx: idx, randomBefore: RANDOM_BEFORE });
         }
 
+        // Для ×3 — 1 колонка (большие), для ×10 — 2 колонки
+        const gridClass = count >= 6 ? "multi-roulette-grid grid-2" : "multi-roulette-grid";
+
         rouletteRoot.innerHTML = `
             <div class="multi-roulette-container">
                 <div class="multi-roulette-title">🎰 ${escapeHtml(caseName)} ×${count}</div>
-                <div class="multi-roulette-list">${roulettesHtml}</div>
+                <div class="${gridClass}">
+                    ${roulettesHtml}
+                </div>
             </div>
         `;
 
         setTimeout(() => {
-            const MINI_ITEM_WIDTH = 64;
-            const viewportWidth = window.innerWidth - 24 - 12;
-            const pointerPos = viewportWidth / 2;
-
             for (const cfg of configs) {
                 const track = document.getElementById(`mini-track-${cfg.idx}`);
                 if (!track) continue;
-                const winningCenter = cfg.randomBefore * MINI_ITEM_WIDTH + MINI_ITEM_WIDTH / 2;
+
+                // Ширина карточки зависит от кол-ва колонок
+                const viewport = track.parentElement;
+                const viewportWidth = viewport.clientWidth;
+                const itemWidth = 64;  // 60px + margin 4px
+                const pointerPos = viewportWidth / 2;
+                const winningCenter = cfg.randomBefore * itemWidth + itemWidth / 2;
                 const offset = winningCenter - pointerPos;
                 const randomShift = (Math.random() - 0.5) * 40;
                 const finalOffset = offset + randomShift;
