@@ -242,12 +242,6 @@
         return div.innerHTML;
     }
 
-    // Строим URL картинки
-    function getItemImageUrl(name) {
-        const filename = name.toLowerCase().replace(/ /g, "_").replace(/ё/g, "е") + ".png";
-        return `${API_URL}/images/${filename}`;
-    }
-
     // ============================================================
     // ВКЛАДКИ
     // ============================================================
@@ -350,15 +344,15 @@
             let html = `<div class="card"><div class="label">🎒 Всего: ${data.count} предметов</div></div>`;
 
             for (const item of data.items) {
-                const imgUrl = getItemImageUrl(item.name);
+                // Если есть base64-картинка — показываем её
+                // Если нет — показываем эмодзи редкости
+                const imgHtml = item.image
+                    ? `<img src="${item.image}" alt="${escapeHtml(item.name)}">`
+                    : `<span>${item.rarity}</span>`;
 
                 html += `
                     <div class="item">
-                        <div class="item-img">
-                            <img src="${imgUrl}"
-                                 onerror="this.style.display='none'; this.parentElement.innerHTML='${item.rarity}';"
-                                 alt="${escapeHtml(item.name)}">
-                        </div>
+                        <div class="item-img">${imgHtml}</div>
                         <div class="item-info">
                             <div class="item-name">${item.rarity} ${escapeHtml(item.name)}</div>
                             <div class="item-price">${formatNumber(item.price)}₽</div>
