@@ -1512,15 +1512,23 @@
         }
     }
 
-    function renderBjPlaying(game) {
+        function renderBjPlaying(game) {
         const me = game.my;
         const their = game.their;
 
         const myCardsHtml = me.cards.map(c => renderBjCard(c, false)).join("");
-        const theirCardsHtml = their.cards.map(c => renderBjCard(c, !their.stand && !their.bust ? false : false)).join("");
+
+        // ← ИЗМЕНЕНО: карты соперника всегда скрыты во время игры
+        const theirCardsHtml = their.cards.map(c => renderBjCard(c, true)).join("");
 
         const myScoreClass = me.bust ? "bust" : "";
         const theirScoreClass = their.bust ? "bust" : "";
+
+        // ← ИЗМЕНЕНО: очки соперника видны только когда он завершил
+        const theirDone = their.stand || their.bust;
+        const theirScoreDisplay = theirDone
+            ? `${their.score} / 21${their.bust ? " 💥" : ""}${their.stand ? " ✋" : ""}`
+            : "? / 21";
 
         let actionsHtml = "";
         if (!me.stand && !me.bust && !their.bust) {
@@ -1539,7 +1547,7 @@
                 <div class="bj-side">
                     <div class="bj-side-title">👤 ${escapeHtml(their.name)}</div>
                     <div class="bj-cards">${theirCardsHtml}</div>
-                    <div class="bj-score ${theirScoreClass}">${their.score} / 21${their.bust ? " 💥" : ""}${their.stand ? " ✋" : ""}</div>
+                    <div class="bj-score ${theirScoreClass}">${theirScoreDisplay}</div>
                 </div>
                 <div class="bj-vs">⚔️</div>
                 <div class="bj-side">
@@ -1554,6 +1562,7 @@
         </div>`;
 
         document.getElementById("content").innerHTML = html;
+        startBjPolling();
     }
 
     function renderBjCard(cardName, hidden) {
