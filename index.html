@@ -6,11 +6,7 @@
     <title>Piggy Chef</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
             font-family: -apple-system, Arial, sans-serif;
@@ -20,55 +16,25 @@
             min-height: 100vh;
         }
 
-        .header {
-            text-align: center;
-            margin-bottom: 16px;
-        }
-
-        .header h1 {
-            font-size: 24px;
-            margin-bottom: 8px;
-        }
-
-        .header .username {
-            color: var(--tg-theme-hint-color, #999);
-            font-size: 14px;
-        }
+        .header { text-align: center; margin-bottom: 16px; }
+        .header h1 { font-size: 24px; margin-bottom: 8px; }
+        .header .username { color: var(--tg-theme-hint-color, #999); font-size: 14px; }
 
         .balance-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            display: flex; justify-content: space-between; align-items: center;
             background: var(--tg-theme-secondary-bg-color, #f5f5f5);
-            border-radius: 12px;
-            padding: 12px 16px;
-            margin-bottom: 16px;
+            border-radius: 12px; padding: 12px 16px; margin-bottom: 16px;
             font-size: 15px;
         }
+        .balance-bar .balance { font-weight: bold; color: #27ae60; font-size: 17px; }
 
-        .balance-bar .balance {
-            font-weight: bold;
-            color: #27ae60;
-            font-size: 17px;
-        }
-
-        .tabs {
-            display: flex;
-            gap: 6px;
-            margin-bottom: 16px;
-        }
-
+        .tabs { display: flex; gap: 6px; margin-bottom: 16px; }
         .tab {
-            flex: 1;
-            padding: 10px 6px;
+            flex: 1; padding: 10px 6px;
             background: var(--tg-theme-secondary-bg-color, #f5f5f5);
             color: var(--tg-theme-text-color, #000);
-            border: none;
-            border-radius: 8px;
-            font-size: 13px;
-            cursor: pointer;
+            border: none; border-radius: 8px; font-size: 13px; cursor: pointer;
         }
-
         .tab.active {
             background: var(--tg-theme-button-color, #2481cc);
             color: var(--tg-theme-button-text-color, #fff);
@@ -77,621 +43,397 @@
 
         .card {
             background: var(--tg-theme-secondary-bg-color, #f5f5f5);
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 12px;
+            border-radius: 12px; padding: 16px; margin-bottom: 12px;
         }
+        .card .label { font-size: 13px; color: var(--tg-theme-hint-color, #999); margin-bottom: 6px; }
+        .card .value { font-size: 22px; font-weight: bold; }
 
-        .card .label {
-            font-size: 13px;
-            color: var(--tg-theme-hint-color, #999);
-            margin-bottom: 6px;
-        }
+        .row { display: flex; gap: 12px; margin-bottom: 12px; }
+        .row .card { flex: 1; margin-bottom: 0; }
 
-        .card .value {
-            font-size: 22px;
-            font-weight: bold;
-        }
-
-        .row {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 12px;
-        }
-
-        .row .card {
-            flex: 1;
-            margin-bottom: 0;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: var(--tg-theme-hint-color, #999);
-        }
+        .loading { text-align: center; padding: 40px; color: var(--tg-theme-hint-color, #999); }
 
         .error {
-            background: #ff4444;
-            color: white;
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 12px;
+            background: #ff4444; color: white;
+            padding: 12px; border-radius: 8px; margin-bottom: 12px;
         }
 
         button {
-            width: 100%;
-            padding: 14px;
-            font-size: 16px;
-            font-weight: bold;
+            width: 100%; padding: 14px;
+            font-size: 16px; font-weight: bold;
             background: var(--tg-theme-button-color, #2481cc);
             color: var(--tg-theme-button-text-color, #ffffff);
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            margin-top: 8px;
+            border: none; border-radius: 10px; cursor: pointer; margin-top: 8px;
+        }
+        button:active { opacity: 0.8; }
+
+        /* ============================================================
+           ИНВЕНТАРЬ
+           ============================================================ */
+        .inv-header {
+            display: flex; justify-content: space-between; align-items: center;
+            background: var(--tg-theme-secondary-bg-color, #f5f5f5);
+            border-radius: 12px; padding: 10px 14px; margin-bottom: 10px;
+            font-size: 14px;
         }
 
-        button:active {
-            opacity: 0.8;
-        }
+        .inv-header .total-value { color: #27ae60; font-weight: bold; }
 
         .item {
-            display: flex;
-            flex-direction: column;
+            display: flex; align-items: center; gap: 12px;
             background: var(--tg-theme-secondary-bg-color, #f5f5f5);
-            border-radius: 16px;
-            padding: 16px;
-            margin-bottom: 14px;
+            border-radius: 14px; padding: 12px; margin-bottom: 8px;
             position: relative;
+            transition: background 0.15s;
         }
 
-        .item-name {
+        .item.selected {
+            background: rgba(39, 174, 96, 0.25);
+            border: 2px solid #27ae60;
+        }
+
+        .item-checkbox {
+            width: 28px; height: 28px;
+            border-radius: 8px;
+            border: 2px solid #888;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+            cursor: pointer;
             font-size: 18px;
-            font-weight: bold;
-            text-align: center;
-            margin-bottom: 12px;
-        }
-
-        .insured-badge {
-            display: inline-block;
-            background: #4a90e2;
             color: white;
-            font-size: 12px;
-            padding: 3px 8px;
-            border-radius: 10px;
-            margin-left: 6px;
-            vertical-align: middle;
-            font-weight: normal;
+            background: transparent;
+            transition: all 0.15s;
+        }
+        .item-checkbox.checked {
+            background: #27ae60;
+            border-color: #27ae60;
         }
 
         .item-img {
-            width: 100%;
-            max-width: 200px;
-            height: 200px;
-            margin: 0 auto 12px;
+            width: 56px; height: 56px;
             background: rgba(0, 0, 0, 0.08);
-            border-radius: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 80px;
-            overflow: hidden;
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 28px;
             flex-shrink: 0;
+            overflow: hidden;
         }
+        .item-img img { width: 100%; height: 100%; object-fit: contain; }
 
-        .item-img img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
+        .item-info { flex: 1; min-width: 0; }
+        .item-name {
+            font-size: 14px; font-weight: bold;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            margin-bottom: 2px;
         }
-
-        .item-info {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-            padding: 0 4px;
-        }
-
-        .item-price {
-            font-size: 16px;
-            font-weight: bold;
-        }
-
+        .item-price { font-size: 13px; color: #27ae60; font-weight: bold; }
         .item-code {
-            font-size: 12px;
-            color: var(--tg-theme-hint-color, #999);
+            font-size: 11px; color: var(--tg-theme-hint-color, #999);
             font-family: monospace;
         }
 
-        .item-buttons {
-            display: flex;
-            gap: 8px;
+        .item-actions {
+            display: flex; flex-direction: column; gap: 4px;
+        }
+        .btn-tiny {
+            width: 40px; height: 36px; font-size: 16px;
+            padding: 0; margin: 0; border-radius: 8px;
+            border: none; cursor: pointer; color: white;
+        }
+        .btn-tiny-insure { background: #4a90e2; }
+        .btn-tiny-gift { background: #e67e22; }
+        .btn-tiny-insure.disabled { background: #555; opacity: 0.5; cursor: not-allowed; }
+
+        .inv-pagination {
+            display: flex; align-items: center; justify-content: center;
+            gap: 12px; margin-top: 14px; margin-bottom: 100px;
+        }
+        .inv-pagination button {
+            width: 50px; height: 50px;
+            padding: 0; margin: 0;
+            border-radius: 12px;
+            font-size: 20px;
+            background: var(--tg-theme-button-color, #2481cc);
+        }
+        .inv-pagination button:disabled {
+            background: #555; opacity: 0.4; cursor: not-allowed;
+        }
+        .inv-pagination .page-info {
+            font-size: 15px; font-weight: bold;
+            color: var(--tg-theme-text-color, #000);
         }
 
-        .btn-small {
+        /* ============================================================
+           КОРЗИНА (снизу фиксированная)
+           ============================================================ */
+        .cart-bar {
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            background: var(--tg-theme-secondary-bg-color, #232e3c);
+            border-top: 2px solid #27ae60;
+            padding: 12px 16px;
+            display: flex; justify-content: space-between; align-items: center;
+            gap: 12px;
+            z-index: 100;
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+        }
+        .cart-info {
             flex: 1;
-            height: 52px;
-            font-size: 22px;
-            border-radius: 12px;
+            font-size: 14px;
+        }
+        .cart-info .cart-count {
+            font-weight: bold;
+            color: var(--tg-theme-text-color, #000);
+        }
+        .cart-info .cart-total {
+            color: #27ae60;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        .cart-btn {
+            width: auto; padding: 12px 20px;
+            margin: 0;
+            background: #27ae60;
+            color: white;
+            font-weight: bold;
+            border-radius: 10px;
             border: none;
             cursor: pointer;
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            font-size: 15px;
+        }
+        .cart-btn:disabled {
+            background: #555; opacity: 0.5; cursor: not-allowed;
         }
 
-        .btn-small:active {
-            transform: scale(0.95);
-        }
-
-        .btn-insure { background: #4a90e2; }
-        .btn-sell { background: #27ae60; }
-        .btn-gift { background: #e67e22; }
-
-        .btn-small.disabled {
-            background: #555;
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
+        /* ============================================================
+           КЕЙСЫ (как было)
+           ============================================================ */
         .case-category {
             background: var(--tg-theme-secondary-bg-color, #f5f5f5);
-            border-radius: 12px;
-            padding: 14px;
-            margin-bottom: 10px;
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 15px;
-            font-weight: bold;
+            border-radius: 12px; padding: 14px; margin-bottom: 10px;
+            cursor: pointer; display: flex; justify-content: space-between;
+            align-items: center; font-size: 15px; font-weight: bold;
         }
-
-        .case-category:active {
-            opacity: 0.7;
-        }
+        .case-category:active { opacity: 0.7; }
 
         .case-item {
             background: var(--tg-theme-secondary-bg-color, #f5f5f5);
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 10px;
-            text-align: center;
+            border-radius: 12px; padding: 16px; margin-bottom: 10px; text-align: center;
         }
-
-        .case-name {
-            font-size: 18px;
-            font-weight: bold;
-            margin-bottom: 6px;
-        }
-
-        .case-price {
-            font-size: 15px;
-            color: var(--tg-theme-hint-color, #999);
-            margin-bottom: 12px;
-        }
-
-        .case-buttons {
-            display: flex;
-            gap: 8px;
-        }
-
+        .case-name { font-size: 18px; font-weight: bold; margin-bottom: 6px; }
+        .case-price { font-size: 15px; color: var(--tg-theme-hint-color, #999); margin-bottom: 12px; }
+        .case-buttons { display: flex; gap: 8px; }
         .btn-case {
-            flex: 1;
-            padding: 12px;
-            border-radius: 10px;
-            border: none;
-            font-size: 15px;
-            font-weight: bold;
-            cursor: pointer;
-            color: white;
+            flex: 1; padding: 12px; border-radius: 10px;
+            border: none; font-size: 15px; font-weight: bold;
+            cursor: pointer; color: white;
         }
-
         .btn-x1 { background: #3498db; }
         .btn-x3 { background: #9b59b6; }
         .btn-x10 { background: #e74c3c; }
 
-        .btn-back {
-            background: #666;
-            color: white;
-            margin-bottom: 12px;
-        }
+        .btn-back { background: #666; color: white; margin-bottom: 12px; }
 
+        /* ============================================================
+           МОДАЛЬНЫЕ ОКНА
+           ============================================================ */
         .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(0, 0, 0, 0.85);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            padding: 20px;
+            display: flex; align-items: center; justify-content: center;
+            z-index: 1000; padding: 20px;
         }
-
         .modal {
             background: var(--tg-theme-bg-color, #ffffff);
-            border-radius: 16px;
-            padding: 20px;
-            width: 100%;
-            max-width: 400px;
-            max-height: 80vh;
-            overflow-y: auto;
+            border-radius: 16px; padding: 20px;
+            width: 100%; max-width: 400px; max-height: 80vh; overflow-y: auto;
         }
-
-        .modal h3 {
-            font-size: 18px;
-            margin-bottom: 16px;
-            text-align: center;
-        }
-
+        .modal h3 { font-size: 18px; margin-bottom: 16px; text-align: center; }
         .modal-btn {
-            width: 100%;
-            padding: 14px;
-            margin-bottom: 8px;
-            font-size: 15px;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            text-align: left;
+            width: 100%; padding: 14px; margin-bottom: 8px;
+            font-size: 15px; border: none; border-radius: 10px;
+            cursor: pointer; text-align: left;
             background: var(--tg-theme-secondary-bg-color, #f5f5f5);
             color: var(--tg-theme-text-color, #000);
         }
-
         .modal-btn.primary {
             background: var(--tg-theme-button-color, #2481cc);
             color: var(--tg-theme-button-text-color, #fff);
-            text-align: center;
-            font-weight: bold;
+            text-align: center; font-weight: bold;
         }
-
         .modal-btn.cancel {
-            background: #666;
-            color: white;
-            text-align: center;
-            margin-top: 8px;
+            background: #666; color: white;
+            text-align: center; margin-top: 8px;
         }
-
         .friend-username {
             color: var(--tg-theme-hint-color, #999);
-            font-size: 13px;
-            margin-left: 6px;
+            font-size: 13px; margin-left: 6px;
         }
-
         .modal-input {
-            width: 100%;
-            padding: 12px;
-            font-size: 16px;
+            width: 100%; padding: 12px; font-size: 16px;
             border: 2px solid var(--tg-theme-secondary-bg-color, #f5f5f5);
             border-radius: 10px;
             background: var(--tg-theme-bg-color, #fff);
             color: var(--tg-theme-text-color, #000);
             margin-bottom: 12px;
         }
-
-        .modal-input:focus {
-            outline: none;
-            border-color: var(--tg-theme-button-color, #2481cc);
-        }
+        .modal-input:focus { outline: none; border-color: var(--tg-theme-button-color, #2481cc); }
 
         /* ============================================================
-           МНОГО РУЛЕТОК НА ОДНОМ ЭКРАНЕ
+           РУЛЕТКИ
            ============================================================ */
-        .multi-roulette-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.96);
-            z-index: 2000;
-            display: flex;
-            flex-direction: column;
-            padding: 12px;
-            overflow-y: auto;
-        }
-
-        .multi-roulette-title {
-            color: white;
-            font-size: 18px;
-            font-weight: bold;
-            text-align: center;
-            margin-bottom: 12px;
-            flex-shrink: 0;
-        }
-
-        .multi-roulette-list {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            padding-bottom: 20px;
-        }
-
-        /* Маленькая рулетка (для ×3, ×10) */
-        .mini-roulette {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
-            padding: 6px;
-        }
-
-        .mini-roulette-viewport {
-            width: 100%;
-            height: 70px;
-            overflow: hidden;
-            position: relative;
-            background: rgba(0, 0, 0, 0.5);
-            border-top: 2px solid #f1c40f;
-            border-bottom: 2px solid #f1c40f;
-            border-radius: 6px;
-        }
-
-        .mini-roulette-track {
-            display: flex;
-            height: 100%;
-            align-items: center;
-            transition: transform 4s cubic-bezier(0.15, 0.7, 0.1, 1);
-            will-change: transform;
-        }
-
-        .mini-roulette-item {
-            width: 60px;
-            height: 60px;
-            flex-shrink: 0;
-            margin: 0 2px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: rgba(255, 255, 255, 0.08);
-            border-radius: 6px;
-            overflow: hidden;
-        }
-
-        .mini-roulette-item img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-        }
-
-        .mini-roulette-item span {
-            font-size: 30px;
-        }
-
-        .mini-roulette-pointer {
-            position: absolute;
-            top: 0;
-            bottom: 0;
-            left: 50%;
-            width: 2px;
-            background: #f1c40f;
-            transform: translateX(-50%);
-            z-index: 10;
-            box-shadow: 0 0 10px #f1c40f;
-        }
-
-        /* Большая рулетка (для ×1) */
         .roulette-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.96);
-            z-index: 2000;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.96); z-index: 2000;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center; padding: 20px;
         }
-
         .roulette-title {
-            color: white;
-            font-size: 20px;
-            font-weight: bold;
-            margin-bottom: 16px;
-            text-align: center;
+            color: white; font-size: 20px; font-weight: bold;
+            margin-bottom: 16px; text-align: center;
         }
-
         .roulette-viewport {
-            width: 100%;
-            max-width: 500px;
-            height: 160px;
-            overflow: hidden;
-            position: relative;
+            width: 100%; max-width: 500px; height: 160px;
+            overflow: hidden; position: relative;
             background: rgba(0, 0, 0, 0.6);
             border-top: 3px solid #f1c40f;
             border-bottom: 3px solid #f1c40f;
             border-radius: 8px;
         }
-
         .roulette-track {
-            display: flex;
-            height: 100%;
-            align-items: center;
+            display: flex; height: 100%; align-items: center;
             transition: transform 4s cubic-bezier(0.15, 0.7, 0.1, 1);
             will-change: transform;
         }
-
         .roulette-item {
-            width: 130px;
-            height: 140px;
-            flex-shrink: 0;
+            width: 130px; height: 140px; flex-shrink: 0;
             margin: 0 5px;
             background: rgba(255, 255, 255, 0.08);
             border-radius: 12px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            position: relative;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            color: white; position: relative;
             border: 2px solid rgba(255, 255, 255, 0.15);
             overflow: hidden;
         }
-
-        .roulette-item img {
-            width: 90px;
-            height: 90px;
-            object-fit: contain;
-        }
-
-        .roulette-item .r-emoji {
-            font-size: 60px;
-        }
-
+        .roulette-item img { width: 90px; height: 90px; object-fit: contain; }
+        .roulette-item .r-emoji { font-size: 60px; }
         .roulette-item .r-name {
-            font-size: 10px;
-            text-align: center;
-            padding: 2px 4px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            width: 100%;
-            margin-top: 4px;
+            font-size: 10px; text-align: center;
+            padding: 2px 4px; overflow: hidden;
+            text-overflow: ellipsis; white-space: nowrap;
+            width: 100%; margin-top: 4px;
         }
-
         .roulette-pointer {
-            position: absolute;
-            top: 0;
-            bottom: 0;
-            left: 50%;
-            width: 4px;
-            background: #f1c40f;
-            transform: translateX(-50%);
-            z-index: 10;
+            position: absolute; top: 0; bottom: 0; left: 50%;
+            width: 4px; background: #f1c40f;
+            transform: translateX(-50%); z-index: 10;
             box-shadow: 0 0 20px #f1c40f;
         }
-
         .roulette-pointer::before {
-            content: "";
-            position: absolute;
-            top: -10px;
-            left: 50%;
-            transform: translateX(-50%);
+            content: ""; position: absolute;
+            top: -10px; left: 50%; transform: translateX(-50%);
             border-left: 10px solid transparent;
             border-right: 10px solid transparent;
             border-top: 14px solid #f1c40f;
         }
-
         .roulette-pointer::after {
-            content: "";
-            position: absolute;
-            bottom: -10px;
-            left: 50%;
-            transform: translateX(-50%);
+            content: ""; position: absolute;
+            bottom: -10px; left: 50%; transform: translateX(-50%);
             border-left: 10px solid transparent;
             border-right: 10px solid transparent;
             border-bottom: 14px solid #f1c40f;
+        }
+
+        .multi-roulette-container {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.96); z-index: 2000;
+            display: flex; flex-direction: column;
+            padding: 12px; overflow-y: auto;
+        }
+        .multi-roulette-title {
+            color: white; font-size: 18px; font-weight: bold;
+            text-align: center; margin-bottom: 12px; flex-shrink: 0;
+        }
+        .multi-roulette-list {
+            display: flex; flex-direction: column; gap: 10px;
+            padding-bottom: 20px;
+        }
+        .mini-roulette {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px; padding: 6px;
+        }
+        .mini-roulette-viewport {
+            width: 100%; height: 70px; overflow: hidden;
+            position: relative; background: rgba(0, 0, 0, 0.5);
+            border-top: 2px solid #f1c40f;
+            border-bottom: 2px solid #f1c40f;
+            border-radius: 6px;
+        }
+        .mini-roulette-track {
+            display: flex; height: 100%; align-items: center;
+            transition: transform 4s cubic-bezier(0.15, 0.7, 0.1, 1);
+            will-change: transform;
+        }
+        .mini-roulette-item {
+            width: 60px; height: 60px; flex-shrink: 0;
+            margin: 0 2px;
+            display: flex; align-items: center; justify-content: center;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 6px; overflow: hidden;
+        }
+        .mini-roulette-item img { width: 100%; height: 100%; object-fit: contain; }
+        .mini-roulette-item span { font-size: 30px; }
+        .mini-roulette-pointer {
+            position: absolute; top: 0; bottom: 0; left: 50%;
+            width: 2px; background: #f1c40f;
+            transform: translateX(-50%); z-index: 10;
+            box-shadow: 0 0 10px #f1c40f;
         }
 
         /* ============================================================
            РЕЗУЛЬТАТ
            ============================================================ */
         .result-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.92);
-            z-index: 2000;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            color: white;
-            text-align: center;
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.92); z-index: 2000;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            padding: 20px; color: white; text-align: center;
             overflow-y: auto;
         }
-
-        .result-header {
-            font-size: 18px;
-            font-weight: bold;
-            margin-bottom: 16px;
-        }
-
+        .result-header { font-size: 18px; font-weight: bold; margin-bottom: 16px; }
         .multi-result-list {
-            max-height: 55vh;
-            overflow-y: auto;
-            width: 100%;
-            max-width: 400px;
-            margin-bottom: 16px;
+            max-height: 55vh; overflow-y: auto;
+            width: 100%; max-width: 400px; margin-bottom: 16px;
         }
-
         .multi-result-row {
-            display: flex;
-            align-items: center;
-            gap: 12px;
+            display: flex; align-items: center; gap: 12px;
             background: rgba(255, 255, 255, 0.08);
-            border-radius: 10px;
-            padding: 10px 12px;
-            margin-bottom: 8px;
+            border-radius: 10px; padding: 10px 12px; margin-bottom: 8px;
         }
-
         .multi-result-row .m-img {
-            width: 50px;
-            height: 50px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 30px;
-            flex-shrink: 0;
+            width: 50px; height: 50px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 30px; flex-shrink: 0;
         }
-
-        .multi-result-row .m-img img {
-            width: 50px;
-            height: 50px;
-            object-fit: contain;
-        }
-
-        .multi-result-info {
-            flex: 1;
-            text-align: left;
-            min-width: 0;
-        }
-
+        .multi-result-row .m-img img { width: 50px; height: 50px; object-fit: contain; }
+        .multi-result-info { flex: 1; text-align: left; min-width: 0; }
         .multi-result-name {
-            font-size: 14px;
-            font-weight: bold;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            font-size: 14px; font-weight: bold;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
-
-        .multi-result-price {
-            font-size: 13px;
-            color: #f1c40f;
-        }
-
-        .result-total {
-            font-size: 16px;
-            margin-bottom: 16px;
-            color: #f1c40f;
-        }
-
+        .multi-result-price { font-size: 13px; color: #f1c40f; }
+        .result-total { font-size: 16px; margin-bottom: 16px; color: #f1c40f; }
         .result-buttons {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            width: 100%;
-            max-width: 320px;
+            display: flex; flex-direction: column; gap: 10px;
+            width: 100%; max-width: 320px;
         }
-
         .result-btn {
-            padding: 16px;
-            border-radius: 12px;
-            border: none;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            color: white;
+            padding: 16px; border-radius: 12px;
+            border: none; font-size: 16px; font-weight: bold;
+            cursor: pointer; color: white;
         }
-
         .result-btn.sell { background: #27ae60; }
         .result-btn.again { background: #3498db; }
         .result-btn.close { background: #666; }
@@ -737,6 +479,16 @@
     let currentBalance = 0;
     let casesData = null;
 
+    // Инвентарь — состояние
+    let inventoryState = {
+        offset: 0,
+        limit: 20,
+        totalCount: 0,
+        totalValue: 0,
+        items: [],
+        cart: new Set(),   // множество кодов выбранных предметов
+    };
+
     // ============================================================
     // УТИЛИТЫ
     // ============================================================
@@ -768,6 +520,10 @@
     function switchTab(tab) {
         document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
         document.querySelector(`[data-tab="${tab}"]`).classList.add("active");
+
+        // Убираем корзину при переключении
+        const oldCart = document.getElementById("cart-bar");
+        if (oldCart) oldCart.remove();
 
         if (tab === "profile") loadProfile();
         if (tab === "inventory") loadInventory();
@@ -837,67 +593,189 @@
     }
 
     // ============================================================
-    // ИНВЕНТАРЬ
+    // ИНВЕНТАРЬ (с пагинацией и корзиной)
     // ============================================================
     async function loadInventory() {
         if (!user) return;
 
         document.getElementById("username").textContent =
             `${user.first_name} (@${user.username || "no_username"})`;
+
+        await fetchInventoryPage(inventoryState.offset);
+    }
+
+    async function fetchInventoryPage(offset) {
         document.getElementById("content").innerHTML =
             '<div class="loading">⏳ Загружаем инвентарь...</div>';
 
         try {
-            const res = await fetch(`${API_URL}/api/inventory?user_id=${user.id}`, {
-                headers: { "ngrok-skip-browser-warning": "true" }
-            });
+            const res = await fetch(
+                `${API_URL}/api/inventory?user_id=${user.id}&offset=${offset}&limit=${inventoryState.limit}`,
+                { headers: { "ngrok-skip-browser-warning": "true" } }
+            );
             const data = await res.json();
             if (!data.ok) throw new Error(data.error);
 
-            if (data.count === 0) {
-                document.getElementById("content").innerHTML =
-                    '<div class="card"><div class="label">🎒 Инвентарь пуст</div></div>';
-                return;
-            }
+            inventoryState.offset = data.offset;
+            inventoryState.totalCount = data.total_count;
+            inventoryState.totalValue = data.total_value;
+            inventoryState.items = data.items;
 
-            let html = `<div class="card"><div class="label">🎒 Всего: ${data.count} предметов</div></div>`;
-
-            for (const item of data.items) {
-                const imgHtml = item.image
-                    ? `<img src="${item.image}" alt="${escapeHtml(item.name)}">`
-                    : `<span>${item.rarity}</span>`;
-
-                const insuredBadge = item.insured
-                    ? '<span class="insured-badge">🛡 застрахован</span>'
-                    : '';
-
-                const insureBtn = item.insured
-                    ? `<button class="btn-small btn-insure disabled" disabled>🛡</button>`
-                    : `<button class="btn-small btn-insure" onclick="insureItem('${item.code}')">🛡</button>`;
-
-                html += `
-                    <div class="item">
-                        <div class="item-name">
-                            ${item.rarity} ${escapeHtml(item.name)}${insuredBadge}
-                        </div>
-                        <div class="item-img">${imgHtml}</div>
-                        <div class="item-info">
-                            <div class="item-price">${formatNumber(item.price)}₽</div>
-                            <div class="item-code">${item.code}</div>
-                        </div>
-                        <div class="item-buttons">
-                            ${insureBtn}
-                            <button class="btn-small btn-sell" onclick="sellItem('${item.code}', ${item.price})">💵</button>
-                            <button class="btn-small btn-gift" onclick="giftItem('${item.code}')">🎁</button>
-                        </div>
-                    </div>
-                `;
-            }
-
-            document.getElementById("content").innerHTML = html;
+            renderInventory();
         } catch (err) {
             document.getElementById("content").innerHTML =
                 `<div class="error">❌ Ошибка: ${escapeHtml(err.message)}</div>`;
+        }
+    }
+
+    function renderInventory() {
+        const { items, offset, limit, totalCount, totalValue, cart } = inventoryState;
+
+        if (totalCount === 0) {
+            document.getElementById("content").innerHTML =
+                '<div class="card"><div class="label">🎒 Инвентарь пуст</div></div>';
+            return;
+        }
+
+        // Шапка
+        let html = `
+            <div class="inv-header">
+                <div>🎒 Всего: <b>${totalCount}</b></div>
+                <div class="total-value">💰 ${formatNumber(totalValue)}₽</div>
+            </div>
+        `;
+
+        // Список предметов
+        for (const item of items) {
+            const isSelected = cart.has(item.code);
+
+            const imgHtml = item.image
+                ? `<img src="${item.image}" alt="${escapeHtml(item.name)}">`
+                : `<span>${item.rarity}</span>`;
+
+            const insuredBtn = item.insured
+                ? `<button class="btn-tiny btn-tiny-insure disabled" disabled>🛡</button>`
+                : `<button class="btn-tiny btn-tiny-insure" onclick="insureItem('${item.code}')">🛡</button>`;
+
+            html += `
+                <div class="item ${isSelected ? 'selected' : ''}" data-code="${item.code}">
+                    <div class="item-checkbox ${isSelected ? 'checked' : ''}"
+                         onclick="toggleCart('${item.code}')">
+                        ${isSelected ? '✓' : ''}
+                    </div>
+                    <div class="item-img">${imgHtml}</div>
+                    <div class="item-info">
+                        <div class="item-name">${item.rarity} ${escapeHtml(item.name)}</div>
+                        <div class="item-price">${formatNumber(item.price)}₽</div>
+                        <div class="item-code">${item.code}${item.insured ? ' 🛡' : ''}</div>
+                    </div>
+                    <div class="item-actions">
+                        ${insuredBtn}
+                        <button class="btn-tiny btn-tiny-gift" onclick="giftItem('${item.code}')">🎁</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Пагинация
+        const currentPage = Math.floor(offset / limit) + 1;
+        const totalPages = Math.ceil(totalCount / limit);
+
+        html += `
+            <div class="inv-pagination">
+                <button onclick="changePage(-1)" ${offset === 0 ? 'disabled' : ''}>⬅️</button>
+                <div class="page-info">${currentPage} / ${totalPages}</div>
+                <button onclick="changePage(1)" ${offset + limit >= totalCount ? 'disabled' : ''}>➡️</button>
+            </div>
+        `;
+
+        document.getElementById("content").innerHTML = html;
+
+        // Корзина снизу
+        renderCartBar();
+    }
+
+    // Переключение страницы
+    function changePage(delta) {
+        const newOffset = inventoryState.offset + delta * inventoryState.limit;
+        if (newOffset < 0) return;
+        if (newOffset >= inventoryState.totalCount) return;
+        fetchInventoryPage(newOffset);
+    }
+
+    // Тоггл корзины
+    function toggleCart(code) {
+        const cart = inventoryState.cart;
+        if (cart.has(code)) {
+            cart.delete(code);
+        } else {
+            cart.add(code);
+        }
+        renderInventory();
+    }
+
+    // Отрисовка корзины
+    function renderCartBar() {
+        const oldCart = document.getElementById("cart-bar");
+        if (oldCart) oldCart.remove();
+
+        const cart = inventoryState.cart;
+        if (cart.size === 0) return;
+
+        // Считаем сумму выбранного (по items текущей страницы)
+        // + пробуем найти в items других страниц
+        // Упростим: суммируем только те, что на текущей странице
+        // (в будущем — можно запрашивать с сервера)
+        let total = 0;
+        for (const item of inventoryState.items) {
+            if (cart.has(item.code)) {
+                total += item.price;
+            }
+        }
+
+        const cartBar = document.createElement("div");
+        cartBar.className = "cart-bar";
+        cartBar.id = "cart-bar";
+        cartBar.innerHTML = `
+            <div class="cart-info">
+                <div>🛒 В корзине: <span class="cart-count">${cart.size}</span></div>
+                <div>💰 Всего: <span class="cart-total">${formatNumber(total)}₽</span></div>
+            </div>
+            <button class="cart-btn" onclick="sellCart()">💵 Продать</button>
+        `;
+        document.body.appendChild(cartBar);
+    }
+
+    // Продажа корзины
+    async function sellCart() {
+        const cart = inventoryState.cart;
+        if (cart.size === 0) return;
+
+        if (!confirm(`💵 Продать ${cart.size} предметов?`)) return;
+
+        try {
+            const res = await fetch(`${API_URL}/api/sell_bulk`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "ngrok-skip-browser-warning": "true"
+                },
+                body: JSON.stringify({
+                    user_id: user.id,
+                    codes: Array.from(cart)
+                })
+            });
+            const data = await res.json();
+            if (data.ok) {
+                updateBalance(data.new_balance);
+                cart.clear();
+                // Обновляем текущую страницу
+                fetchInventoryPage(inventoryState.offset);
+            } else {
+                alert("❌ " + data.error);
+            }
+        } catch (err) {
+            alert("❌ Ошибка: " + err.message);
         }
     }
 
@@ -915,23 +793,7 @@
             const data = await res.json();
             if (data.ok) {
                 if (data.new_balance !== undefined) updateBalance(data.new_balance);
-                loadInventory();
-            } else alert("❌ " + data.error);
-        } catch (err) { alert("❌ Ошибка: " + err.message); }
-    }
-
-    async function sellItem(code, price) {
-        if (!confirm(`💵 Продать за ${formatNumber(price)}₽?`)) return;
-        try {
-            const res = await fetch(`${API_URL}/api/sell_item`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
-                body: JSON.stringify({ user_id: user.id, item_code: code })
-            });
-            const data = await res.json();
-            if (data.ok) {
-                if (data.new_balance !== undefined) updateBalance(data.new_balance);
-                loadInventory();
+                fetchInventoryPage(inventoryState.offset);
             } else alert("❌ " + data.error);
         } catch (err) { alert("❌ Ошибка: " + err.message); }
     }
@@ -1019,7 +881,7 @@
             });
             const data = await res.json();
             if (data.ok) {
-                loadInventory();
+                fetchInventoryPage(inventoryState.offset);
             } else alert("❌ " + data.error);
         } catch (err) { alert("❌ Ошибка: " + err.message); }
     }
@@ -1112,7 +974,7 @@
             return;
         }
 
-        // 1. Загружаем пул
+        // 1. Пул
         let pool = [];
         let caseName = "";
         try {
@@ -1133,7 +995,7 @@
             return;
         }
 
-        // 2. Открываем кейс на сервере
+        // 2. Открываем
         let openResult;
         try {
             const res = await fetch(`${API_URL}/api/open_case`, {
@@ -1153,7 +1015,7 @@
 
         updateBalance(openResult.new_balance);
 
-        // 3. Показываем все рулетки одновременно
+        // 3. Рулетки
         if (count === 1) {
             showSingleBigRoulette(caseName, pool, openResult.results[0], () => {
                 showMultiResult(openResult.results, caseId, count);
@@ -1165,9 +1027,6 @@
         }
     }
 
-    // ============================================================
-    // ОДНА БОЛЬШАЯ РУЛЕТКА (для ×1)
-    // ============================================================
     function showSingleBigRoulette(caseName, pool, result, onDone) {
         const rouletteRoot = document.getElementById("roulette-root");
         const targetIndex = result.pool_index !== undefined
@@ -1177,26 +1036,14 @@
         const RANDOM_BEFORE = 40;
         const TOTAL_ITEMS = 60;
         const strip = [];
-
-        for (let i = 0; i < RANDOM_BEFORE; i++) {
-            strip.push(pool[Math.floor(Math.random() * pool.length)]);
-        }
+        for (let i = 0; i < RANDOM_BEFORE; i++) strip.push(pool[Math.floor(Math.random() * pool.length)]);
         strip.push(pool[targetIndex]);
-        for (let i = 0; i < TOTAL_ITEMS - RANDOM_BEFORE - 1; i++) {
-            strip.push(pool[Math.floor(Math.random() * pool.length)]);
-        }
+        for (let i = 0; i < TOTAL_ITEMS - RANDOM_BEFORE - 1; i++) strip.push(pool[Math.floor(Math.random() * pool.length)]);
 
         let trackHtml = "";
         for (const item of strip) {
-            const img = item.image
-                ? `<img src="${item.image}" alt="">`
-                : `<span class="r-emoji">${item.rarity}</span>`;
-            trackHtml += `
-                <div class="roulette-item">
-                    ${img}
-                    <div class="r-name">${escapeHtml(item.name)}</div>
-                </div>
-            `;
+            const img = item.image ? `<img src="${item.image}" alt="">` : `<span class="r-emoji">${item.rarity}</span>`;
+            trackHtml += `<div class="roulette-item">${img}<div class="r-name">${escapeHtml(item.name)}</div></div>`;
         }
 
         rouletteRoot.innerHTML = `
@@ -1204,9 +1051,7 @@
                 <div class="roulette-title">🎰 ${escapeHtml(caseName)}</div>
                 <div class="roulette-viewport">
                     <div class="roulette-pointer"></div>
-                    <div class="roulette-track" id="roulette-track">
-                        ${trackHtml}
-                    </div>
+                    <div class="roulette-track" id="roulette-track">${trackHtml}</div>
                 </div>
             </div>
         `;
@@ -1221,22 +1066,16 @@
 
         setTimeout(() => {
             const track = document.getElementById("roulette-track");
-            if (!track) return;
-            track.style.transform = `translateX(-${finalOffset}px)`;
+            if (track) track.style.transform = `translateX(-${finalOffset}px)`;
         }, 100);
 
         setTimeout(onDone, 4300);
     }
 
-    // ============================================================
-    // НЕСКОЛЬКО РУЛЕТОК ОДНОВРЕМЕННО (×3, ×10)
-    // ============================================================
     function showAllMiniRoulettes(caseName, count, pool, results, onDone) {
         const rouletteRoot = document.getElementById("roulette-root");
-
-        // Собираем HTML для каждой рулетки
         let roulettesHtml = "";
-        const configs = [];  // для анимации
+        const configs = [];
 
         for (let idx = 0; idx < count; idx++) {
             const result = results[idx];
@@ -1247,20 +1086,13 @@
             const RANDOM_BEFORE = 30;
             const TOTAL_ITEMS = 45;
             const strip = [];
-
-            for (let i = 0; i < RANDOM_BEFORE; i++) {
-                strip.push(pool[Math.floor(Math.random() * pool.length)]);
-            }
+            for (let i = 0; i < RANDOM_BEFORE; i++) strip.push(pool[Math.floor(Math.random() * pool.length)]);
             strip.push(pool[targetIndex]);
-            for (let i = 0; i < TOTAL_ITEMS - RANDOM_BEFORE - 1; i++) {
-                strip.push(pool[Math.floor(Math.random() * pool.length)]);
-            }
+            for (let i = 0; i < TOTAL_ITEMS - RANDOM_BEFORE - 1; i++) strip.push(pool[Math.floor(Math.random() * pool.length)]);
 
             let trackHtml = "";
             for (const item of strip) {
-                const img = item.image
-                    ? `<img src="${item.image}" alt="">`
-                    : `<span>${item.rarity}</span>`;
+                const img = item.image ? `<img src="${item.image}" alt="">` : `<span>${item.rarity}</span>`;
                 trackHtml += `<div class="mini-roulette-item">${img}</div>`;
             }
 
@@ -1268,48 +1100,36 @@
                 <div class="mini-roulette">
                     <div class="mini-roulette-viewport">
                         <div class="mini-roulette-pointer"></div>
-                        <div class="mini-roulette-track" id="mini-track-${idx}">
-                            ${trackHtml}
-                        </div>
+                        <div class="mini-roulette-track" id="mini-track-${idx}">${trackHtml}</div>
                     </div>
                 </div>
             `;
-
-            configs.push({
-                idx: idx,
-                randomBefore: RANDOM_BEFORE,
-            });
+            configs.push({ idx: idx, randomBefore: RANDOM_BEFORE });
         }
 
         rouletteRoot.innerHTML = `
             <div class="multi-roulette-container">
                 <div class="multi-roulette-title">🎰 ${escapeHtml(caseName)} ×${count}</div>
-                <div class="multi-roulette-list">
-                    ${roulettesHtml}
-                </div>
+                <div class="multi-roulette-list">${roulettesHtml}</div>
             </div>
         `;
 
-        // Анимация — все рулетки стартуют одновременно
         setTimeout(() => {
-            const MINI_ITEM_WIDTH = 64;  // 60px + margin 4px
-            const viewportWidth = window.innerWidth - 24 - 12;  // padding контейнера
+            const MINI_ITEM_WIDTH = 64;
+            const viewportWidth = window.innerWidth - 24 - 12;
             const pointerPos = viewportWidth / 2;
 
             for (const cfg of configs) {
                 const track = document.getElementById(`mini-track-${cfg.idx}`);
                 if (!track) continue;
-
                 const winningCenter = cfg.randomBefore * MINI_ITEM_WIDTH + MINI_ITEM_WIDTH / 2;
                 const offset = winningCenter - pointerPos;
                 const randomShift = (Math.random() - 0.5) * 40;
                 const finalOffset = offset + randomShift;
-
                 track.style.transform = `translateX(-${finalOffset}px)`;
             }
         }, 100);
 
-        // Ждём окончания анимации
         setTimeout(onDone, 4300);
     }
 
@@ -1317,19 +1137,13 @@
         document.getElementById("roulette-root").innerHTML = "";
     }
 
-    // ============================================================
-    // РЕЗУЛЬТАТ
-    // ============================================================
     function showMultiResult(results, caseId, count) {
         const rouletteRoot = document.getElementById("roulette-root");
-
         let listHtml = "";
         let totalValue = 0;
         for (const r of results) {
             totalValue += r.price;
-            const imgHtml = r.image
-                ? `<img src="${r.image}">`
-                : `<span>${r.rarity}</span>`;
+            const imgHtml = r.image ? `<img src="${r.image}">` : `<span>${r.rarity}</span>`;
             listHtml += `
                 <div class="multi-result-row">
                     <div class="m-img">${imgHtml}</div>
@@ -1345,9 +1159,7 @@
             <div class="result-container">
                 <div class="result-header">🎁 Открыто ${count} кейсов</div>
                 <div class="result-total">💰 Всего: ${formatNumber(totalValue)}₽</div>
-                <div class="multi-result-list">
-                    ${listHtml}
-                </div>
+                <div class="multi-result-list">${listHtml}</div>
                 <div class="result-buttons">
                     <button class="result-btn sell" onclick="sellAllResults(${JSON.stringify(results.map(r => r.code)).replace(/"/g, '&quot;')})">💵 Продать всё за ${formatNumber(totalValue)}₽</button>
                     <button class="result-btn again" onclick="closeRoulette(); openCase('${caseId}', ${count})">🔁 Открыть ещё ×${count}</button>
@@ -1360,7 +1172,7 @@
     async function sellAllResults(codes) {
         if (!confirm(`💵 Продать всё за ${codes.length} предметов?`)) return;
         try {
-            const res = await fetch(`${API_URL}/api/sell_all`, {
+            const res = await fetch(`${API_URL}/api/sell_bulk`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
                 body: JSON.stringify({ user_id: user.id, codes: codes })
