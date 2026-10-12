@@ -5,57 +5,83 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Piggy Chef</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
         html, body {
             overflow-x: hidden;
+            font-family: 'Pixelify Sans', -apple-system, Arial, sans-serif;
         }
 
         body {
-            font-family: -apple-system, Arial, sans-serif;
             padding: 16px;
             background: var(--tg-theme-bg-color, #ffffff);
             color: var(--tg-theme-text-color, #000000);
             min-height: 100vh;
+            font-size: 16px;
+            line-height: 1.3;
+            -webkit-font-smoothing: none;
+            -moz-osx-font-smoothing: grayscale;
         }
 
         .header { text-align: center; margin-bottom: 16px; }
-        .header h1 { font-size: 24px; margin-bottom: 8px; }
-        .header .username { color: var(--tg-theme-hint-color, #999); font-size: 14px; }
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+        .header .username {
+            color: var(--tg-theme-hint-color, #999);
+            font-size: 14px;
+        }
 
         .balance-bar {
             display: flex; justify-content: space-between; align-items: center;
             background: var(--tg-theme-secondary-bg-color, #f5f5f5);
             border-radius: 12px; padding: 12px 16px; margin-bottom: 16px;
-            font-size: 15px;
+            font-size: 16px;
         }
-        .balance-bar .balance { font-weight: bold; color: #27ae60; font-size: 17px; }
+        .balance-bar .balance {
+            font-weight: bold; color: #27ae60; font-size: 18px;
+        }
 
         .tabs { display: flex; gap: 6px; margin-bottom: 16px; }
         .tab {
             flex: 1; padding: 10px 6px;
             background: var(--tg-theme-secondary-bg-color, #f5f5f5);
             color: var(--tg-theme-text-color, #000);
-            border: none; border-radius: 8px; font-size: 13px; cursor: pointer;
+            border: none; border-radius: 8px; font-size: 15px; cursor: pointer;
+            font-family: inherit;
+            font-weight: 600;
         }
         .tab.active {
             background: var(--tg-theme-button-color, #2481cc);
             color: var(--tg-theme-button-text-color, #fff);
-            font-weight: bold;
+            font-weight: 700;
         }
 
         .card {
             background: var(--tg-theme-secondary-bg-color, #f5f5f5);
             border-radius: 12px; padding: 16px; margin-bottom: 12px;
         }
-        .card .label { font-size: 13px; color: var(--tg-theme-hint-color, #999); margin-bottom: 6px; }
-        .card .value { font-size: 22px; font-weight: bold; }
+        .card .label {
+            font-size: 14px; color: var(--tg-theme-hint-color, #999);
+            margin-bottom: 6px;
+        }
+        .card .value { font-size: 24px; font-weight: 700; }
 
         .row { display: flex; gap: 12px; margin-bottom: 12px; }
         .row .card { flex: 1; margin-bottom: 0; }
 
-        .loading { text-align: center; padding: 40px; color: var(--tg-theme-hint-color, #999); }
+        .loading {
+            text-align: center; padding: 40px;
+            color: var(--tg-theme-hint-color, #999);
+            font-size: 16px;
+        }
 
         .error {
             background: #ff4444; color: white;
@@ -64,19 +90,25 @@
 
         button {
             width: 100%; padding: 14px;
-            font-size: 16px; font-weight: bold;
+            font-size: 16px; font-weight: 700;
             background: var(--tg-theme-button-color, #2481cc);
             color: var(--tg-theme-button-text-color, #ffffff);
             border: none; border-radius: 10px; cursor: pointer; margin-top: 8px;
+            font-family: inherit;
+            letter-spacing: 0.3px;
         }
         button:active { opacity: 0.8; }
+
+        input, textarea, select {
+            font-family: inherit;
+        }
 
         /* ИНВЕНТАРЬ */
         .inv-header {
             display: flex; justify-content: space-between; align-items: center;
             background: var(--tg-theme-secondary-bg-color, #f5f5f5);
             border-radius: 12px; padding: 10px 14px; margin-bottom: 10px;
-            font-size: 14px;
+            font-size: 15px;
         }
         .inv-header .total-value { color: #27ae60; font-weight: bold; }
 
@@ -85,18 +117,19 @@
             overflow-x: auto; padding-bottom: 4px;
         }
         .sort-btn {
-            padding: 8px 12px; font-size: 13px;
+            padding: 8px 12px; font-size: 14px;
             border-radius: 8px; border: 1px solid #888;
             background: transparent;
             color: var(--tg-theme-text-color, #000);
             cursor: pointer; white-space: nowrap;
-            width: auto; margin: 0; font-weight: normal;
+            width: auto; margin: 0; font-weight: 600;
+            font-family: inherit;
         }
         .sort-btn.active {
             background: var(--tg-theme-button-color, #2481cc);
             color: var(--tg-theme-button-text-color, #fff);
             border-color: var(--tg-theme-button-color, #2481cc);
-            font-weight: bold;
+            font-weight: 700;
         }
 
         .item {
@@ -138,13 +171,13 @@
 
         .item-info { flex: 1; min-width: 0; }
         .item-name {
-            font-size: 14px; font-weight: bold;
+            font-size: 15px; font-weight: 700;
             white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
             margin-bottom: 2px;
         }
-        .item-price { font-size: 13px; color: #27ae60; font-weight: bold; }
+        .item-price { font-size: 14px; color: #27ae60; font-weight: 700; }
         .item-code {
-            font-size: 11px; color: var(--tg-theme-hint-color, #999);
+            font-size: 12px; color: var(--tg-theme-hint-color, #999);
             font-family: monospace;
         }
 
@@ -155,6 +188,7 @@
             width: 40px; height: 36px; font-size: 16px;
             padding: 0; margin: 0; border-radius: 8px;
             border: none; cursor: pointer; color: white;
+            font-family: inherit;
         }
         .btn-tiny-insure { background: #4a90e2; }
         .btn-tiny-gift { background: #e67e22; }
@@ -168,12 +202,13 @@
             width: 50px; height: 50px; padding: 0; margin: 0;
             border-radius: 12px; font-size: 20px;
             background: var(--tg-theme-button-color, #2481cc);
+            font-family: inherit;
         }
         .inv-pagination button:disabled {
             background: #555; opacity: 0.4; cursor: not-allowed;
         }
         .inv-pagination .page-info {
-            font-size: 15px; font-weight: bold;
+            font-size: 16px; font-weight: 700;
         }
 
         /* КОРЗИНА */
@@ -187,13 +222,14 @@
             gap: 12px; z-index: 100;
             box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
         }
-        .cart-info { flex: 1; font-size: 14px; }
-        .cart-info .cart-count { font-weight: bold; }
-        .cart-info .cart-total { color: #27ae60; font-weight: bold; font-size: 16px; }
+        .cart-info { flex: 1; font-size: 15px; }
+        .cart-info .cart-count { font-weight: 700; }
+        .cart-info .cart-total { color: #27ae60; font-weight: 700; font-size: 16px; }
         .cart-btn {
             width: auto; padding: 12px 20px; margin: 0;
-            background: #27ae60; color: white; font-weight: bold;
+            background: #27ae60; color: white; font-weight: 700;
             border-radius: 10px; border: none; cursor: pointer; font-size: 15px;
+            font-family: inherit;
         }
 
         /* КЕЙСЫ */
@@ -201,26 +237,31 @@
             background: var(--tg-theme-secondary-bg-color, #f5f5f5);
             border-radius: 12px; padding: 14px; margin-bottom: 10px;
             cursor: pointer; display: flex; justify-content: space-between;
-            align-items: center; font-size: 15px; font-weight: bold;
+            align-items: center; font-size: 16px; font-weight: 700;
         }
 
         .case-item {
             background: var(--tg-theme-secondary-bg-color, #f5f5f5);
             border-radius: 12px; padding: 16px; margin-bottom: 10px; text-align: center;
         }
-        .case-name { font-size: 18px; font-weight: bold; margin-bottom: 6px; }
+        .case-name { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
         .case-price { font-size: 15px; color: var(--tg-theme-hint-color, #999); margin-bottom: 12px; }
         .case-buttons { display: flex; gap: 8px; }
         .btn-case {
             flex: 1; padding: 12px; border-radius: 10px;
-            border: none; font-size: 15px; font-weight: bold;
+            border: none; font-size: 16px; font-weight: 700;
             cursor: pointer; color: white;
+            font-family: inherit;
         }
         .btn-x1 { background: #3498db; }
         .btn-x3 { background: #9b59b6; }
         .btn-x10 { background: #e74c3c; }
 
-        .btn-back { background: #666; color: white; margin-bottom: 12px; }
+        .btn-back {
+            background: #666; color: white; margin-bottom: 12px;
+            font-family: inherit;
+            font-weight: 700;
+        }
 
         /* МОДАЛЬНЫЕ ОКНА */
         .modal-overlay {
@@ -234,18 +275,20 @@
             border-radius: 16px; padding: 20px;
             width: 100%; max-width: 400px; max-height: 80vh; overflow-y: auto;
         }
-        .modal h3 { font-size: 18px; margin-bottom: 16px; text-align: center; }
+        .modal h3 { font-size: 18px; margin-bottom: 16px; text-align: center; font-weight: 700; }
         .modal-btn {
             width: 100%; padding: 14px; margin-bottom: 8px;
             font-size: 15px; border: none; border-radius: 10px;
             cursor: pointer; text-align: left;
             background: var(--tg-theme-secondary-bg-color, #f5f5f5);
             color: var(--tg-theme-text-color, #000);
+            font-family: inherit;
+            font-weight: 600;
         }
         .modal-btn.primary {
             background: var(--tg-theme-button-color, #2481cc);
             color: var(--tg-theme-button-text-color, #fff);
-            text-align: center; font-weight: bold;
+            text-align: center; font-weight: 700;
         }
         .modal-btn.cancel {
             background: #666; color: white;
@@ -262,11 +305,10 @@
             background: var(--tg-theme-bg-color, #fff);
             color: var(--tg-theme-text-color, #000);
             margin-bottom: 12px;
+            font-family: inherit;
         }
 
-        /* ============================================================
-           РУЛЕТКА ×1 — БОЛЬШАЯ
-           ============================================================ */
+        /* РУЛЕТКИ */
         .roulette-container {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(0, 0, 0, 0.96); z-index: 2000;
@@ -275,7 +317,7 @@
             overflow: hidden;
         }
         .roulette-title {
-            color: white; font-size: 20px; font-weight: bold;
+            color: white; font-size: 20px; font-weight: 700;
             margin-bottom: 16px; text-align: center;
         }
         .roulette-viewport {
@@ -305,13 +347,13 @@
         .roulette-item img { width: 90px; height: 90px; object-fit: contain; }
         .roulette-item .r-emoji { font-size: 60px; }
         .roulette-item .r-name {
-            font-size: 10px; text-align: center;
+            font-size: 11px; text-align: center;
             padding: 2px 4px; overflow: hidden;
             text-overflow: ellipsis; white-space: nowrap;
             width: 100%; margin-top: 4px;
+            font-weight: 600;
         }
 
-        /* Общий стиль указателя */
         .roulette-pointer {
             position: absolute; top: 0; bottom: 0;
             left: 50%;
@@ -336,9 +378,6 @@
             border-bottom: 14px solid #f1c40f;
         }
 
-        /* ============================================================
-           МНОГО РУЛЕТОК (×3, ×10) — ФЛЕКС
-           ============================================================ */
         .multi-roulette-container {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(0, 0, 0, 0.96); z-index: 2000;
@@ -348,7 +387,7 @@
             overflow-x: hidden;
         }
         .multi-roulette-title {
-            color: white; font-size: 18px; font-weight: bold;
+            color: white; font-size: 18px; font-weight: 700;
             text-align: center; margin-bottom: 12px; flex-shrink: 0;
         }
         .multi-roulette-list {
@@ -357,19 +396,12 @@
             gap: 10px;
             width: 100%;
         }
-
-        /* ×3 — одна колонка */
-        .multi-roulette-list.cols-1 .mini-roulette {
-            width: 100%;
-        }
-
-        /* ×10 — две колонки */
+        .multi-roulette-list.cols-1 .mini-roulette { width: 100%; }
         .multi-roulette-list.cols-2 {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 8px;
         }
-
         .mini-roulette {
             background: rgba(255, 255, 255, 0.05);
             border-radius: 10px;
@@ -409,7 +441,6 @@
         .mini-roulette-item img { width: 100%; height: 100%; object-fit: contain; }
         .mini-roulette-item span { font-size: 30px; }
 
-        /* Мини-указатель (для ×3, ×10) — тонкая полоска */
         .mini-roulette-pointer {
             position: absolute;
             top: -4px;
@@ -452,7 +483,7 @@
             padding: 20px; color: white; text-align: center;
             overflow-y: auto;
         }
-        .result-header { font-size: 18px; font-weight: bold; margin-bottom: 16px; }
+        .result-header { font-size: 18px; font-weight: 700; margin-bottom: 16px; }
         .multi-result-list {
             max-height: 55vh; overflow-y: auto;
             width: 100%; max-width: 400px; margin-bottom: 16px;
@@ -470,19 +501,20 @@
         .multi-result-row .m-img img { width: 50px; height: 50px; object-fit: contain; }
         .multi-result-info { flex: 1; text-align: left; min-width: 0; }
         .multi-result-name {
-            font-size: 14px; font-weight: bold;
+            font-size: 14px; font-weight: 700;
             white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
         .multi-result-price { font-size: 13px; color: #f1c40f; }
-        .result-total { font-size: 16px; margin-bottom: 16px; color: #f1c40f; }
+        .result-total { font-size: 16px; margin-bottom: 16px; color: #f1c40f; font-weight: 700; }
         .result-buttons {
             display: flex; flex-direction: column; gap: 10px;
             width: 100%; max-width: 320px;
         }
         .result-btn {
             padding: 16px; border-radius: 12px;
-            border: none; font-size: 16px; font-weight: bold;
+            border: none; font-size: 16px; font-weight: 700;
             cursor: pointer; color: white;
+            font-family: inherit;
         }
         .result-btn.sell { background: #27ae60; }
         .result-btn.again { background: #3498db; }
@@ -502,9 +534,9 @@
 </div>
 
 <div class="tabs">
-    <button class="tab active" data-tab="profile" onclick="switchTab('profile')">👤</button>
-    <button class="tab" data-tab="inventory" onclick="switchTab('inventory')">🎒</button>
-    <button class="tab" data-tab="cases" onclick="switchTab('cases')">📦</button>
+    <button class="tab active" data-tab="profile" onclick="switchTab('profile')">👤 Профиль</button>
+    <button class="tab" data-tab="inventory" onclick="switchTab('inventory')">🎒 Инвентарь</button>
+    <button class="tab" data-tab="cases" onclick="switchTab('cases')">📦 Кейсы</button>
 </div>
 
 <div id="content">
@@ -515,6 +547,9 @@
 <div id="roulette-root"></div>
 
 <script>
+    // ============================================================
+    // НАСТРОЙКИ
+    // ============================================================
     const API_URL = "https://preheated-playroom-detective.ngrok-free.dev";
 
     const tg = window.Telegram.WebApp;
@@ -536,6 +571,9 @@
         sort: "price_desc",
     };
 
+    // ============================================================
+    // УТИЛИТЫ
+    // ============================================================
     function formatNumber(n) {
         if (!n) return "0";
         n = Number(n);
@@ -558,11 +596,16 @@
         document.getElementById("balance-display").textContent = formatNumber(b) + "₽";
     }
 
+    // ============================================================
+    // ВКЛАДКИ
+    // ============================================================
     function switchTab(tab) {
         document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
         document.querySelector(`[data-tab="${tab}"]`).classList.add("active");
+
         const oldCart = document.getElementById("cart-bar");
         if (oldCart) oldCart.remove();
+
         if (tab === "profile") loadProfile();
         if (tab === "inventory") loadInventory();
         if (tab === "cases") loadCases();
@@ -577,6 +620,7 @@
                 '<div class="error">❌ Открой меня внутри Telegram!</div>';
             return;
         }
+
         document.getElementById("username").textContent =
             `${user.first_name} (@${user.username || "no_username"})`;
         document.getElementById("content").innerHTML =
@@ -588,19 +632,38 @@
             });
             const data = await res.json();
             if (!data.ok) throw new Error(data.error);
+
             const u = data.user;
             updateBalance(u.balance);
 
             document.getElementById("content").innerHTML = `
-                <div class="card"><div class="label">💰 Баланс</div><div class="value">${formatNumber(u.balance)}₽</div></div>
-                <div class="card"><div class="label">✨ Опыт</div><div class="value">${formatNumber(u.xp)} XP</div></div>
-                <div class="row">
-                    <div class="card"><div class="label">🏪 Ресторан</div><div class="value">${u.restaurant_level} ур.</div></div>
-                    <div class="card"><div class="label">🔥 Стрик</div><div class="value">${u.streak} дн.</div></div>
+                <div class="card">
+                    <div class="label">💰 Баланс</div>
+                    <div class="value">${formatNumber(u.balance)}₽</div>
+                </div>
+                <div class="card">
+                    <div class="label">✨ Опыт</div>
+                    <div class="value">${formatNumber(u.xp)} XP</div>
                 </div>
                 <div class="row">
-                    <div class="card"><div class="label">📦 Кейсов</div><div class="value">${formatNumber(u.total_cases)}</div></div>
-                    <div class="card"><div class="label">⭐ Репутация</div><div class="value">${u.reputation}</div></div>
+                    <div class="card">
+                        <div class="label">🏪 Ресторан</div>
+                        <div class="value">${u.restaurant_level} ур.</div>
+                    </div>
+                    <div class="card">
+                        <div class="label">🔥 Стрик</div>
+                        <div class="value">${u.streak} дн.</div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="card">
+                        <div class="label">📦 Кейсов</div>
+                        <div class="value">${formatNumber(u.total_cases)}</div>
+                    </div>
+                    <div class="card">
+                        <div class="label">⭐ Репутация</div>
+                        <div class="value">${u.reputation}</div>
+                    </div>
                 </div>
                 <button onclick="loadProfile()">🔄 Обновить</button>
             `;
@@ -615,8 +678,10 @@
     // ============================================================
     async function loadInventory() {
         if (!user) return;
+
         document.getElementById("username").textContent =
             `${user.first_name} (@${user.username || "no_username"})`;
+
         await fetchInventoryPage(inventoryState.offset);
     }
 
@@ -631,10 +696,12 @@
             );
             const data = await res.json();
             if (!data.ok) throw new Error(data.error);
+
             inventoryState.offset = data.offset;
             inventoryState.totalCount = data.total_count;
             inventoryState.totalValue = data.total_value;
             inventoryState.items = data.items;
+
             renderInventory();
         } catch (err) {
             document.getElementById("content").innerHTML =
@@ -644,6 +711,7 @@
 
     function renderInventory() {
         const { items, offset, limit, totalCount, totalValue, cart } = inventoryState;
+
         if (totalCount === 0) {
             document.getElementById("content").innerHTML =
                 '<div class="card"><div class="label">🎒 Инвентарь пуст</div></div>';
@@ -666,20 +734,26 @@
         for (const item of items) {
             const isSelected = cart.has(item.code);
             const isArtifact = item.is_artifact;
+
             const imgHtml = item.image
                 ? `<img src="${item.image}" alt="${escapeHtml(item.name)}">`
                 : `<span>${item.rarity}</span>`;
+
             const insuredBtn = item.insured
                 ? `<button class="btn-tiny btn-tiny-insure disabled" disabled>🛡</button>`
                 : `<button class="btn-tiny btn-tiny-insure" onclick="insureItem('${item.code}')">🛡</button>`;
 
             const checkboxHtml = isArtifact
                 ? `<div class="item-checkbox-placeholder">⭐</div>`
-                : `<div class="item-checkbox ${isSelected ? 'checked' : ''}" onclick="toggleCart('${item.code}')">${isSelected ? '✓' : ''}</div>`;
+                : `<div class="item-checkbox ${isSelected ? 'checked' : ''}"
+                        onclick="toggleCart('${item.code}')">
+                     ${isSelected ? '✓' : ''}
+                   </div>`;
 
             const actionsHtml = isArtifact
                 ? `<button class="btn-tiny btn-tiny-gift" onclick="giftItem('${item.code}')">🎁</button>`
-                : `${insuredBtn}<button class="btn-tiny btn-tiny-gift" onclick="giftItem('${item.code}')">🎁</button>`;
+                : `${insuredBtn}
+                   <button class="btn-tiny btn-tiny-gift" onclick="giftItem('${item.code}')">🎁</button>`;
 
             html += `
                 <div class="item ${isSelected ? 'selected' : ''}">
@@ -732,12 +806,15 @@
     function renderCartBar() {
         const oldCart = document.getElementById("cart-bar");
         if (oldCart) oldCart.remove();
+
         const cart = inventoryState.cart;
         if (cart.size === 0) return;
+
         let total = 0;
         for (const item of inventoryState.items) {
             if (cart.has(item.code)) total += item.price;
         }
+
         const cartBar = document.createElement("div");
         cartBar.className = "cart-bar";
         cartBar.id = "cart-bar";
@@ -771,8 +848,11 @@
         } catch (err) { alert("❌ Ошибка: " + err.message); }
     }
 
+    // ============================================================
+    // ДЕЙСТВИЯ
+    // ============================================================
     async function insureItem(code) {
-        if (!confirm("🛡 Застраховать предмет на 24 часа?")) return;
+        if (!confirm("🛡 Застраховать предмет на 24 часа?\nСтоимость: 12% от цены.")) return;
         try {
             const res = await fetch(`${API_URL}/api/insure_item`, {
                 method: "POST",
@@ -787,6 +867,9 @@
         } catch (err) { alert("❌ Ошибка: " + err.message); }
     }
 
+    // ============================================================
+    // ПОДАРОК
+    // ============================================================
     function giftItem(code) {
         fetch(`${API_URL}/api/friends?user_id=${user.id}`, {
             headers: { "ngrok-skip-browser-warning": "true" }
@@ -815,6 +898,7 @@
                 `;
             }
         }
+
         modalRoot.innerHTML = `
             <div class="modal-overlay" onclick="if(event.target === this) closeModal()">
                 <div class="modal">
@@ -857,6 +941,7 @@
         const body = { user_id: user.id, item_code: code };
         if (toUserId) body.to_user_id = toUserId;
         if (toUsername) body.to_username = toUsername;
+
         try {
             const res = await fetch(`${API_URL}/api/gift_item`, {
                 method: "POST",
@@ -864,8 +949,9 @@
                 body: JSON.stringify(body)
             });
             const data = await res.json();
-            if (data.ok) fetchInventoryPage(inventoryState.offset);
-            else alert("❌ " + data.error);
+            if (data.ok) {
+                fetchInventoryPage(inventoryState.offset);
+            } else alert("❌ " + data.error);
         } catch (err) { alert("❌ Ошибка: " + err.message); }
     }
 
@@ -878,16 +964,19 @@
     // ============================================================
     async function loadCases() {
         if (!user) return;
+
         document.getElementById("username").textContent =
             `${user.first_name} (@${user.username || "no_username"})`;
         document.getElementById("content").innerHTML =
             '<div class="loading">⏳ Загружаем кейсы...</div>';
+
         try {
             const res = await fetch(`${API_URL}/api/cases`, {
                 headers: { "ngrok-skip-browser-warning": "true" }
             });
             const data = await res.json();
             if (!data.ok) throw new Error(data.error);
+
             casesData = data.categories;
             renderCategories();
         } catch (err) {
@@ -901,7 +990,8 @@
         for (const cat of casesData) {
             html += `
                 <div class="case-category" onclick="renderCaseList('${cat.id}')">
-                    <span>${escapeHtml(cat.name)}</span><span>▶️</span>
+                    <span>${escapeHtml(cat.name)}</span>
+                    <span>▶️</span>
                 </div>
             `;
         }
@@ -911,8 +1001,10 @@
     function renderCaseList(catId) {
         const cat = casesData.find(c => c.id === catId);
         if (!cat) return;
+
         let html = `<button class="btn-back" onclick="renderCategories()">⬅️ Назад к категориям</button>`;
         html += `<div class="card"><div class="label">${escapeHtml(cat.name)}</div></div>`;
+
         for (const c of cat.cases) {
             html += `
                 <div class="case-item">
@@ -934,12 +1026,14 @@
     // ============================================================
     async function openCase(caseId, count) {
         if (!user) return;
+
         let casePrice = 0;
         for (const cat of casesData) {
             for (const c of cat.cases) {
                 if (c.id === caseId) { casePrice = c.price; break; }
             }
         }
+
         const total = casePrice * count;
         if (currentBalance < total) {
             alert(`❌ Нужно ${formatNumber(total)}₽, у тебя ${formatNumber(currentBalance)}₽`);
@@ -1030,13 +1124,11 @@
     }
 
     // ============================================================
-    // ×3, ×10 — МНОГО РУЛЕТОК ОДНОВРЕМЕННО
+    // ×3 / ×10 — МНОГО РУЛЕТОК
     // ============================================================
     function showAllMiniRoulettes(caseName, count, pool, results, onDone) {
         const rouletteRoot = document.getElementById("roulette-root");
 
-        // ×3 — 1 колонка (большие рулетки)
-        // ×10 — 2 колонки (по 5 в каждой)
         const isTwoCols = count >= 6;
         const listClass = isTwoCols ? "multi-roulette-list cols-2" : "multi-roulette-list cols-1";
 
@@ -1080,9 +1172,8 @@
             </div>
         `;
 
-        // Анимация
         setTimeout(() => {
-            const ITEM_WIDTH = 64;  // 60px + 2*2px margin
+            const ITEM_WIDTH = 64;
 
             for (const cfg of configs) {
                 const track = document.getElementById(`mini-track-${cfg.idx}`);
@@ -1108,6 +1199,7 @@
 
     function showMultiResult(results, caseId, count) {
         const rouletteRoot = document.getElementById("roulette-root");
+
         let listHtml = "";
         let totalValue = 0;
         for (const r of results) {
@@ -1123,6 +1215,7 @@
                 </div>
             `;
         }
+
         rouletteRoot.innerHTML = `
             <div class="result-container">
                 <div class="result-header">🎁 Открыто ${count} кейсов</div>
@@ -1138,7 +1231,7 @@
     }
 
     async function sellAllResults(codes) {
-        if (!confirm(`💵 Продать всё?`)) return;
+        if (!confirm(`💵 Продать всё за ${codes.length} предметов?`)) return;
         try {
             const res = await fetch(`${API_URL}/api/sell_bulk`, {
                 method: "POST",
@@ -1150,9 +1243,12 @@
                 updateBalance(data.new_balance);
                 closeRoulette();
             } else alert("❌ " + data.error);
-        } catch (err) { alert("❌ " + err.message); }
+        } catch (err) { alert("❌ Ошибка: " + err.message); }
     }
 
+    // ============================================================
+    // ЗАПУСК
+    // ============================================================
     switchTab("profile");
 </script>
 
