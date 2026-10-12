@@ -32,15 +32,8 @@
         }
 
         .header { text-align: center; margin-bottom: 16px; }
-        .header h1 {
-            font-size: 38px;
-            margin-bottom: 8px;
-            letter-spacing: 0.5px;
-        }
-        .header .username {
-            color: var(--tg-theme-hint-color, #999);
-            font-size: 18px;
-        }
+        .header h1 { font-size: 38px; margin-bottom: 8px; }
+        .header .username { color: var(--tg-theme-hint-color, #999); font-size: 18px; }
 
         .balance-bar {
             display: flex; justify-content: space-between; align-items: center;
@@ -48,9 +41,7 @@
             border-radius: 12px; padding: 12px 16px; margin-bottom: 16px;
             font-size: 20px;
         }
-        .balance-bar .balance {
-            color: #27ae60; font-size: 24px;
-        }
+        .balance-bar .balance { color: #27ae60; font-size: 24px; }
 
         .tabs { display: flex; gap: 6px; margin-bottom: 16px; }
         .tab {
@@ -99,6 +90,7 @@
             letter-spacing: 0.3px;
         }
         button:active { opacity: 0.8; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
 
         /* ИНВЕНТАРЬ */
         .inv-header {
@@ -256,6 +248,67 @@
         .btn-back {
             background: #666; color: white; margin-bottom: 12px;
             font-family: inherit;
+        }
+
+        /* РЕСТОРАН */
+        .restaurant-image {
+            width: 100%;
+            max-width: 400px;
+            height: auto;
+            margin: 0 auto 16px;
+            display: block;
+            border-radius: 16px;
+            background: rgba(0,0,0,0.05);
+            min-height: 200px;
+            object-fit: contain;
+        }
+
+        .restaurant-image-placeholder {
+            width: 100%;
+            max-width: 400px;
+            height: 200px;
+            margin: 0 auto 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,0,0,0.05);
+            border-radius: 16px;
+            font-size: 80px;
+        }
+
+        .upgrade-block {
+            background: var(--tg-theme-secondary-bg-color, #f5f5f5);
+            border-radius: 12px;
+            padding: 14px;
+            margin-bottom: 10px;
+        }
+
+        .upgrade-block .upgrade-title {
+            font-size: 20px;
+            margin-bottom: 6px;
+        }
+
+        .upgrade-block .upgrade-info {
+            font-size: 17px;
+            color: var(--tg-theme-hint-color, #999);
+            margin-bottom: 10px;
+        }
+
+        .upgrade-block button {
+            margin-top: 0;
+            font-size: 18px;
+            padding: 12px;
+        }
+
+        .worker-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            background: rgba(0,0,0,0.05);
+            border-radius: 8px;
+            margin-bottom: 6px;
+            font-size: 17px;
         }
 
         /* МОДАЛЬНЫЕ ОКНА */
@@ -540,7 +593,10 @@
 <div id="roulette-root"></div>
 
 <script>
-    const API_URL = "https://e32bcfed0457aba0-84-32-50-43.serveousercontent.com";
+    // ============================================================
+    // НАСТРОЙКИ
+    // ============================================================
+    const API_URL = "https://5a4cc7b0b04078fc-185-189-46-104.serveousercontent.com";
 
     const tg = window.Telegram.WebApp;
     tg.ready();
@@ -561,6 +617,9 @@
         sort: "price_desc",
     };
 
+    // ============================================================
+    // УТИЛИТЫ
+    // ============================================================
     function formatNumber(n) {
         if (!n) return "0";
         n = Number(n);
@@ -583,6 +642,9 @@
         document.getElementById("balance-display").textContent = formatNumber(b) + "₽";
     }
 
+    // ============================================================
+    // ВКЛАДКИ
+    // ============================================================
     function switchTab(tab) {
         document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
         document.querySelector(`[data-tab="${tab}"]`).classList.add("active");
@@ -595,6 +657,9 @@
         if (tab === "cases") loadCases();
     }
 
+    // ============================================================
+    // ПРОФИЛЬ
+    // ============================================================
     async function loadProfile() {
         if (!user) {
             document.getElementById("content").innerHTML =
@@ -646,6 +711,7 @@
                         <div class="value">${u.reputation}</div>
                     </div>
                 </div>
+                <button onclick="openRestaurant()">🏪 Ресторан</button>
                 <button onclick="loadProfile()">🔄 Обновить</button>
             `;
         } catch (err) {
@@ -654,6 +720,206 @@
         }
     }
 
+    // ============================================================
+    // РЕСТОРАН
+    // ============================================================
+    async function openRestaurant() {
+        document.getElementById("content").innerHTML =
+            '<div class="loading">⏳ Загружаем ресторан...</div>';
+
+        try {
+            const res = await fetch(`${API_URL}/api/restaurant?user_id=${user.id}`, {
+                headers: { "ngrok-skip-browser-warning": "true" }
+            });
+            const data = await res.json();
+            if (!data.ok) throw new Error(data.error);
+
+            const r = data.restaurant;
+            updateBalance(r.balance);
+
+            let html = `
+                <button class="btn-back" onclick="loadProfile()">⬅️ Назад в профиль</button>
+            `;
+
+            // Картинка
+            if (r.image) {
+                html += `<img src="${r.image}" class="restaurant-image" alt="Ресторан">`;
+            } else {
+                html += `<div class="restaurant-image-placeholder">🏪</div>`;
+            }
+
+            // Заголовок
+            html += `
+                <div class="card">
+                    <div class="label">🏪 Ресторан</div>
+                    <div class="value">Уровень ${r.level} / 10</div>
+                </div>
+            `;
+
+            // Доходы
+            if (r.level > 0) {
+                html += `
+                    <div class="card">
+                        <div class="label">💰 Доход в час</div>
+                        <div class="value">${formatNumber(r.income)}₽</div>
+                        ${r.inventory_bonus > 0 ? `<div style="font-size:15px;color:#999;margin-top:4px;">с инвентаря: +${formatNumber(r.inventory_bonus)}₽</div>` : ''}
+                    </div>
+                `;
+
+                // Накопленный доход
+                html += `
+                    <div class="card" style="background: rgba(39, 174, 96, 0.15);">
+                        <div class="label">⏳ Накоплено</div>
+                        <div class="value" style="color:#27ae60;">${formatNumber(r.total_pending)}₽</div>
+                        ${r.pending_worker_bonus > 0 ? `<div style="font-size:15px;color:#999;margin-top:4px;">в т.ч. с поваров: ${formatNumber(r.pending_worker_bonus)}₽</div>` : ''}
+                    </div>
+                `;
+
+                if (r.total_pending > 0) {
+                    html += `<button onclick="collectIncome()">💰 Собрать доход (${formatNumber(r.total_pending)}₽)</button>`;
+                } else {
+                    html += `<button disabled>💰 Собрать (пока пусто)</button>`;
+                }
+            }
+
+            // Улучшения
+            html += `<div class="card"><div class="label">📈 Улучшения</div></div>`;
+
+            // Ресторан
+            if (r.next_restaurant_cost !== null) {
+                html += `
+                    <div class="upgrade-block">
+                        <div class="upgrade-title">🏪 Ресторан → ур. ${r.level + 1}</div>
+                        <div class="upgrade-info">Стоимость: ${formatNumber(r.next_restaurant_cost)}₽</div>
+                        <button onclick="upgradeRestaurant('restaurant')">🏗 Улучшить за ${formatNumber(r.next_restaurant_cost)}₽</button>
+                    </div>
+                `;
+            } else {
+                html += `
+                    <div class="upgrade-block">
+                        <div class="upgrade-title">🏪 Ресторан</div>
+                        <div class="upgrade-info">МАКСИМУМ</div>
+                    </div>
+                `;
+            }
+
+            // Рабочие места
+            if (r.next_workplaces_cost !== null) {
+                html += `
+                    <div class="upgrade-block">
+                        <div class="upgrade-title">🪑 Рабочие места → ур. ${r.workplaces_level + 1}</div>
+                        <div class="upgrade-info">Сейчас: ${r.workplaces_bonus}% с поваров · Стоимость: ${formatNumber(r.next_workplaces_cost)}₽</div>
+                        <button onclick="upgradeRestaurant('workplaces')">🪑 Улучшить за ${formatNumber(r.next_workplaces_cost)}₽</button>
+                    </div>
+                `;
+            } else {
+                html += `
+                    <div class="upgrade-block">
+                        <div class="upgrade-title">🪑 Рабочие места</div>
+                        <div class="upgrade-info">МАКСИМУМ (${r.workplaces_bonus}%)</div>
+                    </div>
+                `;
+            }
+
+            // Меню
+            if (r.next_menu_cost !== null) {
+                html += `
+                    <div class="upgrade-block">
+                        <div class="upgrade-title">📖 Меню → ур. ${r.menu_level + 1}</div>
+                        <div class="upgrade-info">Сейчас: ${r.menu_bonus}% от блюд · Стоимость: ${formatNumber(r.next_menu_cost)}₽</div>
+                        <button onclick="upgradeRestaurant('menu')">📖 Улучшить за ${formatNumber(r.next_menu_cost)}₽</button>
+                    </div>
+                `;
+            } else {
+                html += `
+                    <div class="upgrade-block">
+                        <div class="upgrade-title">📖 Меню</div>
+                        <div class="upgrade-info">МАКСИМУМ (${r.menu_bonus}%)</div>
+                    </div>
+                `;
+            }
+
+            // Повара
+            if (r.workers.length > 0) {
+                html += `
+                    <div class="card">
+                        <div class="label">👨‍🍳 Повара (${r.workers.length} / ${r.max_workers})</div>
+                    </div>
+                `;
+                for (const w of r.workers) {
+                    html += `
+                        <div class="worker-row">
+                            <span>👨‍🍳 ${escapeHtml(w.name)} (ур. ${w.level})</span>
+                            <span style="color:#27ae60;">+${formatNumber(w.bonus)}₽/час</span>
+                        </div>
+                    `;
+                }
+                html += `
+                    <div class="card" style="background: rgba(39, 174, 96, 0.15); margin-top: 10px;">
+                        <div class="label">💰 Всего с поваров</div>
+                        <div class="value" style="color:#27ae60;">+${formatNumber(r.total_owner_bonus)}₽/час</div>
+                    </div>
+                `;
+            } else {
+                html += `<div class="card"><div class="label">👨‍🍳 Поваров пока нет</div></div>`;
+            }
+
+            document.getElementById("content").innerHTML = html;
+        } catch (err) {
+            document.getElementById("content").innerHTML =
+                `<div class="error">❌ Ошибка: ${escapeHtml(err.message)}</div>
+                 <button onclick="loadProfile()">⬅️ Назад в профиль</button>`;
+        }
+    }
+
+    async function collectIncome() {
+        try {
+            const res = await fetch(`${API_URL}/api/collect_income`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
+                body: JSON.stringify({ user_id: user.id })
+            });
+            const data = await res.json();
+            if (data.ok) {
+                updateBalance(data.new_balance);
+                openRestaurant();
+            } else {
+                alert("❌ " + data.error);
+            }
+        } catch (err) {
+            alert("❌ Ошибка: " + err.message);
+        }
+    }
+
+    async function upgradeRestaurant(type) {
+        const names = {
+            "restaurant": "ресторан",
+            "menu": "меню",
+            "workplaces": "рабочие места"
+        };
+        if (!confirm(`Улучшить ${names[type]}?`)) return;
+
+        try {
+            const res = await fetch(`${API_URL}/api/upgrade`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
+                body: JSON.stringify({ user_id: user.id, type: type })
+            });
+            const data = await res.json();
+            if (data.ok) {
+                updateBalance(data.new_balance);
+                openRestaurant();
+            } else {
+                alert("❌ " + data.error);
+            }
+        } catch (err) {
+            alert("❌ Ошибка: " + err.message);
+        }
+    }
+
+    // ============================================================
+    // ИНВЕНТАРЬ
+    // ============================================================
     async function loadInventory() {
         if (!user) return;
 
@@ -931,6 +1197,9 @@
         document.getElementById("modal-root").innerHTML = "";
     }
 
+    // ============================================================
+    // КЕЙСЫ
+    // ============================================================
     async function loadCases() {
         if (!user) return;
 
@@ -990,6 +1259,9 @@
         document.getElementById("content").innerHTML = html;
     }
 
+    // ============================================================
+    // ОТКРЫТИЕ КЕЙСА
+    // ============================================================
     async function openCase(caseId, count) {
         if (!user) return;
 
@@ -1206,6 +1478,9 @@
         } catch (err) { alert("❌ Ошибка: " + err.message); }
     }
 
+    // ============================================================
+    // ЗАПУСК
+    // ============================================================
     switchTab("profile");
 </script>
 
