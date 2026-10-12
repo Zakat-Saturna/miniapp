@@ -294,6 +294,14 @@
         return div.innerHTML;
     }
 
+    // ← ИЗМЕНЕНО: helper для картинок. Возвращает <img> или эмодзи-фолбэк.
+    function imgTag(item, extraClass = "") {
+        if (item && item.image_url) {
+            return `<img src="${API_URL}${item.image_url}" loading="lazy" decoding="async" alt="" class="${extraClass}">`;
+        }
+        return `<span>${item ? item.rarity : "❓"}</span>`;
+    }
+
     function updateBalance(b) {
         currentBalance = b;
         document.getElementById("balance-display").textContent = formatNumber(b) + "₽";
@@ -375,7 +383,8 @@
 
             let html = `<button class="btn-back" onclick="loadProfile()">⬅️ Назад в профиль</button>`;
 
-            if (r.image) html += `<img src="${r.image}" class="restaurant-image" alt="Ресторан">`;
+            // ← ИЗМЕНЕНО: API_URL + r.image, loading="lazy"
+            if (r.image) html += `<img src="${API_URL}${r.image}" class="restaurant-image" alt="Ресторан" loading="lazy" decoding="async">`;
             else html += `<div class="restaurant-image-placeholder">🏪</div>`;
 
             html += `<div class="card"><div class="label">🏪 Ресторан</div><div class="value">Уровень ${r.level} / 10</div></div>`;
@@ -723,7 +732,6 @@
 
             html += `<div class="card"><div class="label">⚔️ Воровство</div><div style="font-size:16px;color:#999;margin-top:6px;">Выбери жертву из друзей или введи @username</div></div>`;
 
-            // Друзья
             const frRes = await fetch(`${API_URL}/api/rob_friends?user_id=${user.id}`, {
                 headers: { "ngrok-skip-browser-warning": "true" }
             });
@@ -762,7 +770,6 @@
             if (victimId) {
                 url = `${API_URL}/api/victim_inventory?victim_id=${victimId}`;
             } else {
-                // Ищем по username/ID
                 let cleanRaw = rawInput;
                 if (cleanRaw.startsWith("@")) cleanRaw = cleanRaw.slice(1);
                 const searchUrl = /^\d+$/.test(cleanRaw)
@@ -798,10 +805,9 @@
         html += `<div class="card"><div class="label">⚔️ Жертва: ${escapeHtml(robState.victimName)}</div><div style="font-size:16px;color:#999;margin-top:6px;">Выбери, что украсть</div></div>`;
 
         for (const item of robState.victimItems) {
-            const imgUrl = item.image ? `<img src="${item.image}">` : '';
             html += `
                 <div class="item" onclick="pickMyItem('${item.code}')">
-                    <div class="item-img">${imgUrl || item.rarity}</div>
+                    <div class="item-img">${imgTag(item)}</div>
                     <div class="item-info">
                         <div class="item-name">${item.rarity} ${escapeHtml(item.name)}</div>
                         <div class="item-price">${formatNumber(item.price)}₽</div>
@@ -824,7 +830,6 @@
             const data = await res.json();
             if (!data.ok) throw new Error(data.error);
 
-            // Фильтруем: только не артефакты, не застрахованные
             const available = data.items.filter(i => !i.is_artifact && !i.insured);
 
             if (available.length === 0) {
@@ -837,10 +842,9 @@
             html += `<div class="card"><div class="label">⚔️ Выбери свою ставку</div></div>`;
 
             for (const item of available) {
-                const imgUrl = item.image ? `<img src="${item.image}">` : '';
                 html += `
                     <div class="item" onclick="doSteal('${item.code}')">
-                        <div class="item-img">${imgUrl || item.rarity}</div>
+                        <div class="item-img">${imgTag(item)}</div>
                         <div class="item-info">
                             <div class="item-name">${item.rarity} ${escapeHtml(item.name)}</div>
                             <div class="item-price">${formatNumber(item.price)}₽</div>
@@ -881,12 +885,10 @@
     function showStealRoulette(result) {
         const rouletteRoot = document.getElementById("roulette-root");
 
-        // Строим ленту: 40 случайных + результат + хвост
         const RANDOM_BEFORE = 35;
         const TOTAL_ITEMS = 55;
         const strip = [];
 
-        // Пул — перемешанные предметы из обоих игроков
         const pool = [];
         for (let i = 0; i < 10; i++) {
             pool.push({
@@ -904,7 +906,6 @@
         for (let i = 0; i < RANDOM_BEFORE; i++) {
             strip.push(pool[Math.floor(Math.random() * pool.length)]);
         }
-        // Победный элемент
         strip.push({
             name: result.success ? result.victim_item.name : result.thief_item.name,
             rarity: result.success ? result.victim_item.rarity : result.thief_item.rarity,
@@ -981,8 +982,6 @@
                 </div>
             </div>
         `;
-
-        // Обновляем баланс (не менялся, но XP мог)
     }
 
     function closeRoulette() { document.getElementById("roulette-root").innerHTML = ""; }
@@ -1035,7 +1034,8 @@
         for (const item of items) {
             const isSelected = cart.has(item.code);
             const isArtifact = item.is_artifact;
-            const imgHtml = item.image ? `<img src="${item.image}" alt="${escapeHtml(item.name)}">` : `<span>${item.rarity}</span>`;
+            // ← ИЗМЕНЕНО: используем helper imgTag()
+            const imgHtml = imgTag(item);
             const insuredBtn = item.insured
                 ? `<button class="btn-tiny btn-tiny-insure disabled" disabled>🛡</button>`
                 : `<button class="btn-tiny btn-tiny-insure" onclick="insureItem('${item.code}')">🛡</button>`;
@@ -1358,10 +1358,10 @@
         strip.push(pool[targetIndex]);
         for (let i = 0; i < TOTAL_ITEMS - RANDOM_BEFORE - 1; i++) strip.push(pool[Math.floor(Math.random() * pool.length)]);
 
+        // ← ИЗМЕНЕНО: imgTag() + lazy
         let trackHtml = "";
         for (const item of strip) {
-            const img = item.image ? `<img src="${item.image}" alt="">` : `<span class="r-emoji">${item.rarity}</span>`;
-            trackHtml += `<div class="roulette-item">${img}<div class="r-name">${escapeHtml(item.name)}</div></div>`;
+            trackHtml += `<div class="roulette-item">${imgTag(item, "r-emoji")}<div class="r-name">${escapeHtml(item.name)}</div></div>`;
         }
 
         rouletteRoot.innerHTML = `
@@ -1405,10 +1405,10 @@
             strip.push(pool[targetIndex]);
             for (let i = 0; i < TOTAL_ITEMS - RANDOM_BEFORE - 1; i++) strip.push(pool[Math.floor(Math.random() * pool.length)]);
 
+            // ← ИЗМЕНЕНО: imgTag() + lazy
             let trackHtml = "";
             for (const item of strip) {
-                const img = item.image ? `<img src="${item.image}" alt="">` : `<span>${item.rarity}</span>`;
-                trackHtml += `<div class="mini-roulette-item">${img}</div>`;
+                trackHtml += `<div class="mini-roulette-item">${imgTag(item)}</div>`;
             }
 
             roulettesHtml += `
@@ -1455,10 +1455,10 @@
         let totalValue = 0;
         for (const r of results) {
             totalValue += r.price;
-            const imgHtml = r.image ? `<img src="${r.image}">` : `<span>${r.rarity}</span>`;
+            // ← ИЗМЕНЕНО: imgTag() + lazy
             listHtml += `
                 <div class="multi-result-row">
-                    <div class="m-img">${imgHtml}</div>
+                    <div class="m-img">${imgTag(r)}</div>
                     <div class="multi-result-info">
                         <div class="multi-result-name">${r.rarity} ${escapeHtml(r.name)}</div>
                         <div class="multi-result-price">${formatNumber(r.price)}₽</div>
