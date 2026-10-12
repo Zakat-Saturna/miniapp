@@ -200,9 +200,14 @@
         <div class="username" id="username">Загрузка...</div>
     </div>
 
-    <div id="content">
-        <div class="loading">⏳ Загружаем данные...</div>
-    </div>
+    <div class="tabs">
+    <button class="tab active" data-tab="profile" onclick="switchTab('profile')">👤 Профиль</button>
+    <button class="tab" data-tab="inventory" onclick="switchTab('inventory')">🎒 Инвентарь</button>
+</div>
+
+<div id="content">
+    <div class="loading">⏳ Загружаем данные...</div>
+</div>
 
     <script>
     // ============================================================
