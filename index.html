@@ -379,15 +379,107 @@
         }
 
         /* ============================================================
-           РУЛЕТКА
+           МНОГО РУЛЕТОК НА ОДНОМ ЭКРАНЕ
            ============================================================ */
+        .multi-roulette-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.96);
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            padding: 12px;
+            overflow-y: auto;
+        }
+
+        .multi-roulette-title {
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 12px;
+            flex-shrink: 0;
+        }
+
+        .multi-roulette-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding-bottom: 20px;
+        }
+
+        /* Маленькая рулетка (для ×3, ×10) */
+        .mini-roulette {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 6px;
+        }
+
+        .mini-roulette-viewport {
+            width: 100%;
+            height: 70px;
+            overflow: hidden;
+            position: relative;
+            background: rgba(0, 0, 0, 0.5);
+            border-top: 2px solid #f1c40f;
+            border-bottom: 2px solid #f1c40f;
+            border-radius: 6px;
+        }
+
+        .mini-roulette-track {
+            display: flex;
+            height: 100%;
+            align-items: center;
+            transition: transform 4s cubic-bezier(0.15, 0.7, 0.1, 1);
+            will-change: transform;
+        }
+
+        .mini-roulette-item {
+            width: 60px;
+            height: 60px;
+            flex-shrink: 0;
+            margin: 0 2px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .mini-roulette-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .mini-roulette-item span {
+            font-size: 30px;
+        }
+
+        .mini-roulette-pointer {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            width: 2px;
+            background: #f1c40f;
+            transform: translateX(-50%);
+            z-index: 10;
+            box-shadow: 0 0 10px #f1c40f;
+        }
+
+        /* Большая рулетка (для ×1) */
         .roulette-container {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.95);
+            background: rgba(0, 0, 0, 0.96);
             z-index: 2000;
             display: flex;
             flex-direction: column;
@@ -400,14 +492,8 @@
             color: white;
             font-size: 20px;
             font-weight: bold;
-            margin-bottom: 12px;
-            text-align: center;
-        }
-
-        .roulette-counter {
-            color: #f1c40f;
-            font-size: 15px;
             margin-bottom: 16px;
+            text-align: center;
         }
 
         .roulette-viewport {
@@ -426,7 +512,7 @@
             display: flex;
             height: 100%;
             align-items: center;
-            transition: transform 3s cubic-bezier(0.15, 0.7, 0.1, 1);
+            transition: transform 4s cubic-bezier(0.15, 0.7, 0.1, 1);
             will-change: transform;
         }
 
@@ -609,31 +695,6 @@
         .result-btn.sell { background: #27ae60; }
         .result-btn.again { background: #3498db; }
         .result-btn.close { background: #666; }
-
-        /* Прогресс нескольких рулеток */
-        .progress-dots {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 12px;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-
-        .progress-dot {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.2);
-        }
-
-        .progress-dot.done {
-            background: #f1c40f;
-        }
-
-        .progress-dot.current {
-            background: #27ae60;
-            box-shadow: 0 0 10px #27ae60;
-        }
     </style>
 </head>
 <body>
@@ -841,7 +902,7 @@
     }
 
     // ============================================================
-    // ДЕЙСТВИЯ — БЕЗ alert, просто обновление
+    // ДЕЙСТВИЯ
     // ============================================================
     async function insureItem(code) {
         if (!confirm("🛡 Застраховать предмет на 24 часа?\nСтоимость: 12% от цены.")) return;
@@ -855,12 +916,8 @@
             if (data.ok) {
                 if (data.new_balance !== undefined) updateBalance(data.new_balance);
                 loadInventory();
-            } else {
-                alert("❌ " + data.error);
-            }
-        } catch (err) {
-            alert("❌ Ошибка: " + err.message);
-        }
+            } else alert("❌ " + data.error);
+        } catch (err) { alert("❌ Ошибка: " + err.message); }
     }
 
     async function sellItem(code, price) {
@@ -875,12 +932,8 @@
             if (data.ok) {
                 if (data.new_balance !== undefined) updateBalance(data.new_balance);
                 loadInventory();
-            } else {
-                alert("❌ " + data.error);
-            }
-        } catch (err) {
-            alert("❌ Ошибка: " + err.message);
-        }
+            } else alert("❌ " + data.error);
+        } catch (err) { alert("❌ Ошибка: " + err.message); }
     }
 
     // ============================================================
@@ -967,12 +1020,8 @@
             const data = await res.json();
             if (data.ok) {
                 loadInventory();
-            } else {
-                alert("❌ " + data.error);
-            }
-        } catch (err) {
-            alert("❌ Ошибка: " + err.message);
-        }
+            } else alert("❌ " + data.error);
+        } catch (err) { alert("❌ Ошибка: " + err.message); }
     }
 
     function closeModal() {
@@ -1104,53 +1153,27 @@
 
         updateBalance(openResult.new_balance);
 
-        // 3. Запускаем рулетки последовательно
-        runMultiRoulette(caseName, count, pool, openResult.results, caseId);
-    }
-
-    // ============================================================
-    // ПОСЛЕДОВАТЕЛЬНЫЕ РУЛЕТКИ (×1 = 1, ×3 = 3, ×10 = 10)
-    // ============================================================
-    function runMultiRoulette(caseName, count, pool, results, caseId) {
-        let currentIndex = 0;
-
-        // Функция, запускающая одну рулетку
-        function runOne() {
-            if (currentIndex >= count) {
-                // Все рулетки проиграны — показываем результат
-                closeRoulette();
-                showMultiResult(results, caseId, count);
-                return;
-            }
-
-            const result = results[currentIndex];
-            const targetIndex = result.pool_index !== undefined
-                ? result.pool_index
-                : Math.floor(Math.random() * pool.length);
-
-            showSingleRoulette(caseName, currentIndex + 1, count, pool, targetIndex, () => {
-                currentIndex++;
-                // Пауза между рулетками
-                setTimeout(runOne, 300);
+        // 3. Показываем все рулетки одновременно
+        if (count === 1) {
+            showSingleBigRoulette(caseName, pool, openResult.results[0], () => {
+                showMultiResult(openResult.results, caseId, count);
+            });
+        } else {
+            showAllMiniRoulettes(caseName, count, pool, openResult.results, () => {
+                showMultiResult(openResult.results, caseId, count);
             });
         }
-
-        runOne();
     }
 
-    function showSingleRoulette(caseName, currentNum, totalCount, pool, targetIndex, onDone) {
+    // ============================================================
+    // ОДНА БОЛЬШАЯ РУЛЕТКА (для ×1)
+    // ============================================================
+    function showSingleBigRoulette(caseName, pool, result, onDone) {
         const rouletteRoot = document.getElementById("roulette-root");
+        const targetIndex = result.pool_index !== undefined
+            ? result.pool_index
+            : Math.floor(Math.random() * pool.length);
 
-        // Прогресс-точки
-        let dotsHtml = "";
-        for (let i = 0; i < totalCount; i++) {
-            let cls = "progress-dot";
-            if (i < currentNum - 1) cls += " done";
-            else if (i === currentNum - 1) cls += " current";
-            dotsHtml += `<div class="${cls}"></div>`;
-        }
-
-        // Строим ленту
         const RANDOM_BEFORE = 40;
         const TOTAL_ITEMS = 60;
         const strip = [];
@@ -1179,8 +1202,6 @@
         rouletteRoot.innerHTML = `
             <div class="roulette-container">
                 <div class="roulette-title">🎰 ${escapeHtml(caseName)}</div>
-                <div class="roulette-counter">Кейс ${currentNum} из ${totalCount}</div>
-                <div class="progress-dots">${dotsHtml}</div>
                 <div class="roulette-viewport">
                     <div class="roulette-pointer"></div>
                     <div class="roulette-track" id="roulette-track">
@@ -1204,8 +1225,92 @@
             track.style.transform = `translateX(-${finalOffset}px)`;
         }, 100);
 
-        // 3 сек анимация + 200 мс запас
-        setTimeout(onDone, 3300);
+        setTimeout(onDone, 4300);
+    }
+
+    // ============================================================
+    // НЕСКОЛЬКО РУЛЕТОК ОДНОВРЕМЕННО (×3, ×10)
+    // ============================================================
+    function showAllMiniRoulettes(caseName, count, pool, results, onDone) {
+        const rouletteRoot = document.getElementById("roulette-root");
+
+        // Собираем HTML для каждой рулетки
+        let roulettesHtml = "";
+        const configs = [];  // для анимации
+
+        for (let idx = 0; idx < count; idx++) {
+            const result = results[idx];
+            const targetIndex = result.pool_index !== undefined
+                ? result.pool_index
+                : Math.floor(Math.random() * pool.length);
+
+            const RANDOM_BEFORE = 30;
+            const TOTAL_ITEMS = 45;
+            const strip = [];
+
+            for (let i = 0; i < RANDOM_BEFORE; i++) {
+                strip.push(pool[Math.floor(Math.random() * pool.length)]);
+            }
+            strip.push(pool[targetIndex]);
+            for (let i = 0; i < TOTAL_ITEMS - RANDOM_BEFORE - 1; i++) {
+                strip.push(pool[Math.floor(Math.random() * pool.length)]);
+            }
+
+            let trackHtml = "";
+            for (const item of strip) {
+                const img = item.image
+                    ? `<img src="${item.image}" alt="">`
+                    : `<span>${item.rarity}</span>`;
+                trackHtml += `<div class="mini-roulette-item">${img}</div>`;
+            }
+
+            roulettesHtml += `
+                <div class="mini-roulette">
+                    <div class="mini-roulette-viewport">
+                        <div class="mini-roulette-pointer"></div>
+                        <div class="mini-roulette-track" id="mini-track-${idx}">
+                            ${trackHtml}
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            configs.push({
+                idx: idx,
+                randomBefore: RANDOM_BEFORE,
+            });
+        }
+
+        rouletteRoot.innerHTML = `
+            <div class="multi-roulette-container">
+                <div class="multi-roulette-title">🎰 ${escapeHtml(caseName)} ×${count}</div>
+                <div class="multi-roulette-list">
+                    ${roulettesHtml}
+                </div>
+            </div>
+        `;
+
+        // Анимация — все рулетки стартуют одновременно
+        setTimeout(() => {
+            const MINI_ITEM_WIDTH = 64;  // 60px + margin 4px
+            const viewportWidth = window.innerWidth - 24 - 12;  // padding контейнера
+            const pointerPos = viewportWidth / 2;
+
+            for (const cfg of configs) {
+                const track = document.getElementById(`mini-track-${cfg.idx}`);
+                if (!track) continue;
+
+                const winningCenter = cfg.randomBefore * MINI_ITEM_WIDTH + MINI_ITEM_WIDTH / 2;
+                const offset = winningCenter - pointerPos;
+                const randomShift = (Math.random() - 0.5) * 40;
+                const finalOffset = offset + randomShift;
+
+                track.style.transform = `translateX(-${finalOffset}px)`;
+            }
+        }, 100);
+
+        // Ждём окончания анимации
+        setTimeout(onDone, 4300);
     }
 
     function closeRoulette() {
@@ -1252,10 +1357,8 @@
         `;
     }
 
-    // Продать всё из результатов
     async function sellAllResults(codes) {
         if (!confirm(`💵 Продать всё за ${codes.length} предметов?`)) return;
-
         try {
             const res = await fetch(`${API_URL}/api/sell_all`, {
                 method: "POST",
@@ -1266,13 +1369,8 @@
             if (data.ok) {
                 updateBalance(data.new_balance);
                 closeRoulette();
-                // Никаких alert — просто возврат к кейсам
-            } else {
-                alert("❌ " + data.error);
-            }
-        } catch (err) {
-            alert("❌ Ошибка: " + err.message);
-        }
+            } else alert("❌ " + data.error);
+        } catch (err) { alert("❌ Ошибка: " + err.message); }
     }
 
     // ============================================================
