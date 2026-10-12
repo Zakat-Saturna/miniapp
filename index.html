@@ -14,30 +14,19 @@
         body { padding: 16px; background: var(--tg-theme-bg-color, #ffffff); color: var(--tg-theme-text-color, #000000); min-height: 100vh; font-size: 20px; line-height: 1.2; position: relative; }
         button, input, select, textarea { font-family: inherit; }
 
-        /* === ФОН === */
         body::before {
             content: "";
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background-image: url('https://piggychef.serveousercontent.com/images/background.png');
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            opacity: 0.12;
-            z-index: -2;
-            pointer-events: none;
+            background-size: cover; background-position: center; background-repeat: no-repeat;
+            opacity: 0.12; z-index: -2; pointer-events: none;
         }
-        /* Слой для читаемости на тёмной/светлой теме */
         body::after {
             content: "";
-            position: fixed;
-            inset: 0;
+            position: fixed; inset: 0;
             background: var(--tg-theme-bg-color, #ffffff);
-            opacity: 0.75;
-            z-index: -1;
-            pointer-events: none;
+            opacity: 0.75; z-index: -1; pointer-events: none;
         }
-        /* Тёмная тема — другая картинка */
         body.tg-dark::before {
             background-image: url('https://piggychef.serveousercontent.com/images/background_dark.png');
             opacity: 0.2;
@@ -52,24 +41,8 @@
 
         .tabs-row { display: flex; gap: 6px; margin-bottom: 6px; }
         .tabs-row:last-of-type { margin-bottom: 16px; }
-        .tab {
-            flex: 1;
-            padding: 14px 6px;
-            background: var(--tg-theme-secondary-bg-color, #f5f5f5);
-            color: var(--tg-theme-text-color, #000);
-            border: none;
-            border-radius: 10px;
-            font-size: 26px;
-            cursor: pointer;
-            font-family: inherit;
-            line-height: 1;
-            min-width: 0;
-        }
-        .tab.active {
-            background: var(--tg-theme-button-color, #2481cc);
-            color: var(--tg-theme-button-text-color, #fff);
-            transform: scale(1.05);
-        }
+        .tab { flex: 1; padding: 14px 6px; background: var(--tg-theme-secondary-bg-color, #f5f5f5); color: var(--tg-theme-text-color, #000); border: none; border-radius: 10px; font-size: 26px; cursor: pointer; font-family: inherit; line-height: 1; min-width: 0; }
+        .tab.active { background: var(--tg-theme-button-color, #2481cc); color: var(--tg-theme-button-text-color, #fff); transform: scale(1.05); }
 
         .card { background: var(--tg-theme-secondary-bg-color, #f5f5f5); border-radius: 12px; padding: 16px; margin-bottom: 12px; }
         .card .label { font-size: 17px; color: var(--tg-theme-hint-color, #999); margin-bottom: 6px; }
@@ -79,7 +52,6 @@
         .row .card { flex: 1; margin-bottom: 0; }
 
         .loading { text-align: center; padding: 40px; color: var(--tg-theme-hint-color, #999); font-size: 20px; }
-
         .error { background: #ff4444; color: white; padding: 12px; border-radius: 8px; margin-bottom: 12px; }
 
         button { width: 100%; padding: 14px; font-size: 20px; background: var(--tg-theme-button-color, #2481cc); color: var(--tg-theme-button-text-color, #ffffff); border: none; border-radius: 10px; cursor: pointer; margin-top: 8px; font-family: inherit; letter-spacing: 0.3px; }
@@ -89,36 +61,29 @@
         /* ИНВЕНТАРЬ */
         .inv-header { display: flex; justify-content: space-between; align-items: center; background: var(--tg-theme-secondary-bg-color, #f5f5f5); border-radius: 12px; padding: 10px 14px; margin-bottom: 10px; font-size: 19px; }
         .inv-header .total-value { color: #27ae60; }
-
         .sort-bar { display: flex; gap: 6px; margin-bottom: 10px; overflow-x: auto; padding-bottom: 4px; }
         .sort-btn { padding: 8px 12px; font-size: 17px; border-radius: 8px; border: 1px solid #888; background: transparent; color: var(--tg-theme-text-color, #000); cursor: pointer; white-space: nowrap; width: auto; margin: 0; font-family: inherit; }
         .sort-btn.active { background: var(--tg-theme-button-color, #2481cc); color: var(--tg-theme-button-text-color, #fff); border-color: var(--tg-theme-button-color, #2481cc); }
-
         .item { display: flex; align-items: center; gap: 12px; background: var(--tg-theme-secondary-bg-color, #f5f5f5); border-radius: 14px; padding: 12px; margin-bottom: 8px; transition: background 0.15s; }
         .item.selected { background: rgba(39, 174, 96, 0.25); border: 2px solid #27ae60; }
-
         .item-checkbox { width: 28px; height: 28px; border-radius: 8px; border: 2px solid #888; display: flex; align-items: center; justify-content: center; flex-shrink: 0; cursor: pointer; font-size: 22px; color: white; background: transparent; transition: all 0.15s; }
         .item-checkbox.checked { background: #27ae60; border-color: #27ae60; }
         .item-checkbox-placeholder { width: 28px; height: 28px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 24px; }
-
         .item-img { width: 56px; height: 56px; background: rgba(0, 0, 0, 0.08); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 28px; flex-shrink: 0; overflow: hidden; }
         .item-img img { width: 100%; height: 100%; object-fit: contain; }
         .item-info { flex: 1; min-width: 0; }
         .item-name { font-size: 19px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px; }
         .item-price { font-size: 17px; color: #27ae60; }
         .item-code { font-size: 14px; color: var(--tg-theme-hint-color, #999); font-family: monospace; }
-
         .item-actions { display: flex; flex-direction: column; gap: 4px; }
         .btn-tiny { width: 40px; height: 36px; font-size: 20px; padding: 0; margin: 0; border-radius: 8px; border: none; cursor: pointer; color: white; font-family: inherit; }
         .btn-tiny-insure { background: #4a90e2; }
         .btn-tiny-gift { background: #e67e22; }
         .btn-tiny-insure.disabled { background: #555; opacity: 0.5; cursor: not-allowed; }
-
         .inv-pagination { display: flex; align-items: center; justify-content: center; gap: 12px; margin-top: 14px; margin-bottom: 14px; }
         .inv-pagination button { width: 50px; height: 50px; padding: 0; margin: 0; border-radius: 12px; font-size: 24px; background: var(--tg-theme-button-color, #2481cc); font-family: inherit; }
         .inv-pagination button:disabled { background: #555; opacity: 0.4; cursor: not-allowed; }
         .inv-pagination .page-info { font-size: 20px; }
-
         .sell-all-btn { background: #27ae60; margin-bottom: 100px; }
 
         /* КОРЗИНА */
@@ -147,7 +112,11 @@
         .upgrade-block .upgrade-title { font-size: 20px; margin-bottom: 6px; }
         .upgrade-block .upgrade-info { font-size: 17px; color: var(--tg-theme-hint-color, #999); margin-bottom: 10px; }
         .upgrade-block button { margin-top: 0; font-size: 18px; padding: 12px; }
-        .worker-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: rgba(0,0,0,0.05); border-radius: 8px; margin-bottom: 6px; font-size: 17px; }
+        .worker-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: rgba(0,0,0,0.05); border-radius: 8px; margin-bottom: 6px; font-size: 17px; gap: 8px; }
+        .worker-row .worker-info { flex: 1; min-width: 0; }
+        .worker-row .worker-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .worker-row .worker-bonus { color: #27ae60; white-space: nowrap; }
+        .worker-row .btn-fire { width: auto; padding: 6px 12px; margin: 0; background: #e74c3c; font-size: 16px; border-radius: 8px; }
 
         /* КРАФТ */
         .craft-row { display: flex; justify-content: space-between; align-items: center; background: var(--tg-theme-secondary-bg-color, #f5f5f5); border-radius: 12px; padding: 14px; margin-bottom: 8px; }
@@ -184,25 +153,63 @@
             50% { box-shadow: 0 0 0 6px rgba(39, 174, 96, 0); }
         }
 
-        /* TOAST */
-        .toast {
+        /* ДРУЗЬЯ */
+        .friend-row { display: flex; align-items: center; gap: 12px; background: var(--tg-theme-secondary-bg-color, #f5f5f5); border-radius: 12px; padding: 12px 14px; margin-bottom: 8px; }
+        .friend-avatar { width: 44px; height: 44px; border-radius: 50%; background: rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0; }
+        .friend-info { flex: 1; min-width: 0; }
+        .friend-name { font-size: 19px; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .friend-stats { font-size: 15px; color: var(--tg-theme-hint-color, #999); }
+        .friend-actions { display: flex; gap: 6px; }
+        .friend-actions button { width: auto; padding: 8px 12px; margin: 0; font-size: 16px; border-radius: 8px; }
+        .friend-actions .btn-gift { background: #e67e22; }
+        .friend-actions .btn-del { background: #e74c3c; }
+
+        /* РАБОТА */
+        .job-card { background: var(--tg-theme-secondary-bg-color, #f5f5f5); border-radius: 12px; padding: 16px; margin-bottom: 12px; }
+        .job-card .job-title { font-size: 20px; margin-bottom: 8px; }
+        .job-card .job-info { font-size: 17px; color: var(--tg-theme-hint-color, #999); margin-bottom: 4px; }
+        .job-offer { background: rgba(39, 174, 96, 0.1); border: 2px solid #27ae60; border-radius: 12px; padding: 14px; margin-bottom: 10px; }
+
+        /* ПРИГЛАШЕНИЯ */
+        .ref-link { background: rgba(0,0,0,0.05); border-radius: 10px; padding: 12px; font-family: monospace; font-size: 15px; word-break: break-all; margin-bottom: 12px; user-select: all; }
+        .ref-buttons { display: flex; gap: 8px; margin-bottom: 16px; }
+        .ref-buttons button { flex: 1; padding: 12px; font-size: 17px; margin: 0; }
+
+        /* УВЕДОМЛЕНИЯ (баннер) */
+        .notif-container {
             position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%) translateY(-100px);
-            background: linear-gradient(135deg, #27ae60, #2ecc71);
-            color: white;
-            padding: 14px 24px;
-            border-radius: 12px;
-            font-size: 18px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
-            z-index: 10000;
-            opacity: 0;
-            transition: all 0.3s ease;
-            max-width: 90%;
-            text-align: center;
+            top: 12px; left: 12px; right: 12px;
+            z-index: 5000;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            pointer-events: none;
         }
-        .toast.visible { transform: translateX(-50%) translateY(0); opacity: 1; }
+        .notif {
+            background: var(--tg-theme-bg-color, #ffffff);
+            border: 2px solid #27ae60;
+            border-radius: 14px;
+            padding: 12px 14px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+            pointer-events: auto;
+            transform: translateY(-120%);
+            opacity: 0;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+            max-width: 100%;
+        }
+        .notif.visible { transform: translateY(0); opacity: 1; }
+        .notif-icon { font-size: 28px; flex-shrink: 0; }
+        .notif-body { flex: 1; min-width: 0; }
+        .notif-title { font-size: 17px; font-weight: bold; margin-bottom: 2px; }
+        .notif-text { font-size: 15px; color: var(--tg-theme-hint-color, #666); }
+        .notif-actions { display: flex; gap: 6px; flex-shrink: 0; }
+        .notif-btn { width: 38px; height: 38px; padding: 0; margin: 0; border-radius: 10px; border: none; font-size: 20px; cursor: pointer; color: white; font-family: inherit; }
+        .notif-btn.accept { background: #27ae60; }
+        .notif-btn.decline { background: #e74c3c; }
+        .notif-btn.close { background: #888; }
 
         /* БОНУС */
         .bonus-card { background: var(--tg-theme-secondary-bg-color, #f5f5f5); border-radius: 16px; padding: 24px; text-align: center; margin-bottom: 12px; }
@@ -227,7 +234,7 @@
         .rob-friend-btn { padding: 10px 14px; margin: 0; width: auto; font-size: 17px; background: #4a90e2; }
 
         /* МОДАЛЬНЫЕ ОКНА */
-        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.85); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.85); display: flex; align-items: center; justify-content: center; z-index: 4000; padding: 20px; }
         .modal { background: var(--tg-theme-bg-color, #ffffff); border-radius: 16px; padding: 20px; width: 100%; max-width: 400px; max-height: 80vh; overflow-y: auto; }
         .modal h3 { font-size: 24px; margin-bottom: 16px; text-align: center; }
         .modal-btn { width: 100%; padding: 14px; margin-bottom: 8px; font-size: 19px; border: none; border-radius: 10px; cursor: pointer; text-align: left; background: var(--tg-theme-secondary-bg-color, #f5f5f5); color: var(--tg-theme-text-color, #000); font-family: inherit; }
@@ -245,7 +252,6 @@
         .roulette-item img { width: 90px; height: 90px; object-fit: contain; }
         .roulette-item .r-emoji { font-size: 60px; }
         .roulette-item .r-name { font-size: 14px; text-align: center; padding: 2px 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; width: 100%; margin-top: 4px; }
-
         .roulette-pointer { position: absolute; top: 0; bottom: 0; left: 50%; width: 4px; background: #f1c40f; transform: translateX(-50%); z-index: 50; box-shadow: 0 0 20px #f1c40f, 0 0 40px #f1c40f; pointer-events: none; }
         .roulette-pointer::before { content: ""; position: absolute; top: -10px; left: 50%; transform: translateX(-50%); border-left: 10px solid transparent; border-right: 10px solid transparent; border-top: 14px solid #f1c40f; }
         .roulette-pointer::after { content: ""; position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%); border-left: 10px solid transparent; border-right: 10px solid transparent; border-bottom: 14px solid #f1c40f; }
@@ -283,70 +289,26 @@
         .result-btn.close { background: #666; }
 
         /* ЗАГРУЗОЧНЫЙ ЭКРАН */
-        .preloader {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: var(--tg-theme-bg-color, #ffffff);
-            z-index: 9999;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: opacity 0.5s ease, visibility 0.5s ease;
-        }
-        .preloader.hidden {
-            opacity: 0;
-            visibility: hidden;
-            pointer-events: none;
-        }
-        .preloader-inner {
-            text-align: center;
-            padding: 20px;
-            width: 100%;
-            max-width: 320px;
-        }
-        .preloader-icon {
-            font-size: 80px;
-            animation: preloader-pulse 1.5s ease-in-out infinite;
-            margin-bottom: 16px;
-        }
-        @keyframes preloader-pulse {
-            0%, 100% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.15); opacity: 0.8; }
-        }
-        .preloader-title {
-            font-size: 36px;
-            margin-bottom: 24px;
-            color: var(--tg-theme-text-color, #000);
-        }
-        .preloader-bar {
-            width: 100%;
-            height: 12px;
-            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
-            border-radius: 6px;
-            overflow: hidden;
-            margin-bottom: 12px;
-        }
-        .preloader-bar-fill {
-            height: 100%;
-            width: 0%;
-            background: linear-gradient(90deg, #27ae60, #2ecc71);
-            border-radius: 6px;
-            transition: width 0.3s ease;
-        }
-        .preloader-status {
-            font-size: 16px;
-            color: var(--tg-theme-hint-color, #999);
-            margin-bottom: 4px;
-            min-height: 20px;
-        }
-        .preloader-progress {
-            font-size: 20px;
-            color: var(--tg-theme-text-color, #000);
-            font-weight: bold;
-        }
+        .preloader { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--tg-theme-bg-color, #ffffff); z-index: 9999; display: flex; align-items: center; justify-content: center; transition: opacity 0.5s ease, visibility 0.5s ease; }
+        .preloader.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+        .preloader-inner { text-align: center; padding: 20px; width: 100%; max-width: 320px; }
+        .preloader-icon { font-size: 80px; animation: preloader-pulse 1.5s ease-in-out infinite; margin-bottom: 16px; }
+        @keyframes preloader-pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.15); opacity: 0.8; } }
+        .preloader-title { font-size: 36px; margin-bottom: 24px; color: var(--tg-theme-text-color, #000); }
+        .preloader-bar { width: 100%; height: 12px; background: var(--tg-theme-secondary-bg-color, #f0f0f0); border-radius: 6px; overflow: hidden; margin-bottom: 12px; }
+        .preloader-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #27ae60, #2ecc71); border-radius: 6px; transition: width 0.3s ease; }
+        .preloader-status { font-size: 16px; color: var(--tg-theme-hint-color, #999); margin-bottom: 4px; min-height: 20px; }
+        .preloader-progress { font-size: 20px; color: var(--tg-theme-text-color, #000); font-weight: bold; }
+
+        /* TOAST */
+        .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px); background: linear-gradient(135deg, #27ae60, #2ecc71); color: white; padding: 14px 24px; border-radius: 12px; font-size: 18px; box-shadow: 0 8px 24px rgba(0,0,0,0.3); z-index: 10000; opacity: 0; transition: all 0.3s ease; max-width: 90%; text-align: center; }
+        .toast.visible { transform: translateX(-50%) translateY(0); opacity: 1; }
     </style>
 </head>
 <body>
+
+<!-- УВЕДОМЛЕНИЯ (баннер) -->
+<div id="notif-container" class="notif-container"></div>
 
 <!-- ЗАГРУЗОЧНЫЙ ЭКРАН -->
 <div id="preloader" class="preloader">
@@ -388,7 +350,6 @@
 
 <div id="modal-root"></div>
 <div id="roulette-root"></div>
-
 <script>
     const API_URL = "https://piggychef.serveousercontent.com";
 
@@ -397,8 +358,7 @@
     tg.expand();
 
     const user = tg.initDataUnsafe?.user;
-
-    // ← Тёмная тема
+    const BOT_USERNAME = "piggy_chefBot"; // ← без @
     if (tg.colorScheme === "dark") {
         document.body.classList.add("tg-dark");
     }
@@ -409,6 +369,8 @@
     let currentBalance = 0;
     let casesData = null;
     let robState = {};
+    let notifPollingTimer = null;
+    let shownNotifIds = new Set();
 
     let inventoryState = {
         offset: 0,
@@ -444,7 +406,6 @@
         return `<span>${item ? item.rarity : "❓"}</span>`;
     }
 
-    // TOAST
     function showToast(message, duration = 2500) {
         const existing = document.getElementById("toast");
         if (existing) existing.remove();
@@ -508,7 +469,142 @@
         if (tab === "rob") loadRob();
     }
 
+    // ============================================================
+    // УВЕДОМЛЕНИЯ
+    // ============================================================
+    function renderNotification(notif) {
+        const container = document.getElementById("notif-container");
+        const p = notif.payload || {};
+        let icon = "🔔";
+        let title = "";
+        let text = "";
+        let actionsHtml = "";
+
+        if (notif.type === "friend_added") {
+            icon = "👥";
+            title = "Новый друг";
+            text = `@${escapeHtml(p.username || "игрок")} добавил тебя в друзья`;
+            actionsHtml = `<button class="notif-btn close" onclick="dismissNotification(${notif.id}, this)">✕</button>`;
+        } else if (notif.type === "job_invite") {
+            icon = "💼";
+            title = "Приглашение на работу";
+            text = `@${escapeHtml(p.owner_name || "игрок")} (рест. ур. ${p.restaurant_level || 0}) приглашает поваром`;
+            actionsHtml = `
+                <button class="notif-btn decline" onclick="declineJob(${notif.id}, ${p.owner_id}, this)">✕</button>
+                <button class="notif-btn accept" onclick="acceptJob(${notif.id}, ${p.owner_id}, this)">✓</button>
+            `;
+        } else if (notif.type === "gift_received") {
+            icon = "🎁";
+            title = "Подарок";
+            text = `@${escapeHtml(p.from_name || "игрок")} подарил ${p.rarity || ""} ${escapeHtml(p.item_name || "предмет")}`;
+            actionsHtml = `<button class="notif-btn close" onclick="dismissNotification(${notif.id}, this)">✕</button>`;
+        } else {
+            title = "Уведомление";
+            text = escapeHtml(notif.type);
+            actionsHtml = `<button class="notif-btn close" onclick="dismissNotification(${notif.id}, this)">✕</button>`;
+        }
+
+        const el = document.createElement("div");
+        el.className = "notif";
+        el.dataset.notifId = notif.id;
+        el.innerHTML = `
+            <div class="notif-icon">${icon}</div>
+            <div class="notif-body">
+                <div class="notif-title">${title}</div>
+                <div class="notif-text">${text}</div>
+            </div>
+            <div class="notif-actions">${actionsHtml}</div>
+        `;
+        container.appendChild(el);
+
+        setTimeout(() => el.classList.add("visible"), 20);
+
+        // Автоскрытие через 15 секунд для информационных
+        if (notif.type !== "job_invite") {
+            setTimeout(() => {
+                if (el.parentElement) {
+                    el.classList.remove("visible");
+                    setTimeout(() => el.remove(), 400);
+                }
+            }, 15000);
+        }
+    }
+
+    async function markNotificationSeen(notifId) {
+        try {
+            await fetch(`${API_URL}/api/notification_seen`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
+                body: JSON.stringify({ user_id: user.id, notification_id: notifId })
+            });
+        } catch (e) { /* ignore */ }
+    }
+
+    async function dismissNotification(notifId, btn) {
+        const el = btn.closest(".notif");
+        if (el) {
+            el.classList.remove("visible");
+            setTimeout(() => el.remove(), 400);
+        }
+        await markNotificationSeen(notifId);
+    }
+
+    async function acceptJob(notifId, ownerId, btn) {
+        try {
+            const res = await fetch(`${API_URL}/api/job_accept`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
+                body: JSON.stringify({ user_id: user.id, owner_id: ownerId, notification_id: notifId })
+            });
+            const data = await res.json();
+            if (data.ok) {
+                showToast("✅ Ты принят на работу!");
+                dismissNotification(notifId, btn);
+            } else {
+                alert("❌ " + data.error);
+                await markNotificationSeen(notifId);
+                btn.closest(".notif").remove();
+            }
+        } catch (err) { alert("❌ " + err.message); }
+    }
+
+    async function declineJob(notifId, ownerId, btn) {
+        try {
+            await fetch(`${API_URL}/api/job_decline`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
+                body: JSON.stringify({ user_id: user.id, owner_id: ownerId, notification_id: notifId })
+            });
+            dismissNotification(notifId, btn);
+        } catch (err) { console.error(err); }
+    }
+
+    async function pollNotifications() {
+        if (!user) return;
+        try {
+            const res = await fetch(`${API_URL}/api/notifications?user_id=${user.id}`, {
+                headers: { "ngrok-skip-browser-warning": "true" }
+            });
+            const data = await res.json();
+            if (!data.ok) return;
+
+            for (const notif of data.notifications) {
+                if (shownNotifIds.has(notif.id)) continue;
+                shownNotifIds.add(notif.id);
+                renderNotification(notif);
+            }
+        } catch (e) { /* ignore */ }
+    }
+
+    function startNotificationPolling() {
+        if (notifPollingTimer) return;
+        pollNotifications();
+        notifPollingTimer = setInterval(pollNotifications, 5000);
+    }
+
+    // ============================================================
     // ПРОФИЛЬ
+    // ============================================================
     async function loadProfile() {
         if (!user) {
             document.getElementById("content").innerHTML = '<div class="error">❌ Открой меня внутри Telegram!</div>';
@@ -543,6 +639,9 @@
                 <button onclick="openCraft()">🔨 Крафт</button>
                 <button onclick="openCollection()">📖 Коллекция</button>
                 <button onclick="openAchievements()">🏅 Достижения</button>
+                <button onclick="openFriends()">👥 Друзья</button>
+                <button onclick="openJob()">💼 Работа</button>
+                <button onclick="openReferral()">🔗 Приглашения</button>
                 <button onclick="loadProfile()">🔄 Обновить</button>
             `;
         } catch (err) {
@@ -550,7 +649,9 @@
         }
     }
 
+    // ============================================================
     // РЕСТОРАН
+    // ============================================================
     async function openRestaurant() {
         document.getElementById("content").innerHTML = '<div class="loading">⏳ Загружаем ресторан...</div>';
         try {
@@ -577,6 +678,34 @@
                 else html += `<button disabled>💰 Собрать (пока пусто)</button>`;
             }
 
+            // Повара
+            if (r.level > 0) {
+                html += `<div class="card"><div class="label">👨‍🍳 Повара (${r.workers.length} / ${r.max_workers})</div></div>`;
+
+                if (r.workers.length > 0) {
+                    for (const w of r.workers) {
+                        html += `
+                            <div class="worker-row">
+                                <div class="worker-info">
+                                    <div class="worker-name">👨‍🍳 ${escapeHtml(w.name)} (ур. ${w.level})</div>
+                                </div>
+                                <div class="worker-bonus">+${formatNumber(w.bonus)}₽/ч</div>
+                                <button class="btn-fire" onclick="fireWorker(${w.id})">❌</button>
+                            </div>
+                        `;
+                    }
+                    html += `<div class="card" style="background: rgba(39, 174, 96, 0.15);"><div class="label">💰 Всего с поваров</div><div class="value" style="color:#27ae60;">+${formatNumber(r.total_owner_bonus)}₽/час</div></div>`;
+                } else {
+                    html += `<div class="card"><div class="label">Пока никого</div></div>`;
+                }
+
+                if (r.workers.length < r.max_workers) {
+                    html += `<button onclick="openHireModal()">👨‍🍳 Нанять повара</button>`;
+                } else {
+                    html += `<button disabled>👨‍🍳 Максимум поваров (${r.max_workers})</button>`;
+                }
+            }
+
             html += `<div class="card"><div class="label">📈 Улучшения</div></div>`;
 
             if (r.next_restaurant_cost !== null) {
@@ -595,16 +724,6 @@
                 html += `<div class="upgrade-block"><div class="upgrade-title">📖 Меню → ур. ${r.menu_level + 1}</div><div class="upgrade-info">${r.menu_bonus}% от блюд · Стоимость: ${formatNumber(r.next_menu_cost)}₽</div><button onclick="upgradeRestaurant('menu')">📖 Улучшить</button></div>`;
             } else {
                 html += `<div class="upgrade-block"><div class="upgrade-title">📖 Меню</div><div class="upgrade-info">МАКСИМУМ (${r.menu_bonus}%)</div></div>`;
-            }
-
-            if (r.workers.length > 0) {
-                html += `<div class="card"><div class="label">👨‍🍳 Повара (${r.workers.length} / ${r.max_workers})</div></div>`;
-                for (const w of r.workers) {
-                    html += `<div class="worker-row"><span>👨‍🍳 ${escapeHtml(w.name)} (ур. ${w.level})</span><span style="color:#27ae60;">+${formatNumber(w.bonus)}₽/час</span></div>`;
-                }
-                html += `<div class="card" style="background: rgba(39, 174, 96, 0.15);"><div class="label">💰 Всего с поваров</div><div class="value" style="color:#27ae60;">+${formatNumber(r.total_owner_bonus)}₽/час</div></div>`;
-            } else {
-                html += `<div class="card"><div class="label">👨‍🍳 Поваров пока нет</div></div>`;
             }
 
             document.getElementById("content").innerHTML = html;
@@ -641,7 +760,315 @@
         } catch (err) { alert("❌ Ошибка: " + err.message); }
     }
 
+    async function fireWorker(workerId) {
+        try {
+            const res = await fetch(`${API_URL}/api/restaurant_fire`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
+                body: JSON.stringify({ user_id: user.id, worker_id: workerId })
+            });
+            const data = await res.json();
+            if (data.ok) { showToast("✅ Повар уволен"); openRestaurant(); }
+            else alert("❌ " + data.error);
+        } catch (err) { alert("❌ Ошибка: " + err.message); }
+    }
+
+    async function openHireModal() {
+        try {
+            const res = await fetch(`${API_URL}/api/friends_detail?user_id=${user.id}`, {
+                headers: { "ngrok-skip-browser-warning": "true" }
+            });
+            const data = await res.json();
+            const friends = (data.ok && data.friends) ? data.friends : [];
+
+            const modalRoot = document.getElementById("modal-root");
+            let friendsHtml = "";
+            if (friends.length === 0) {
+                friendsHtml = '<div style="text-align:center;color:#999;padding:10px;">Нет друзей</div>';
+            } else {
+                for (const f of friends) {
+                    const displayName = f.first_name || f.username || `id${f.user_id}`;
+                    const uname = f.username ? `@${f.username}` : `id${f.user_id}`;
+                    friendsHtml += `<button class="modal-btn" onclick="hireFromModal('${uname}')">${escapeHtml(displayName)}<span class="friend-username">${escapeHtml(uname)}</span></button>`;
+                }
+            }
+
+            modalRoot.innerHTML = `
+                <div class="modal-overlay" onclick="if(event.target === this) closeModal()">
+                    <div class="modal">
+                        <h3>👨‍🍳 Кого нанять?</h3>
+                        <button class="modal-btn primary" onclick="showHireInput()">✏️ Ввести @username / ID</button>
+                        <div style="margin-top:12px;margin-bottom:8px;font-size:15px;color:#999;text-align:center;">или выбери из друзей:</div>
+                        ${friendsHtml}
+                        <button class="modal-btn cancel" onclick="closeModal()">❌ Отмена</button>
+                    </div>
+                </div>
+            `;
+        } catch (err) {
+            alert("❌ " + err.message);
+        }
+    }
+
+    async function hireFromModal(target) {
+        closeModal();
+        try {
+            const res = await fetch(`${API_URL}/api/restaurant_hire`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
+                body: JSON.stringify({ user_id: user.id, target: target })
+            });
+            const data = await res.json();
+            if (data.ok) {
+                showToast("✅ " + data.message);
+                openRestaurant();
+            } else {
+                alert("❌ " + data.error);
+            }
+        } catch (err) { alert("❌ Ошибка: " + err.message); }
+    }
+
+    function showHireInput() {
+        const modalRoot = document.getElementById("modal-root");
+        modalRoot.innerHTML = `
+            <div class="modal-overlay" onclick="if(event.target === this) closeModal()">
+                <div class="modal">
+                    <h3>✏️ Введи @username / ID</h3>
+                    <input type="text" id="hire-input" class="modal-input" placeholder="@username или ID" autocomplete="off">
+                    <button class="modal-btn primary" onclick="hireFromInput()">✅ Пригласить</button>
+                    <button class="modal-btn cancel" onclick="openHireModal()">⬅️ Назад</button>
+                </div>
+            </div>
+        `;
+        setTimeout(() => document.getElementById("hire-input").focus(), 100);
+    }
+
+    function hireFromInput() {
+        const input = document.getElementById("hire-input");
+        const value = (input.value || "").trim();
+        if (!value) { alert("❌ Введи username или ID"); return; }
+        hireFromModal(value);
+    }
+
+    // ============================================================
+    // ДРУЗЬЯ
+    // ============================================================
+    async function openFriends() {
+        document.getElementById("content").innerHTML = '<div class="loading">⏳ Загружаем друзей...</div>';
+        try {
+            const res = await fetch(`${API_URL}/api/friends_detail?user_id=${user.id}`, {
+                headers: { "ngrok-skip-browser-warning": "true" }
+            });
+            const data = await res.json();
+            if (!data.ok) throw new Error(data.error);
+
+            let html = `<button class="btn-back" onclick="loadProfile()">⬅️ Назад в профиль</button>`;
+            html += `<div class="card"><div class="label">👥 Друзья</div><div class="value">${data.count}</div></div>`;
+            html += `<button onclick="showAddFriendInput()">➕ Добавить друга</button>`;
+
+            if (data.friends.length === 0) {
+                html += `<div class="card" style="margin-top:12px;"><div style="text-align:center;color:#999;padding:16px;">У тебя пока нет друзей</div></div>`;
+            } else {
+                html += `<div style="margin-top:12px;"></div>`;
+                for (const f of data.friends) {
+                    const displayName = f.first_name || f.username || `id${f.user_id}`;
+                    const uname = f.username ? `@${f.username}` : `id${f.user_id}`;
+                    html += `
+                        <div class="friend-row">
+                            <div class="friend-avatar">👤</div>
+                            <div class="friend-info">
+                                <div class="friend-name">${escapeHtml(displayName)}</div>
+                                <div class="friend-stats">${escapeHtml(uname)} · ур. ${f.level} · ${formatNumber(f.balance)}₽</div>
+                            </div>
+                            <div class="friend-actions">
+                                <button class="btn-del" onclick="removeFriend(${f.user_id})">❌</button>
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+
+            document.getElementById("content").innerHTML = html;
+        } catch (err) {
+            document.getElementById("content").innerHTML = `<div class="error">❌ Ошибка: ${escapeHtml(err.message)}</div><button onclick="loadProfile()">⬅️ Назад</button>`;
+        }
+    }
+
+    function showAddFriendInput() {
+        const modalRoot = document.getElementById("modal-root");
+        modalRoot.innerHTML = `
+            <div class="modal-overlay" onclick="if(event.target === this) closeModal()">
+                <div class="modal">
+                    <h3>➕ Добавить друга</h3>
+                    <input type="text" id="add-friend-input" class="modal-input" placeholder="@username или ID" autocomplete="off">
+                    <button class="modal-btn primary" onclick="submitAddFriend()">✅ Добавить</button>
+                    <button class="modal-btn cancel" onclick="closeModal()">❌ Отмена</button>
+                </div>
+            </div>
+        `;
+        setTimeout(() => document.getElementById("add-friend-input").focus(), 100);
+    }
+
+    async function submitAddFriend() {
+        const input = document.getElementById("add-friend-input");
+        const value = (input.value || "").trim();
+        if (!value) { alert("❌ Введи username или ID"); return; }
+
+        closeModal();
+        try {
+            const res = await fetch(`${API_URL}/api/friend_add`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
+                body: JSON.stringify({ user_id: user.id, target: value })
+            });
+            const data = await res.json();
+            if (data.ok) {
+                showToast("✅ " + data.message);
+                openFriends();
+            } else {
+                alert("❌ " + data.error);
+            }
+        } catch (err) { alert("❌ Ошибка: " + err.message); }
+    }
+
+    async function removeFriend(friendId) {
+        if (!confirm("Удалить из друзей?")) return;
+        try {
+            const res = await fetch(`${API_URL}/api/friend_remove`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
+                body: JSON.stringify({ user_id: user.id, friend_id: friendId })
+            });
+            const data = await res.json();
+            if (data.ok) { showToast("✅ Удалено"); openFriends(); }
+            else alert("❌ " + data.error);
+        } catch (err) { alert("❌ Ошибка: " + err.message); }
+    }
+
+    // ============================================================
+    // РАБОТА
+    // ============================================================
+    async function openJob() {
+        document.getElementById("content").innerHTML = '<div class="loading">⏳ Загружаем...</div>';
+        try {
+            const res = await fetch(`${API_URL}/api/my_job?user_id=${user.id}`, {
+                headers: { "ngrok-skip-browser-warning": "true" }
+            });
+            const data = await res.json();
+            if (!data.ok) throw new Error(data.error);
+
+            let html = `<button class="btn-back" onclick="loadProfile()">⬅️ Назад в профиль</button>`;
+
+            if (!data.job) {
+                html += `<div class="job-card">
+                    <div class="job-title">💼 Ты не работаешь</div>
+                    <div class="job-info">Когда рестораны начнут тебя приглашать — уведомление появится сверху экрана.</div>
+                </div>`;
+            } else {
+                const j = data.job;
+                html += `<div class="job-card">
+                    <div class="job-title">💼 Ты работаешь поваром</div>
+                    <div class="job-info">👤 Владелец: <b>@${escapeHtml(j.owner_name)}</b></div>
+                    <div class="job-info">🏪 Ресторан: <b>ур. ${j.restaurant_level}</b></div>
+                    <div class="job-info">⏰ Зарплата каждые 5 минут</div>
+                </div>`;
+                html += `<button onclick="quitJob()" style="background:#e74c3c;">🚪 Уволиться</button>`;
+            }
+
+            document.getElementById("content").innerHTML = html;
+        } catch (err) {
+            document.getElementById("content").innerHTML = `<div class="error">❌ Ошибка: ${escapeHtml(err.message)}</div><button onclick="loadProfile()">⬅️ Назад</button>`;
+        }
+    }
+
+    async function quitJob() {
+        if (!confirm("Уволиться?")) return;
+        try {
+            const res = await fetch(`${API_URL}/api/job_quit`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
+                body: JSON.stringify({ user_id: user.id })
+            });
+            const data = await res.json();
+            if (data.ok) { showToast("✅ " + data.message); openJob(); }
+            else alert("❌ " + data.error);
+        } catch (err) { alert("❌ Ошибка: " + err.message); }
+    }
+
+    // ============================================================
+    // ПРИГЛАШЕНИЯ
+    // ============================================================
+    async function openReferral() {
+        document.getElementById("content").innerHTML = '<div class="loading">⏳ Загружаем...</div>';
+        try {
+            const res = await fetch(`${API_URL}/api/referral?user_id=${user.id}`, {
+                headers: { "ngrok-skip-browser-warning": "true" }
+            });
+            const data = await res.json();
+            if (!data.ok) throw new Error(data.error);
+
+            const refLink = `https://t.me/${BOT_USERNAME}?start=ref_${user.id}`;
+
+            let html = `<button class="btn-back" onclick="loadProfile()">⬅️ Назад в профиль</button>`;
+
+            html += `<div class="card">
+                <div class="label">🔗 Приглашай друзей!</div>
+                <div style="margin-top:10px;font-size:17px;">
+                    Ты получаешь: <b>+${formatNumber(data.current_reward)}₽</b> и <b>+${data.inviter_rep} rep</b><br>
+                    Друг получает: <b>+${formatNumber(data.new_user_reward)}₽</b> и <b>+${data.new_user_rep} rep</b>
+                </div>
+            </div>`;
+
+            html += `<div class="card">
+                <div class="label">🎖 Твой уровень</div>
+                <div class="value">${data.level}</div>
+                <div style="font-size:15px;color:#999;margin-top:6px;">💰 Текущая награда за друга: <b style="color:#27ae60;">+${formatNumber(data.current_reward)}₽</b></div>
+            </div>`;
+
+            html += `<div class="card">
+                <div class="label">📊 Приглашено друзей</div>
+                <div class="value">${data.invited_count}</div>
+            </div>`;
+
+            html += `<div class="card">
+                <div class="label">Твоя ссылка</div>
+                <div class="ref-link" id="ref-link">${refLink}</div>
+                <div class="ref-buttons">
+                    <button onclick="copyRefLink()">📋 Копировать</button>
+                    <button onclick="shareRefLink()">📤 Поделиться</button>
+                </div>
+            </div>`;
+
+            document.getElementById("content").innerHTML = html;
+        } catch (err) {
+            document.getElementById("content").innerHTML = `<div class="error">❌ Ошибка: ${escapeHtml(err.message)}</div><button onclick="loadProfile()">⬅️ Назад</button>`;
+        }
+    }
+
+    function copyRefLink() {
+        const el = document.getElementById("ref-link");
+        const text = el.textContent;
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(text).then(() => showToast("✅ Скопировано"));
+        } else {
+            const range = document.createRange();
+            range.selectNode(el);
+            window.getSelection().removeAllRanges();
+            window.getSelection().addRange(range);
+            document.execCommand("copy");
+            showToast("✅ Скопировано");
+        }
+    }
+
+    function shareRefLink() {
+        const url = `https://t.me/${BOT_USERNAME}?start=ref_${user.id}`;
+        const text = "🍽 Заходи в Piggy Chef — открывай кейсы с едой, качай ресторан!";
+        const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`;
+        window.open(shareUrl, "_blank");
+    }
+
+    // ============================================================
     // КРАФТ
+    // ============================================================
     async function openCraft() {
         document.getElementById("content").innerHTML = '<div class="loading">⏳ Загружаем крафт...</div>';
         try {
@@ -691,7 +1118,9 @@
         } catch (err) { alert("❌ Ошибка: " + err.message); }
     }
 
+    // ============================================================
     // КОЛЛЕКЦИЯ
+    // ============================================================
     let collectionState = { collapsed: {} };
 
     async function openCollection() {
@@ -744,7 +1173,9 @@
         }
     }
 
-    // ДОСТИЖЕНИЯ ← ОБНОВЛЕНО
+    // ============================================================
+    // ДОСТИЖЕНИЯ
+    // ============================================================
     async function openAchievements() {
         document.getElementById("content").innerHTML = '<div class="loading">⏳ Загружаем достижения...</div>';
         try {
@@ -810,7 +1241,9 @@
         } catch (err) { alert("❌ Ошибка: " + err.message); }
     }
 
+    // ============================================================
     // ТОП
+    // ============================================================
     async function loadTop() {
         document.getElementById("username").textContent = `${user.first_name} (@${user.username || "no_username"})`;
         document.getElementById("content").innerHTML = '<div class="loading">⏳ Загружаем топ...</div>';
@@ -847,7 +1280,9 @@
         }
     }
 
+    // ============================================================
     // БОНУС
+    // ============================================================
     async function loadBonus() {
         document.getElementById("username").textContent = `${user.first_name} (@${user.username || "no_username"})`;
         document.getElementById("content").innerHTML = '<div class="loading">⏳ Загружаем бонус...</div>';
@@ -905,7 +1340,9 @@
         } catch (err) { alert("❌ Ошибка: " + err.message); }
     }
 
+    // ============================================================
     // ВОРОВСТВО
+    // ============================================================
     async function loadRob() {
         document.getElementById("username").textContent = `${user.first_name} (@${user.username || "no_username"})`;
         document.getElementById("content").innerHTML = '<div class="loading">⏳ Загружаем воровство...</div>';
@@ -915,7 +1352,6 @@
                 headers: { "ngrok-skip-browser-warning": "true" }
             });
             const stat = await statRes.json();
-
             if (!stat.ok) throw new Error(stat.error);
 
             let html = '';
@@ -966,7 +1402,6 @@
 
     async function selectVictim(victimId, victimName, rawInput) {
         document.getElementById("content").innerHTML = '<div class="loading">⏳ Ищем жертву...</div>';
-
         try {
             let url;
             if (victimId) {
@@ -1078,7 +1513,6 @@
             if (!data.ok) { alert("❌ " + data.error); return; }
 
             showStealRoulette(data);
-
         } catch (err) {
             alert("❌ Ошибка: " + err.message);
         }
@@ -1086,36 +1520,22 @@
 
     function showStealRoulette(result) {
         const rouletteRoot = document.getElementById("roulette-root");
-
         const RANDOM_BEFORE = 35;
         const TOTAL_ITEMS = 55;
         const strip = [];
 
         const pool = [];
         for (let i = 0; i < 10; i++) {
-            pool.push({
-                name: result.thief_item.name,
-                rarity: result.thief_item.rarity,
-                is_winner: false,
-            });
-            pool.push({
-                name: result.victim_item.name,
-                rarity: result.victim_item.rarity,
-                is_winner: false,
-            });
+            pool.push({ name: result.thief_item.name, rarity: result.thief_item.rarity });
+            pool.push({ name: result.victim_item.name, rarity: result.victim_item.rarity });
         }
 
-        for (let i = 0; i < RANDOM_BEFORE; i++) {
-            strip.push(pool[Math.floor(Math.random() * pool.length)]);
-        }
+        for (let i = 0; i < RANDOM_BEFORE; i++) strip.push(pool[Math.floor(Math.random() * pool.length)]);
         strip.push({
             name: result.success ? result.victim_item.name : result.thief_item.name,
             rarity: result.success ? result.victim_item.rarity : result.thief_item.rarity,
-            is_winner: true,
         });
-        for (let i = 0; i < TOTAL_ITEMS - RANDOM_BEFORE - 1; i++) {
-            strip.push(pool[Math.floor(Math.random() * pool.length)]);
-        }
+        for (let i = 0; i < TOTAL_ITEMS - RANDOM_BEFORE - 1; i++) strip.push(pool[Math.floor(Math.random() * pool.length)]);
 
         let trackHtml = "";
         for (const item of strip) {
@@ -1128,7 +1548,6 @@
         }
 
         const title = result.success ? '⚔️ Победа!' : '💀 Провал...';
-
         rouletteRoot.innerHTML = `
             <div class="roulette-container">
                 <div class="roulette-title">${title}</div>
@@ -1152,14 +1571,11 @@
             if (track) track.style.transform = `translateX(-${finalOffset}px)`;
         }, 100);
 
-        setTimeout(() => {
-            showStealResult(result);
-        }, 4300);
+        setTimeout(() => showStealResult(result), 4300);
     }
 
     function showStealResult(result) {
         const rouletteRoot = document.getElementById("roulette-root");
-
         let header, detail, color;
         if (result.success) {
             header = "🏆 Победа!";
@@ -1170,13 +1586,11 @@
             detail = `Ты проиграл свою ставку ${result.thief_item.rarity} <b>${escapeHtml(result.thief_item.name)}</b> (${formatNumber(result.thief_item.price)}₽)`;
             color = "#e74c3c";
         }
-
         rouletteRoot.innerHTML = `
             <div class="result-container">
                 <div class="result-header" style="color: ${color};">${header}</div>
                 <div style="font-size: 19px; margin-bottom: 20px; line-height: 1.4;">
-                    ${detail}<br><br>
-                    🎲 Шанс победы: ${result.chance}%
+                    ${detail}<br><br>🎲 Шанс победы: ${result.chance}%
                 </div>
                 <div class="result-buttons">
                     <button class="result-btn again" onclick="closeRoulette(); loadRob()">⚔️ Ещё раз</button>
@@ -1188,7 +1602,9 @@
 
     function closeRoulette() { document.getElementById("roulette-root").innerHTML = ""; }
 
+    // ============================================================
     // ИНВЕНТАРЬ
+    // ============================================================
     async function loadInventory() {
         if (!user) return;
         document.getElementById("username").textContent = `${user.first_name} (@${user.username || "no_username"})`;
@@ -1350,9 +1766,7 @@
                 alert(`✅ Продано ${data.sold_count} предметов на ${formatNumber(data.total_price)}₽`);
                 clearDynamicCache();
                 fetchInventoryPage(0);
-            } else {
-                alert("❌ " + data.error);
-            }
+            } else alert("❌ " + data.error);
         } catch (err) { alert("❌ Ошибка: " + err.message); }
     }
 
@@ -1373,7 +1787,7 @@
     }
 
     function giftItem(code) {
-        fetch(`${API_URL}/api/friends?user_id=${user.id}`, {
+        fetch(`${API_URL}/api/friends_detail?user_id=${user.id}`, {
             headers: { "ngrok-skip-browser-warning": "true" }
         })
         .then(r => r.json())
@@ -1455,7 +1869,9 @@
 
     function closeModal() { document.getElementById("modal-root").innerHTML = ""; }
 
+    // ============================================================
     // КЕЙСЫ
+    // ============================================================
     async function loadCases() {
         if (!user) return;
         document.getElementById("username").textContent = `${user.first_name} (@${user.username || "no_username"})`;
@@ -1644,8 +2060,6 @@
         setTimeout(onDone, 4300);
     }
 
-    function closeRoulette() { document.getElementById("roulette-root").innerHTML = ""; }
-
     function showMultiResult(results, caseId, count) {
         const rouletteRoot = document.getElementById("roulette-root");
         let listHtml = "";
@@ -1694,7 +2108,9 @@
         } catch (err) { alert("❌ Ошибка: " + err.message); }
     }
 
+    // ============================================================
     // ПРОГРЕВ КАРТИНОК
+    // ============================================================
     const ALL_DISH_NAMES = [
         "Крошка хлеба", "Кусок хлеба", "Гренка", "Варёное яйцо", "Овсянка",
         "Макароны", "Картошка", "Сосиска", "Салат из огурцов", "Помидор", "Лук", "Чеснок",
@@ -1751,23 +2167,20 @@
                 const url = `${API_URL}/images/${filename}`;
                 const img = new Image();
                 const timeout = setTimeout(() => {
-                    failed++;
-                    done++;
+                    failed++; done++;
                     updatePreloaderProgress(done, total, "Загрузка блюд...");
                     resolve();
                 }, 5000);
 
                 img.onload = () => {
                     clearTimeout(timeout);
-                    loaded++;
-                    done++;
+                    loaded++; done++;
                     updatePreloaderProgress(done, total, "Загрузка блюд...");
                     resolve();
                 };
                 img.onerror = () => {
                     clearTimeout(timeout);
-                    failed++;
-                    done++;
+                    failed++; done++;
                     updatePreloaderProgress(done, total, "Загрузка блюд...");
                     resolve();
                 };
@@ -1815,6 +2228,10 @@
         await new Promise(r => setTimeout(r, 200));
         hidePreloader();
         switchTab("profile");
+
+        // Запускаем polling уведомлений
+        startNotificationPolling();
+
         console.log(`⏱ Запуск: ${Date.now() - startTime}мс`);
     }
 
