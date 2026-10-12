@@ -222,9 +222,85 @@
         .result-btn.sell { background: #27ae60; }
         .result-btn.again { background: #3498db; }
         .result-btn.close { background: #666; }
+
+        /* === ЗАГРУЗОЧНЫЙ ЭКРАН === */
+        .preloader {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: var(--tg-theme-bg-color, #ffffff);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+        .preloader.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+        .preloader-inner {
+            text-align: center;
+            padding: 20px;
+            width: 100%;
+            max-width: 320px;
+        }
+        .preloader-icon {
+            font-size: 80px;
+            animation: preloader-pulse 1.5s ease-in-out infinite;
+            margin-bottom: 16px;
+        }
+        @keyframes preloader-pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.15); opacity: 0.8; }
+        }
+        .preloader-title {
+            font-size: 36px;
+            margin-bottom: 24px;
+            color: var(--tg-theme-text-color, #000);
+        }
+        .preloader-bar {
+            width: 100%;
+            height: 12px;
+            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 12px;
+        }
+        .preloader-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #27ae60, #2ecc71);
+            border-radius: 6px;
+            transition: width 0.3s ease;
+        }
+        .preloader-status {
+            font-size: 16px;
+            color: var(--tg-theme-hint-color, #999);
+            margin-bottom: 4px;
+            min-height: 20px;
+        }
+        .preloader-progress {
+            font-size: 20px;
+            color: var(--tg-theme-text-color, #000);
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
+
+<!-- ← ЗАГРУЗОЧНЫЙ ЭКРАН -->
+<div id="preloader" class="preloader">
+    <div class="preloader-inner">
+        <div class="preloader-icon">🍽</div>
+        <div class="preloader-title">Piggy Chef</div>
+        <div class="preloader-bar">
+            <div class="preloader-bar-fill" id="preloader-fill"></div>
+        </div>
+        <div class="preloader-status" id="preloader-status">Загрузка...</div>
+        <div class="preloader-progress" id="preloader-progress">0%</div>
+    </div>
+</div>
 
 <div class="header">
     <h1>🍽 Piggy Chef</h1>
@@ -294,7 +370,7 @@
         return div.innerHTML;
     }
 
-    // ← ИЗМЕНЕНО: helper для картинок
+    // helper для картинок
     function imgTag(item, extraClass = "") {
         if (item && item.image_url) {
             return `<img src="${API_URL}${item.image_url}" loading="lazy" decoding="async" alt="" class="${extraClass}">`;
@@ -303,11 +379,9 @@
     }
 
     // ============================================================
-    // КЕШ ← НОВОЕ
+    // КЕШ
     // ============================================================
-    // staticCache — данные, которые НИКОГДА не меняются (список кейсов, превью)
     const staticCache = new Map();
-    // dynamicCache — данные с TTL (топ, коллекция, достижения, крафт)
     const dynamicCache = new Map();
 
     async function fetchStatic(url) {
@@ -340,9 +414,6 @@
         staticCache.clear();
         dynamicCache.clear();
     }
-    // ============================================================
-    // КОНЕЦ КЕША
-    // ============================================================
 
     function updateBalance(b) {
         currentBalance = b;
@@ -365,7 +436,7 @@
     }
 
     // ============================================================
-    // ПРОФИЛЬ — НЕ кешируем (баланс должен быть свежим)
+    // ПРОФИЛЬ
     // ============================================================
     async function loadProfile() {
         if (!user) {
@@ -502,12 +573,11 @@
     }
 
     // ============================================================
-    // КРАФТ ← КЕШ
+    // КРАФТ
     // ============================================================
     async function openCraft() {
         document.getElementById("content").innerHTML = '<div class="loading">⏳ Загружаем крафт...</div>';
         try {
-            // ← КЕШ: TTL 10 секунд
             const data = await fetchCached(`${API_URL}/api/craft_available?user_id=${user.id}`, 10000);
             if (!data.ok) throw new Error(data.error);
 
@@ -548,21 +618,20 @@
             const data = await res.json();
             if (data.ok) {
                 alert(`✅ Получено: ${data.rarity} ${data.name} (${formatNumber(data.price)}₽)`);
-                clearDynamicCache();  // ← КЕШ: сброс после крафта
+                clearDynamicCache();
                 openCraft();
             } else alert("❌ " + data.error);
         } catch (err) { alert("❌ Ошибка: " + err.message); }
     }
 
     // ============================================================
-    // КОЛЛЕКЦИЯ ← КЕШ
+    // КОЛЛЕКЦИЯ
     // ============================================================
     let collectionState = { collapsed: {} };
 
     async function openCollection() {
         document.getElementById("content").innerHTML = '<div class="loading">⏳ Загружаем коллекцию...</div>';
         try {
-            // ← КЕШ: TTL 30 секунд
             const data = await fetchCached(`${API_URL}/api/collection?user_id=${user.id}`, 30000);
             if (!data.ok) throw new Error(data.error);
 
@@ -611,12 +680,11 @@
     }
 
     // ============================================================
-    // ДОСТИЖЕНИЯ ← КЕШ
+    // ДОСТИЖЕНИЯ
     // ============================================================
     async function openAchievements() {
         document.getElementById("content").innerHTML = '<div class="loading">⏳ Загружаем достижения...</div>';
         try {
-            // ← КЕШ: TTL 30 секунд
             const data = await fetchCached(`${API_URL}/api/achievements?user_id=${user.id}`, 30000);
             if (!data.ok) throw new Error(data.error);
             let html = `<button class="btn-back" onclick="loadProfile()">⬅️ Назад в профиль</button>`;
@@ -639,13 +707,12 @@
     }
 
     // ============================================================
-    // ТОП ← КЕШ
+    // ТОП
     // ============================================================
     async function loadTop() {
         document.getElementById("username").textContent = `${user.first_name} (@${user.username || "no_username"})`;
         document.getElementById("content").innerHTML = '<div class="loading">⏳ Загружаем топ...</div>';
         try {
-            // ← КЕШ: TTL 30 секунд
             const data = await fetchCached(`${API_URL}/api/top`, 30000);
             if (!data.ok) throw new Error(data.error);
             let html = `<div class="card"><div class="label">🏆 Топ игроков по XP</div></div>`;
@@ -679,7 +746,7 @@
     }
 
     // ============================================================
-    // БОНУС — НЕ кешируем (таймер точный нужен)
+    // БОНУС
     // ============================================================
     async function loadBonus() {
         document.getElementById("username").textContent = `${user.first_name} (@${user.username || "no_username"})`;
@@ -732,14 +799,14 @@
             if (data.ok) {
                 updateBalance(data.new_balance);
                 alert(`🎁 +${formatNumber(data.bonus)}₽\n🔥 Стрик: ${data.new_streak} дн.`);
-                clearDynamicCache();  // ← КЕШ: сброс
+                clearDynamicCache();
                 loadBonus();
             } else alert("❌ " + data.error);
         } catch (err) { alert("❌ Ошибка: " + err.message); }
     }
 
     // ============================================================
-    // ВОРОВСТВО — НЕ кешируем (кулдаун)
+    // ВОРОВСТВО
     // ============================================================
     async function loadRob() {
         document.getElementById("username").textContent = `${user.first_name} (@${user.username || "no_username"})`;
@@ -1024,7 +1091,7 @@
     function closeRoulette() { document.getElementById("roulette-root").innerHTML = ""; }
 
     // ============================================================
-    // ИНВЕНТАРЬ — НЕ кешируем (постоянно меняется)
+    // ИНВЕНТАРЬ
     // ============================================================
     async function loadInventory() {
         if (!user) return;
@@ -1167,7 +1234,7 @@
             if (data.ok) {
                 updateBalance(data.new_balance);
                 cart.clear();
-                clearDynamicCache();  // ← КЕШ: сброс после продажи
+                clearDynamicCache();
                 fetchInventoryPage(inventoryState.offset);
             } else alert("❌ " + data.error);
         } catch (err) { alert("❌ Ошибка: " + err.message); }
@@ -1185,7 +1252,7 @@
             if (data.ok) {
                 updateBalance(data.new_balance);
                 alert(`✅ Продано ${data.sold_count} предметов на ${formatNumber(data.total_price)}₽`);
-                clearDynamicCache();  // ← КЕШ: сброс
+                clearDynamicCache();
                 fetchInventoryPage(0);
             } else {
                 alert("❌ " + data.error);
@@ -1283,7 +1350,7 @@
             });
             const data = await res.json();
             if (data.ok) {
-                clearDynamicCache();  // ← КЕШ: сброс
+                clearDynamicCache();
                 fetchInventoryPage(inventoryState.offset);
             }
             else alert("❌ " + data.error);
@@ -1293,14 +1360,13 @@
     function closeModal() { document.getElementById("modal-root").innerHTML = ""; }
 
     // ============================================================
-    // КЕЙСЫ ← КЕШ
+    // КЕЙСЫ
     // ============================================================
     async function loadCases() {
         if (!user) return;
         document.getElementById("username").textContent = `${user.first_name} (@${user.username || "no_username"})`;
         document.getElementById("content").innerHTML = '<div class="loading">⏳ Загружаем кейсы...</div>';
         try {
-            // ← КЕШ: staticCache — список кейсов не меняется никогда
             const data = await fetchStatic(`${API_URL}/api/cases`);
             if (!data.ok) throw new Error(data.error);
             casesData = data.categories;
@@ -1355,7 +1421,6 @@
 
         let pool = [], caseName = "";
         try {
-            // ← КЕШ: staticCache — превью кейса не меняется
             const data = await fetchStatic(`${API_URL}/api/case_preview?case_id=${caseId}`);
             if (!data.ok) { alert("❌ " + data.error); return; }
             pool = data.pool || [];
@@ -1376,7 +1441,7 @@
         } catch (err) { alert("❌ " + err.message); return; }
 
         updateBalance(openResult.new_balance);
-        clearDynamicCache();  // ← КЕШ: сброс после открытия кейса (коллекция обновилась)
+        clearDynamicCache();
 
         if (count === 1) {
             showSingleBigRoulette(caseName, pool, openResult.results[0], () => {
@@ -1528,14 +1593,165 @@
             const data = await res.json();
             if (data.ok) {
                 updateBalance(data.new_balance);
-                clearDynamicCache();  // ← КЕШ: сброс
+                clearDynamicCache();
                 closeRoulette();
             }
             else alert("❌ " + data.error);
         } catch (err) { alert("❌ Ошибка: " + err.message); }
     }
 
-    switchTab("profile");
+    // ============================================================
+    // ПРОГРЕВ КАРТИНОК + ЗАГРУЗОЧНЫЙ ЭКРАН
+    // ============================================================
+    const ALL_DISH_NAMES = [
+        // ⚪
+        "Крошка хлеба", "Кусок хлеба", "Гренка", "Варёное яйцо", "Овсянка",
+        "Макароны", "Картошка", "Сосиска", "Салат из огурцов", "Помидор", "Лук", "Чеснок",
+        // 🟢
+        "Вареники", "Сырники", "Драники", "Пельмени", "Блины", "Борщ", "Плов",
+        "Котлета по-киевски", "Шаурма", "Гречка с мясом", "Куриный суп", "Окрошка",
+        "Хачапури", "Чебурек",
+        // 🔵
+        "Шашлык", "Суши", "Пицца", "Стейк", "Лазанья", "Паэлья", "Ризотто", "Рамен",
+        "Бургер с трюфелем", "Хинкали", "Манты", "Том-ям", "Карпаччо", "Тартар из говядины",
+        // 🟣
+        "Тирамису", "Фуа-гра", "Трюфель", "Крем-брюле", "Матча-десерт", "Крем-карамель",
+        "Крокембуш", "Макарон", "Панна-котта", "Профитроли", "Мусс из манго", "Шоколадный фондан",
+        // 🟡
+        "Хамон", "Пармезан 36 мес", "Вагю", "Мраморный тунец", "Кавиар", "Сыр с плесенью",
+        "Осьминог", "Лобстер", "Краб камчатский", "Устрицы", "Икра морского ежа", "Рыба фуга",
+        // 🔴
+        "Чёрная икра", "Белый трюфель", "Фугу", "Золотой стейк", "Блюдо шефа", "Легенда кухни",
+        "Грааль гурмана", "Блюдо богов", "Абсолют", "Императорский ужин", "Блюдо царей",
+        "Блюдо Олимпа", "Корона гурмана", "Пир богов", "Трон Олимпа", "Эликсир бессмертия",
+        "Последний ужин", "Просфора", "Святая вода",
+        // 🔶
+        "Деликатес из древности", "Лунный десерт", "Жаркое из феникса",
+        "Маринованное сердце дракона", "Кровь звездного кита", "Жареные семена Иггдрасиля",
+        "Крылья пегаса BBQ", "Нектар падальщика", "Молния в бутылке",
+        // 🔷
+        "Завтрашний суп", "Испуг сомнамбулы", "Грог", "Бесконечный бутерброд",
+        "Блюдо из антиматерии", "Биткоин-бургер",
+    ];
+
+    const MAX_PRELOAD_TIME = 8000;  // максимум 8 сек на прогрев
+
+    function updatePreloaderProgress(done, total, status) {
+        const percent = Math.round((done / total) * 100);
+        document.getElementById("preloader-fill").style.width = percent + "%";
+        document.getElementById("preloader-progress").textContent = percent + "%";
+        if (status) document.getElementById("preloader-status").textContent = status;
+    }
+
+    function hidePreloader() {
+        const preloader = document.getElementById("preloader");
+        if (preloader) {
+            preloader.classList.add("hidden");
+            setTimeout(() => preloader.remove(), 600);
+        }
+    }
+
+    async function preloadAllImages() {
+        const total = ALL_DISH_NAMES.length;
+        let done = 0;
+        let loaded = 0;
+        let failed = 0;
+        const startTime = Date.now();
+
+        const CONCURRENCY = 6;
+        const queue = [...ALL_DISH_NAMES];
+
+        async function loadOne(name) {
+            return new Promise((resolve) => {
+                const filename = name.toLowerCase().replace(/ /g, "_").replace(/ё/g, "е") + ".png";
+                const url = `${API_URL}/images/${filename}`;
+                const img = new Image();
+                const timeout = setTimeout(() => {
+                    failed++;
+                    done++;
+                    updatePreloaderProgress(done, total, "Загрузка блюд...");
+                    resolve();
+                }, 5000);
+
+                img.onload = () => {
+                    clearTimeout(timeout);
+                    loaded++;
+                    done++;
+                    updatePreloaderProgress(done, total, "Загрузка блюд...");
+                    resolve();
+                };
+                img.onerror = () => {
+                    clearTimeout(timeout);
+                    failed++;
+                    done++;
+                    updatePreloaderProgress(done, total, "Загрузка блюд...");
+                    resolve();
+                };
+                img.src = url;
+            });
+        }
+
+        async function worker() {
+            while (queue.length > 0) {
+                if (Date.now() - startTime > MAX_PRELOAD_TIME) {
+                    return;
+                }
+                const name = queue.shift();
+                if (name) await loadOne(name);
+            }
+        }
+
+        const workers = [];
+        for (let i = 0; i < CONCURRENCY; i++) {
+            workers.push(worker());
+        }
+
+        await Promise.all(workers);
+
+        console.log(`🔥 Прогрев завершён: загружено ${loaded}, провалено ${failed}, за ${Date.now() - startTime}мс`);
+        return { loaded, failed, total };
+    }
+
+    async function initApp() {
+        const startTime = Date.now();
+
+        updatePreloaderProgress(0, 100, "Добро пожаловать!");
+        await new Promise(r => setTimeout(r, 300));
+
+        updatePreloaderProgress(0, 100, "Подготовка...");
+
+        // Параллельно: профиль + прогрев картинок
+        const profilePromise = user
+            ? fetch(`${API_URL}/api/profile?user_id=${user.id}`, {
+                headers: { "ngrok-skip-browser-warning": "true" }
+            }).then(r => r.json()).catch(() => null)
+            : Promise.resolve(null);
+
+        const preloadPromise = preloadAllImages();
+
+        const [profileResult] = await Promise.all([
+            profilePromise,
+            preloadPromise,
+        ]);
+
+        if (profileResult && profileResult.ok) {
+            updateBalance(profileResult.user.balance);
+        }
+
+        updatePreloaderProgress(100, 100, "Готово!");
+        await new Promise(r => setTimeout(r, 200));
+
+        hidePreloader();
+
+        switchTab("profile");
+
+        console.log(`⏱ Общее время запуска: ${Date.now() - startTime}мс`);
+    }
+
+    // ============================================================
+    // ЗАПУСК
+    // ============================================================
+    initApp();
 </script>
 
 </body>
