@@ -1512,33 +1512,34 @@
         }
     }
 
-        function renderBjPlaying(game) {
+    function renderBjPlaying(game) {
         const me = game.my;
         const their = game.their;
 
         const myCardsHtml = me.cards.map(c => renderBjCard(c, false)).join("");
 
-        // ← ИЗМЕНЕНО: карты соперника всегда скрыты во время игры
+        // Карты соперника всегда скрыты во время игры
         const theirCardsHtml = their.cards.map(c => renderBjCard(c, true)).join("");
 
         const myScoreClass = me.bust ? "bust" : "";
         const theirScoreClass = their.bust ? "bust" : "";
 
-        // ← ИЗМЕНЕНО: очки соперника видны только когда он завершил
+        // Очки соперника видны только когда он завершил
         const theirDone = their.stand || their.bust;
         const theirScoreDisplay = theirDone
             ? `${their.score} / 21${their.bust ? " 💥" : ""}${their.stand ? " ✋" : ""}`
             : "? / 21";
 
+        // ФИКС: кнопки исчезают только когда Я завершил ход, а не когда соперник перебрал
         let actionsHtml = "";
-        if (!me.stand && !me.bust && !their.bust) {
+        if (!me.stand && !me.bust) {
             actionsHtml = `
                 <div class="bj-actions">
                     <button class="bj-btn-hit" onclick="bjHit()">🃏 Взять</button>
                     <button class="bj-btn-stand" onclick="bjStand()">✋ Хватит</button>
                 </div>
             `;
-        } else if (me.stand || me.bust) {
+        } else {
             actionsHtml = `<div style="text-align:center;color:#999;padding:16px;">Ожидаем ход соперника...</div>`;
         }
 
@@ -1606,6 +1607,8 @@
                 if (data.bust) showToast(`💥 Перебор! ${data.new_score}`);
                 // Немедленно обновим состояние
                 await refreshBjState();
+                // Если игра завершилась — останавливаем поллинг
+                if (data.game_finished) stopBjPolling();
             } else alert("❌ " + data.error);
         } catch (err) { alert("❌ Ошибка: " + err.message); }
     }
@@ -1618,8 +1621,10 @@
                 body: JSON.stringify({ user_id: user.id })
             });
             const data = await res.json();
-            if (data.ok) await refreshBjState();
-            else alert("❌ " + data.error);
+            if (data.ok) {
+                await refreshBjState();
+                if (data.game_finished) stopBjPolling();
+            } else alert("❌ " + data.error);
         } catch (err) { alert("❌ Ошибка: " + err.message); }
     }
 
@@ -1631,6 +1636,10 @@
             const data = await res.json();
             if (data.ok && data.game) {
                 renderBjScreen(data.game);
+                // Если игра завершилась — останавливаем поллинг
+                if (data.game.status === "awaiting_rematch") {
+                    stopBjPolling();
+                }
             } else {
                 // Игры больше нет — вернёмся к меню
                 stopBjPolling();
