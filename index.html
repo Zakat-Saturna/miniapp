@@ -11,8 +11,37 @@
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         html, body { font-family: 'Jersey 10', -apple-system, Arial, sans-serif; overflow-x: hidden; -webkit-font-smoothing: none; -moz-osx-font-smoothing: grayscale; }
-        body { padding: 16px; background: var(--tg-theme-bg-color, #ffffff); color: var(--tg-theme-text-color, #000000); min-height: 100vh; font-size: 20px; line-height: 1.2; }
+        body { padding: 16px; background: var(--tg-theme-bg-color, #ffffff); color: var(--tg-theme-text-color, #000000); min-height: 100vh; font-size: 20px; line-height: 1.2; position: relative; }
         button, input, select, textarea { font-family: inherit; }
+
+        /* === ФОН === */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image: url('https://piggychef.serveousercontent.com/images/background.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            opacity: 0.12;
+            z-index: -2;
+            pointer-events: none;
+        }
+        /* Слой для читаемости на тёмной/светлой теме */
+        body::after {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background: var(--tg-theme-bg-color, #ffffff);
+            opacity: 0.75;
+            z-index: -1;
+            pointer-events: none;
+        }
+        /* Тёмная тема — другая картинка */
+        body.tg-dark::before {
+            background-image: url('https://piggychef.serveousercontent.com/images/background_dark.png');
+            opacity: 0.2;
+        }
 
         .header { text-align: center; margin-bottom: 16px; }
         .header h1 { font-size: 38px; margin-bottom: 8px; }
@@ -138,12 +167,42 @@
         .coll-dish .check { width: 24px; text-align: center; font-size: 20px; }
 
         /* ДОСТИЖЕНИЯ */
-        .ach-row { display: flex; justify-content: space-between; align-items: center; background: var(--tg-theme-secondary-bg-color, #f5f5f5); border-radius: 12px; padding: 14px; margin-bottom: 8px; }
+        .ach-row { display: flex; justify-content: space-between; align-items: center; background: var(--tg-theme-secondary-bg-color, #f5f5f5); border-radius: 12px; padding: 14px; margin-bottom: 8px; transition: all 0.2s; }
         .ach-row.unlocked { background: rgba(39, 174, 96, 0.15); }
-        .ach-info { flex: 1; }
+        .ach-row.clickable { cursor: pointer; border: 2px solid #27ae60; box-shadow: 0 0 12px rgba(39, 174, 96, 0.4); }
+        .ach-row.clickable:active { transform: scale(0.98); }
+        .ach-row.claimed { opacity: 0.5; }
+        .ach-info { flex: 1; min-width: 0; }
         .ach-name { font-size: 19px; margin-bottom: 2px; }
         .ach-desc { font-size: 15px; color: var(--tg-theme-hint-color, #999); }
-        .ach-reward { font-size: 17px; color: #f1c40f; text-align: right; }
+        .ach-reward { font-size: 17px; color: #f1c40f; text-align: right; white-space: nowrap; }
+        .ach-badge { display: block; font-size: 13px; margin-top: 4px; padding: 3px 8px; border-radius: 6px; text-align: center; font-family: inherit; }
+        .ach-badge.ready { background: #27ae60; color: white; animation: ach-pulse 1.5s infinite; }
+        .ach-badge.done { background: rgba(0,0,0,0.15); color: var(--tg-theme-hint-color, #999); }
+        @keyframes ach-pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(39, 174, 96, 0.6); }
+            50% { box-shadow: 0 0 0 6px rgba(39, 174, 96, 0); }
+        }
+
+        /* TOAST */
+        .toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            color: white;
+            padding: 14px 24px;
+            border-radius: 12px;
+            font-size: 18px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+            z-index: 10000;
+            opacity: 0;
+            transition: all 0.3s ease;
+            max-width: 90%;
+            text-align: center;
+        }
+        .toast.visible { transform: translateX(-50%) translateY(0); opacity: 1; }
 
         /* БОНУС */
         .bonus-card { background: var(--tg-theme-secondary-bg-color, #f5f5f5); border-radius: 16px; padding: 24px; text-align: center; margin-bottom: 12px; }
@@ -223,7 +282,7 @@
         .result-btn.again { background: #3498db; }
         .result-btn.close { background: #666; }
 
-        /* === ЗАГРУЗОЧНЫЙ ЭКРАН === */
+        /* ЗАГРУЗОЧНЫЙ ЭКРАН */
         .preloader {
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -289,7 +348,7 @@
 </head>
 <body>
 
-<!-- ← ЗАГРУЗОЧНЫЙ ЭКРАН -->
+<!-- ЗАГРУЗОЧНЫЙ ЭКРАН -->
 <div id="preloader" class="preloader">
     <div class="preloader-inner">
         <div class="preloader-icon">🍽</div>
@@ -339,6 +398,14 @@
 
     const user = tg.initDataUnsafe?.user;
 
+    // ← Тёмная тема
+    if (tg.colorScheme === "dark") {
+        document.body.classList.add("tg-dark");
+    }
+    tg.onEvent("themeChanged", () => {
+        document.body.classList.toggle("tg-dark", tg.colorScheme === "dark");
+    });
+
     let currentBalance = 0;
     let casesData = null;
     let robState = {};
@@ -370,7 +437,6 @@
         return div.innerHTML;
     }
 
-    // helper для картинок
     function imgTag(item, extraClass = "") {
         if (item && item.image_url) {
             return `<img src="${API_URL}${item.image_url}" loading="lazy" decoding="async" alt="" class="${extraClass}">`;
@@ -378,9 +444,25 @@
         return `<span>${item ? item.rarity : "❓"}</span>`;
     }
 
-    // ============================================================
+    // TOAST
+    function showToast(message, duration = 2500) {
+        const existing = document.getElementById("toast");
+        if (existing) existing.remove();
+
+        const toast = document.createElement("div");
+        toast.id = "toast";
+        toast.className = "toast";
+        toast.textContent = message;
+        document.body.appendChild(toast);
+
+        setTimeout(() => toast.classList.add("visible"), 10);
+        setTimeout(() => {
+            toast.classList.remove("visible");
+            setTimeout(() => toast.remove(), 400);
+        }, duration);
+    }
+
     // КЕШ
-    // ============================================================
     const staticCache = new Map();
     const dynamicCache = new Map();
 
@@ -402,18 +484,9 @@
         return data;
     }
 
-    function clearDynamicCache() {
-        dynamicCache.clear();
-    }
-
-    function clearStaticCache() {
-        staticCache.clear();
-    }
-
-    function clearAllCache() {
-        staticCache.clear();
-        dynamicCache.clear();
-    }
+    function clearDynamicCache() { dynamicCache.clear(); }
+    function clearStaticCache() { staticCache.clear(); }
+    function clearAllCache() { staticCache.clear(); dynamicCache.clear(); }
 
     function updateBalance(b) {
         currentBalance = b;
@@ -435,9 +508,7 @@
         if (tab === "rob") loadRob();
     }
 
-    // ============================================================
     // ПРОФИЛЬ
-    // ============================================================
     async function loadProfile() {
         if (!user) {
             document.getElementById("content").innerHTML = '<div class="error">❌ Открой меня внутри Telegram!</div>';
@@ -479,9 +550,7 @@
         }
     }
 
-    // ============================================================
     // РЕСТОРАН
-    // ============================================================
     async function openRestaurant() {
         document.getElementById("content").innerHTML = '<div class="loading">⏳ Загружаем ресторан...</div>';
         try {
@@ -572,9 +641,7 @@
         } catch (err) { alert("❌ Ошибка: " + err.message); }
     }
 
-    // ============================================================
     // КРАФТ
-    // ============================================================
     async function openCraft() {
         document.getElementById("content").innerHTML = '<div class="loading">⏳ Загружаем крафт...</div>';
         try {
@@ -624,9 +691,7 @@
         } catch (err) { alert("❌ Ошибка: " + err.message); }
     }
 
-    // ============================================================
     // КОЛЛЕКЦИЯ
-    // ============================================================
     let collectionState = { collapsed: {} };
 
     async function openCollection() {
@@ -679,24 +744,44 @@
         }
     }
 
-    // ============================================================
-    // ДОСТИЖЕНИЯ
-    // ============================================================
+    // ДОСТИЖЕНИЯ ← ОБНОВЛЕНО
     async function openAchievements() {
         document.getElementById("content").innerHTML = '<div class="loading">⏳ Загружаем достижения...</div>';
         try {
-            const data = await fetchCached(`${API_URL}/api/achievements?user_id=${user.id}`, 30000);
+            const data = await fetchCached(`${API_URL}/api/achievements?user_id=${user.id}`, 5000);
             if (!data.ok) throw new Error(data.error);
+
             let html = `<button class="btn-back" onclick="loadProfile()">⬅️ Назад в профиль</button>`;
-            html += `<div class="card"><div class="label">🏅 Достижения</div><div class="value">${data.unlocked} / ${data.total}</div></div>`;
+            html += `<div class="card">
+                <div class="label">🏅 Достижения</div>
+                <div class="value">${data.unlocked} / ${data.total}</div>
+                ${data.claimable > 0 ? `<div style="font-size:17px;color:#27ae60;margin-top:6px;font-weight:bold;">🎁 Доступно к получению: ${data.claimable}</div>` : ''}
+            </div>`;
+
             for (const ach of data.achievements) {
+                let rowClass = '';
+                let clickAttr = '';
+                let badge = '';
+
+                if (ach.claimed) {
+                    rowClass = 'claimed';
+                    badge = '<span class="ach-badge done">✓ Забрано</span>';
+                } else if (ach.unlocked) {
+                    rowClass = 'unlocked clickable';
+                    clickAttr = `onclick="claimAchievement('${ach.id}')"`;
+                    badge = '<span class="ach-badge ready">🎁 Забрать</span>';
+                }
+
                 html += `
-                    <div class="ach-row ${ach.unlocked ? 'unlocked' : ''}">
+                    <div class="ach-row ${rowClass}" ${clickAttr}>
                         <div class="ach-info">
                             <div class="ach-name">${ach.unlocked ? '✅' : '⬜'} ${escapeHtml(ach.name)}</div>
                             <div class="ach-desc">${escapeHtml(ach.desc)}</div>
                         </div>
-                        <div class="ach-reward">+${formatNumber(ach.reward)}₽</div>
+                        <div class="ach-reward">
+                            +${formatNumber(ach.reward)}₽
+                            ${badge}
+                        </div>
                     </div>
                 `;
             }
@@ -706,9 +791,26 @@
         }
     }
 
-    // ============================================================
+    async function claimAchievement(achId) {
+        try {
+            const res = await fetch(`${API_URL}/api/claim_achievement`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
+                body: JSON.stringify({ user_id: user.id, achievement_id: achId })
+            });
+            const data = await res.json();
+            if (data.ok) {
+                updateBalance(data.new_balance);
+                clearDynamicCache();
+                showToast(`🎁 +${formatNumber(data.reward)}₽ за «${data.name}»`);
+                setTimeout(() => openAchievements(), 300);
+            } else {
+                alert("❌ " + data.error);
+            }
+        } catch (err) { alert("❌ Ошибка: " + err.message); }
+    }
+
     // ТОП
-    // ============================================================
     async function loadTop() {
         document.getElementById("username").textContent = `${user.first_name} (@${user.username || "no_username"})`;
         document.getElementById("content").innerHTML = '<div class="loading">⏳ Загружаем топ...</div>';
@@ -745,9 +847,7 @@
         }
     }
 
-    // ============================================================
     // БОНУС
-    // ============================================================
     async function loadBonus() {
         document.getElementById("username").textContent = `${user.first_name} (@${user.username || "no_username"})`;
         document.getElementById("content").innerHTML = '<div class="loading">⏳ Загружаем бонус...</div>';
@@ -805,9 +905,7 @@
         } catch (err) { alert("❌ Ошибка: " + err.message); }
     }
 
-    // ============================================================
     // ВОРОВСТВО
-    // ============================================================
     async function loadRob() {
         document.getElementById("username").textContent = `${user.first_name} (@${user.username || "no_username"})`;
         document.getElementById("content").innerHTML = '<div class="loading">⏳ Загружаем воровство...</div>';
@@ -1090,9 +1188,7 @@
 
     function closeRoulette() { document.getElementById("roulette-root").innerHTML = ""; }
 
-    // ============================================================
     // ИНВЕНТАРЬ
-    // ============================================================
     async function loadInventory() {
         if (!user) return;
         document.getElementById("username").textContent = `${user.first_name} (@${user.username || "no_username"})`;
@@ -1359,9 +1455,7 @@
 
     function closeModal() { document.getElementById("modal-root").innerHTML = ""; }
 
-    // ============================================================
     // КЕЙСЫ
-    // ============================================================
     async function loadCases() {
         if (!user) return;
         document.getElementById("username").textContent = `${user.first_name} (@${user.username || "no_username"})`;
@@ -1600,41 +1694,31 @@
         } catch (err) { alert("❌ Ошибка: " + err.message); }
     }
 
-    // ============================================================
-    // ПРОГРЕВ КАРТИНОК + ЗАГРУЗОЧНЫЙ ЭКРАН
-    // ============================================================
+    // ПРОГРЕВ КАРТИНОК
     const ALL_DISH_NAMES = [
-        // ⚪
         "Крошка хлеба", "Кусок хлеба", "Гренка", "Варёное яйцо", "Овсянка",
         "Макароны", "Картошка", "Сосиска", "Салат из огурцов", "Помидор", "Лук", "Чеснок",
-        // 🟢
         "Вареники", "Сырники", "Драники", "Пельмени", "Блины", "Борщ", "Плов",
         "Котлета по-киевски", "Шаурма", "Гречка с мясом", "Куриный суп", "Окрошка",
         "Хачапури", "Чебурек",
-        // 🔵
         "Шашлык", "Суши", "Пицца", "Стейк", "Лазанья", "Паэлья", "Ризотто", "Рамен",
         "Бургер с трюфелем", "Хинкали", "Манты", "Том-ям", "Карпаччо", "Тартар из говядины",
-        // 🟣
         "Тирамису", "Фуа-гра", "Трюфель", "Крем-брюле", "Матча-десерт", "Крем-карамель",
         "Крокембуш", "Макарон", "Панна-котта", "Профитроли", "Мусс из манго", "Шоколадный фондан",
-        // 🟡
         "Хамон", "Пармезан 36 мес", "Вагю", "Мраморный тунец", "Кавиар", "Сыр с плесенью",
         "Осьминог", "Лобстер", "Краб камчатский", "Устрицы", "Икра морского ежа", "Рыба фуга",
-        // 🔴
         "Чёрная икра", "Белый трюфель", "Фугу", "Золотой стейк", "Блюдо шефа", "Легенда кухни",
         "Грааль гурмана", "Блюдо богов", "Абсолют", "Императорский ужин", "Блюдо царей",
         "Блюдо Олимпа", "Корона гурмана", "Пир богов", "Трон Олимпа", "Эликсир бессмертия",
         "Последний ужин", "Просфора", "Святая вода",
-        // 🔶
         "Деликатес из древности", "Лунный десерт", "Жаркое из феникса",
         "Маринованное сердце дракона", "Кровь звездного кита", "Жареные семена Иггдрасиля",
         "Крылья пегаса BBQ", "Нектар падальщика", "Молния в бутылке",
-        // 🔷
         "Завтрашний суп", "Испуг сомнамбулы", "Грог", "Бесконечный бутерброд",
         "Блюдо из антиматерии", "Биткоин-бургер",
     ];
 
-    const MAX_PRELOAD_TIME = 8000;  // максимум 8 сек на прогрев
+    const MAX_PRELOAD_TIME = 8000;
 
     function updatePreloaderProgress(done, total, status) {
         const percent = Math.round((done / total) * 100);
@@ -1693,34 +1777,26 @@
 
         async function worker() {
             while (queue.length > 0) {
-                if (Date.now() - startTime > MAX_PRELOAD_TIME) {
-                    return;
-                }
+                if (Date.now() - startTime > MAX_PRELOAD_TIME) return;
                 const name = queue.shift();
                 if (name) await loadOne(name);
             }
         }
 
         const workers = [];
-        for (let i = 0; i < CONCURRENCY; i++) {
-            workers.push(worker());
-        }
-
+        for (let i = 0; i < CONCURRENCY; i++) workers.push(worker());
         await Promise.all(workers);
 
-        console.log(`🔥 Прогрев завершён: загружено ${loaded}, провалено ${failed}, за ${Date.now() - startTime}мс`);
+        console.log(`🔥 Прогрев: загружено ${loaded}, провалено ${failed}, за ${Date.now() - startTime}мс`);
         return { loaded, failed, total };
     }
 
     async function initApp() {
         const startTime = Date.now();
-
         updatePreloaderProgress(0, 100, "Добро пожаловать!");
         await new Promise(r => setTimeout(r, 300));
-
         updatePreloaderProgress(0, 100, "Подготовка...");
 
-        // Параллельно: профиль + прогрев картинок
         const profilePromise = user
             ? fetch(`${API_URL}/api/profile?user_id=${user.id}`, {
                 headers: { "ngrok-skip-browser-warning": "true" }
@@ -1729,10 +1805,7 @@
 
         const preloadPromise = preloadAllImages();
 
-        const [profileResult] = await Promise.all([
-            profilePromise,
-            preloadPromise,
-        ]);
+        const [profileResult] = await Promise.all([profilePromise, preloadPromise]);
 
         if (profileResult && profileResult.ok) {
             updateBalance(profileResult.user.balance);
@@ -1740,17 +1813,11 @@
 
         updatePreloaderProgress(100, 100, "Готово!");
         await new Promise(r => setTimeout(r, 200));
-
         hidePreloader();
-
         switchTab("profile");
-
-        console.log(`⏱ Общее время запуска: ${Date.now() - startTime}мс`);
+        console.log(`⏱ Запуск: ${Date.now() - startTime}мс`);
     }
 
-    // ============================================================
-    // ЗАПУСК
-    // ============================================================
     initApp();
 </script>
 
