@@ -2368,6 +2368,95 @@
         transform: translateX(-50%) translateY(0);
         opacity: 1;
     }
+         /* ============================================================ */
+    /* ВИТРИНА */
+    /* ============================================================ */
+    .showcase-grid {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 6px;
+        margin-bottom: 12px;
+    }
+
+    @media (max-width: 500px) {
+        .showcase-grid {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+
+    .showcase-slot {
+        background: var(--pixel-dark);
+        border: 3px solid var(--pixel-border);
+        border-radius: 0;
+        padding: 6px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 100px;
+        text-align: center;
+        box-shadow: var(--pixel-shadow-xs);
+        transition: none;
+        cursor: pointer;
+    }
+
+    .showcase-slot:active {
+        transform: translate(2px, 2px);
+        box-shadow: none;
+    }
+
+    .showcase-slot.empty {
+        background: var(--pixel-black);
+        border-style: dashed;
+        color: var(--pixel-hint);
+        opacity: 0.6;
+    }
+
+    .showcase-slot.filled {
+        background: var(--pixel-dark);
+        border-color: var(--pixel-yellow);
+    }
+
+    .showcase-img {
+        width: 56px;
+        height: 56px;
+        background: transparent;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        image-rendering: pixelated;
+        margin-bottom: 4px;
+    }
+
+    .showcase-img img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        image-rendering: pixelated;
+    }
+
+    .showcase-name {
+        font-size: 11px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        width: 100%;
+        color: var(--pixel-text);
+    }
+
+    .showcase-price {
+        font-size: 11px;
+        color: var(--pixel-green);
+        font-weight: bold;
+    }
+
+    .showcase-remove {
+        font-size: 11px;
+        color: var(--pixel-red);
+        margin-top: 4px;
+        text-transform: uppercase;
+        font-weight: bold;
+    }
 </style>
 </head>
 <body>
@@ -2749,6 +2838,238 @@ document.addEventListener('touchmove', function(e) {
         // ============================================================
         // ПРОФИЛЬ
         // ============================================================
+
+                // ============================================================
+        // ПРОФИЛИ ДРУГИХ ИГРОКОВ
+        // ============================================================
+        async function openUserProfile(targetUserId) {
+            if (!targetUserId) return;
+
+            if (user && targetUserId === user.id) {
+                loadProfile();
+                return;
+            }
+
+            document.getElementById("content").innerHTML = '<div class="loading">⏳ Загружаем профиль...</div>';
+
+            try {
+                const res = await fetch(`${API_URL}/api/user_profile?user_id=${targetUserId}`, {
+                    headers: { "ngrok-skip-browser-warning": "true" }
+                });
+                const data = await res.json();
+                if (!data.ok) throw new Error(data.error);
+
+                const u = data.user;
+                const showcase = data.showcase || [];
+
+                let repIcon = "";
+                if (u.reputation >= 100) repIcon = "😇 ";
+                else if (u.reputation <= -100) repIcon = "🎭 ";
+                if (u.has_crown) repIcon = "👑 " + repIcon;
+
+                let html = `<button class="btn-back" onclick="loadTop()">⬅️ Назад</button>`;
+
+                html += `
+                    <div class="card" style="text-align:center;">
+                        <div style="font-size:48px; margin-bottom:8px;">👤</div>
+                        <div style="font-size:22px; font-weight:bold; margin-bottom:4px;">
+                            ${repIcon}${escapeHtml(u.first_name || u.username || ("id" + u.user_id))}
+                        </div>
+                        ${u.username ? `<div style="font-size:14px; color:var(--pixel-hint);">@${escapeHtml(u.username)}</div>` : ''}
+                    </div>
+                `;
+
+                html += `<div class="card"><div class="label">🏆 Витрина</div></div>`;
+                if (showcase.length === 0) {
+                    html += `<div class="card"><div style="text-align:center; color:var(--pixel-hint); padding:16px;">
+                        Витрина пуста
+                    </div></div>`;
+                } else {
+                    html += `<div class="showcase-grid">`;
+                    for (let i = 1; i <= 5; i++) {
+                        const item = showcase.find(s => s.slot === i);
+                        if (item) {
+                            html += `
+                                <div class="showcase-slot filled">
+                                    <div class="showcase-img">${imgTag(item)}</div>
+                                    <div class="showcase-name">${item.rarity} ${escapeHtml(item.name)}</div>
+                                    <div class="showcase-price">${formatNumber(item.price)}₽</div>
+                                </div>
+                            `;
+                        } else {
+                            html += `<div class="showcase-slot empty">—</div>`;
+                        }
+                    }
+                    html += `</div>`;
+                }
+
+                html += `
+                    <div class="row">
+                        <div class="card"><div class="label">🎖 Уровень</div><div class="value">${u.level}</div></div>
+                        <div class="card"><div class="label">🏪 Ресторан</div><div class="value">${u.restaurant_level} ур.</div></div>
+                    </div>
+                    <div class="card"><div class="label">💰 Баланс</div><div class="value">${formatNumber(u.balance)}₽</div></div>
+                    <div class="card"><div class="label">⭐ Репутация</div><div class="value">${u.reputation}</div></div>
+                    <div class="row">
+                        <div class="card"><div class="label">📦 Кейсов</div><div class="value">${formatNumber(u.total_cases)}</div></div>
+                        <div class="card"><div class="label">🔥 Стрик</div><div class="value">${u.streak}</div></div>
+                    </div>
+                    <div class="card"><div class="label">🏆 Лучший дроп</div><div class="value">${formatNumber(u.best_item_price)}₽</div></div>
+                    <div class="row">
+                        <div class="card"><div class="label">💸 Потрачено</div><div class="value">${formatNumber(u.total_spent)}₽</div></div>
+                        <div class="card"><div class="label">💵 Получено</div><div class="value">${formatNumber(u.total_earned)}₽</div></div>
+                    </div>
+                    <div class="card"><div class="label">🔴 Джекпотов</div><div class="value">${u.jackpots}</div></div>
+                `;
+
+                document.getElementById("content").innerHTML = html;
+            } catch (err) {
+                document.getElementById("content").innerHTML = `
+                    <div class="error">❌ Ошибка: ${escapeHtml(err.message)}</div>
+                    <button onclick="loadTop()">⬅️ Назад</button>
+                `;
+            }
+        }
+
+        // ============================================================
+        // ВИТРИНА — редактор
+        // ============================================================
+        let showcaseState = { currentItems: [] };
+
+        async function openShowcaseEditor() {
+            document.getElementById("content").innerHTML = '<div class="loading">⏳ Загружаем витрину...</div>';
+
+            try {
+                const res = await fetch(`${API_URL}/api/my_showcase?user_id=${user.id}`, {
+                    headers: { "ngrok-skip-browser-warning": "true" }
+                });
+                const data = await res.json();
+                if (!data.ok) throw new Error(data.error);
+
+                showcaseState.currentItems = data.items || [];
+                renderShowcaseEditor();
+            } catch (err) {
+                document.getElementById("content").innerHTML = `
+                    <div class="error">❌ Ошибка: ${escapeHtml(err.message)}</div>
+                    <button onclick="loadProfile()">⬅️ Назад</button>
+                `;
+            }
+        }
+
+        function renderShowcaseEditor() {
+            const items = showcaseState.currentItems;
+
+            let html = `<button class="btn-back" onclick="loadProfile()">⬅️ Назад в профиль</button>`;
+            html += `<div class="card"><div class="label">🏆 Витрина</div>
+                <div style="font-size:14px; color:var(--pixel-hint); margin-top:6px;">
+                    Выбери до 5 блюд для витрины. Их увидят другие игроки.
+                </div>
+            </div>`;
+
+            html += `<div class="showcase-grid">`;
+            for (let i = 1; i <= 5; i++) {
+                const item = items.find(s => s.slot === i);
+                if (item) {
+                    html += `
+                        <div class="showcase-slot filled" onclick="removeShowcaseSlot(${i})">
+                            <div class="showcase-img">${imgTag(item)}</div>
+                            <div class="showcase-name">${item.rarity} ${escapeHtml(item.name)}</div>
+                            <div class="showcase-remove">✕ Убрать</div>
+                        </div>
+                    `;
+                } else {
+                    html += `
+                        <div class="showcase-slot empty" onclick="pickItemForSlot(${i})">
+                            <div style="font-size:32px;">+</div>
+                            <div style="font-size:12px; margin-top:4px;">Добавить</div>
+                        </div>
+                    `;
+                }
+            }
+            html += `</div>`;
+
+            document.getElementById("content").innerHTML = html;
+        }
+
+        async function pickItemForSlot(slot) {
+            document.getElementById("content").innerHTML = '<div class="loading">⏳ Загружаем инвентарь...</div>';
+
+            try {
+                const res = await fetch(`${API_URL}/api/inventory?user_id=${user.id}&offset=0&limit=50&sort=price_desc`, {
+                    headers: { "ngrok-skip-browser-warning": "true" }
+                });
+                const data = await res.json();
+                if (!data.ok) throw new Error(data.error);
+
+                const items = data.items;
+
+                let html = `<button class="btn-back" onclick="renderShowcaseEditor()">⬅️ Назад</button>`;
+                html += `<div class="card"><div class="label">Выбери блюдо для слота ${slot}</div></div>`;
+
+                if (items.length === 0) {
+                    html += `<div class="card"><div style="text-align:center; padding:16px;">Инвентарь пуст</div></div>`;
+                } else {
+                    for (const item of items) {
+                        html += `
+                            <div class="item" onclick="setShowcaseSlot(${slot}, '${item.code}')">
+                                <div class="item-img">${imgTag(item)}</div>
+                                <div class="item-info">
+                                    <div class="item-name">${item.rarity} ${escapeHtml(item.name)}</div>
+                                    <div class="item-price">${formatNumber(item.price)}₽</div>
+                                </div>
+                            </div>
+                        `;
+                    }
+                }
+
+                document.getElementById("content").innerHTML = html;
+            } catch (err) {
+                document.getElementById("content").innerHTML = `
+                    <div class="error">❌ Ошибка: ${escapeHtml(err.message)}</div>
+                    <button onclick="renderShowcaseEditor()">⬅️ Назад</button>
+                `;
+            }
+        }
+
+        async function setShowcaseSlot(slot, itemCode) {
+            try {
+                const res = await fetch(`${API_URL}/api/set_showcase_slot`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
+                    body: JSON.stringify({ user_id: user.id, slot: slot, item_code: itemCode })
+                });
+                const data = await res.json();
+                if (data.ok) {
+                    showToast("✅ Поставлено на витрину");
+                    await openShowcaseEditor();
+                } else {
+                    alert("❌ " + data.error);
+                }
+            } catch (err) {
+                alert("❌ Ошибка: " + err.message);
+            }
+        }
+
+        async function removeShowcaseSlot(slot) {
+            if (!confirm("Убрать предмет из витрины?")) return;
+            try {
+                const res = await fetch(`${API_URL}/api/set_showcase_slot`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
+                    body: JSON.stringify({ user_id: user.id, slot: slot, item_code: null })
+                });
+                const data = await res.json();
+                if (data.ok) {
+                    showToast("✅ Убрано");
+                    await openShowcaseEditor();
+                } else {
+                    alert("❌ " + data.error);
+                }
+            } catch (err) {
+                alert("❌ Ошибка: " + err.message);
+            }
+        }
+        
         async function loadProfile() {
     if (!user) {
         document.getElementById("content").innerHTML = '<div class="error">❌ Открой меня внутри Telegram!</div>';
@@ -2791,6 +3112,7 @@ document.addEventListener('touchmove', function(e) {
         ${u.path === "saint" ? `<div class="card" style="background: rgba(52,152,219,0.15);"><div class="label">😇 Добряк</div><div style="font-size:14px;color:#999;margin-top:4px;">Кулдаун воровства: 60 мин</div></div>` : ''}
         ${u.path === "sinner" ? `<div class="card" style="background: rgba(231,76,60,0.15);"><div class="label">🎭 Злодей</div><div style="font-size:14px;color:#999;margin-top:4px;">Кулдаун воровства: 2 мин · Страховка −50%</div></div>` : ''}
         ${u.is_worker ? `<div class="card" style="background: rgba(155,89,182,0.15);"><div class="label">🚫 Ты работаешь поваром</div><div style="font-size:14px;color:#999;margin-top:4px;">Кейсы временно недоступны. Уволься, чтобы играть.</div></div>` : ''}
+        <button onclick="openShowcaseEditor()">🏆 Настроить витрину</button>
         <button onclick="openRestaurant()">🏪 Ресторан</button>
         <button onclick="openCraft()">🔨 Крафт</button>
         <button onclick="openCollection()">📖 Коллекция</button>
@@ -3134,15 +3456,15 @@ document.addEventListener('touchmove', function(e) {
         if (u.reputation >= 100) name = '😇 ' + name;
         else if (u.reputation <= -100) name = '🎭 ' + name;
         html += `
-        <div class="top-row ${rowClass}">
+    <div class="top-row ${rowClass}" onclick="openUserProfile(${u.user_id})" style="cursor:pointer;">
         <div class="top-rank">${medal}</div>
         <div class="top-info">
-        <div class="top-name">${escapeHtml(name)}</div>
-        <div class="top-stats">Ур. ${u.level} · ✨ ${formatNumber(u.xp)} XP</div>
+            <div class="top-name">${escapeHtml(name)}</div>
+            <div class="top-stats">Ур. ${u.level} · ✨ ${formatNumber(u.xp)} XP</div>
         </div>
         <div class="top-balance">${formatNumber(u.balance)}₽</div>
-        </div>
-        `;
+    </div>
+`;
         }
         el.innerHTML = html || '<div class="card"><div class="label">Пусто</div></div>';
         } else {
@@ -3158,16 +3480,16 @@ document.addEventListener('touchmove', function(e) {
         else if (rank === 3) { medal = '🥉'; rowClass = 'top3'; }
         else { medal = `#${rank}`; }
         let name = u.username ? `@${u.username}` : (u.first_name || `id${u.user_id}`);
-        html += `
-        <div class="top-row ${rowClass}">
+       html += `
+    <div class="top-row ${rowClass}" onclick="openUserProfile(${u.user_id})" style="cursor:pointer;">
         <div class="top-rank">${medal}</div>
         <div class="top-info">
-        <div class="top-name">${escapeHtml(name)}</div>
-        <div class="top-stats">Ур. БП ${u.level} · ✨ ${formatNumber(u.bp_xp)} XP</div>
+            <div class="top-name">${escapeHtml(name)}</div>
+            <div class="top-stats">Ур. БП ${u.level} · ✨ ${formatNumber(u.bp_xp)} XP</div>
         </div>
         <div class="top-balance">🎃 ${u.season_coins}</div>
-        </div>
-        `;
+    </div>
+`;
         }
         el.innerHTML = html || '<div class="card"><div class="label">Пусто</div></div>';
         }
@@ -3384,18 +3706,18 @@ document.addEventListener('touchmove', function(e) {
         const displayName = f.first_name || f.username || `id${f.user_id}`;
         const uname = f.username ? `@${f.username}` : `id${f.user_id}`;
         html += `
-        <div class="friend-row">
-        <div class="friend-avatar">👤</div>
-        <div class="friend-info">
-        <div class="friend-name">${escapeHtml(displayName)}</div>
-        <div class="friend-stats">${escapeHtml(uname)} · ур. ${f.level} · ${formatNumber(f.balance)}₽</div>
+    <div class="friend-row">
+        <div class="friend-avatar" onclick="openUserProfile(${f.user_id})" style="cursor:pointer;">👤</div>
+        <div class="friend-info" onclick="openUserProfile(${f.user_id})" style="cursor:pointer;">
+            <div class="friend-name">${escapeHtml(displayName)}</div>
+            <div class="friend-stats">${escapeHtml(uname)} · ур. ${f.level} · ${formatNumber(f.balance)}₽</div>
         </div>
         <div class="friend-actions">
-        <button class="btn-battle" onclick="openBjChallengeTo(${f.user_id}, '${escapeJs(uname)}')">🎰</button>
-        <button class="btn-del" onclick="removeFriend(${f.user_id})">❌</button>
+            <button class="btn-battle" onclick="openBjChallengeTo(${f.user_id}, '${escapeJs(uname)}')">🎰</button>
+            <button class="btn-del" onclick="removeFriend(${f.user_id})">❌</button>
         </div>
-        </div>
-        `;
+    </div>
+`;
         }
         }
 
