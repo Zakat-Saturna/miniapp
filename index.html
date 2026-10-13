@@ -2343,14 +2343,14 @@
         const data = await res.json();
         if (!data.ok) throw new Error(data.error);
 
-        \1
-            currentUserDiscount = u.discount || 0;
-            currentUserRep = u.reputation || 0;
-            currentUserPath = u.path || "neutral";
-            currentUserIsWorker = u.is_worker || false;
+        const u = data.user;
+        updateBalance(u.balance);
+        currentUserDiscount = u.discount || 0;
+        currentUserRep = u.reputation || 0;
+        currentUserPath = u.path || "neutral";
+        currentUserIsWorker = u.is_worker || false;
 
-        document.getElementById("content").innerHTML = `
-        <div class="card"><div class="label">💰 Баланс</div><div class="value">${formatNumber(u.balance)}₽</div></div>
+        document.getElementById("content").innerHTML = `        <div class="card"><div class="label">💰 Баланс</div><div class="value">${formatNumber(u.balance)}₽</div></div>
         <div class="card"><div class="label">✨ Опыт</div><div class="value">${formatNumber(u.xp)} XP</div></div>
         <div class="row">
         <div class="card"><div class="label">🏪 Ресторан</div><div class="value">${u.restaurant_level} ур.</div></div>
@@ -4587,7 +4587,8 @@
 
         const [profileResult] = await Promise.all([profilePromise, preloadPromise]);
 
-        \1
+        if (profileResult && profileResult.ok) {
+            updateBalance(profileResult.user.balance);
             currentUserDiscount = profileResult.user.discount || 0;
             currentUserRep = profileResult.user.reputation || 0;
             currentUserPath = profileResult.user.path || "neutral";
