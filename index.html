@@ -2097,6 +2097,16 @@
         return (n / 1000000000000000).toFixed(1) + "Qa";
         }
 
+        function escapeJs(s) {
+        if (!s) return "";
+        return String(s)
+        .replace(/\\/g, "\\\\")
+        .replace(/'/g, "\\'")
+        .replace(/"/g, '\\"')
+        .replace(/\n/g, "\\n")
+        .replace(/\r/g, "\\r");
+        }
+        
         function escapeHtml(s) {
         const div = document.createElement("div");
         div.textContent = s;
@@ -2889,7 +2899,7 @@
         for (const f of friends) {
         const displayName = f.first_name || f.username || `id${f.user_id}`;
         const uname = f.username ? `@${f.username}` : `id${f.user_id}`;
-        friendsHtml += `<button class="modal-btn" onclick="hireFromModal('${uname}')">${escapeHtml(displayName)}<span class="friend-username">${escapeHtml(uname)}</span></button>`;
+        friendsHtml += `<button class="modal-btn" onclick="hireFromModal('${escapeJs(uname)}')">${escapeHtml(displayName)}<span class="friend-username">${escapeHtml(uname)}</span></button>`;
         }
         }
 
@@ -2970,7 +2980,7 @@
         <div class="friend-stats">${escapeHtml(uname)} · ур. ${f.level} · ${formatNumber(f.balance)}₽</div>
         </div>
         <div class="friend-actions">
-        <button class="btn-battle" onclick="openBjChallengeTo(${f.user_id}, '${escapeHtml(uname)}')">🎰</button>
+        <button class="btn-battle" onclick="openBjChallengeTo(${f.user_id}, '${escapeJs(uname)}')">🎰</button>
         <button class="btn-del" onclick="removeFriend(${f.user_id})">❌</button>
         </div>
         </div>
@@ -3409,7 +3419,7 @@
         <div class="friend-stats">${escapeHtml(uname)} · ур. ${f.level}</div>
         </div>
         <div class="friend-actions">
-        <button class="btn-battle" onclick="openBjChallengeTo(${f.user_id}, '${escapeHtml(uname)}')">🎰</button>
+        <button class="btn-battle" onclick="openBjChallengeTo(${f.user_id}, '${escapeJs(uname)}')">🎰</button>
         </div>
         </div>
         `;
@@ -4360,10 +4370,14 @@
         let casePrice = 0;
         for (const cat of casesData) {
         for (const c of cat.cases) {
-        if (c.id === caseId) { casePrice = c.price; break; }
+        if (c.id === caseId) {
+            // используем реальную цену со скидкой
+            casePrice = c.real_price !== undefined ? c.real_price : c.price;
+            break;
         }
         }
-        const total = casePrice * count;
+        }
+const total = casePrice * count;
         if (currentBalance < total) {
         alert(`❌ Нужно ${formatNumber(total)}₽, у тебя ${formatNumber(currentBalance)}₽`);
         return;
