@@ -2991,45 +2991,96 @@ document.addEventListener('touchmove', function(e) {
             document.getElementById("content").innerHTML = html;
         }
 
-        async function pickItemForSlot(slot) {
-            document.getElementById("content").innerHTML = '<div class="loading">⏳ Загружаем инвентарь...</div>';
+        let showcasePickState = { slot: 0, offset: 0, limit: 20, items: [], total: 0 };
 
-            try {
-                const res = await fetch(`${API_URL}/api/inventory?user_id=${user.id}&offset=0&limit=50&sort=price_desc`, {
-                    headers: { "ngrok-skip-browser-warning": "true" }
-                });
-                const data = await res.json();
-                if (!data.ok) throw new Error(data.error);
+async function pickItemForSlot(slot) {
+    showcasePickState.slot = slot;
+    showcasePickState.offset = 0;
+    await loadShowcasePickPage();
+}
 
-                const items = data.items;
+async function loadShowcasePickPage() {
+    document.getElementById("content").innerHTML = '<div class="loading">⏳ Загружаем инвентарь...</div>';
 
-                let html = `<button class="btn-back" onclick="renderShowcaseEditor()">⬅️ Назад</button>`;
-                html += `<div class="card"><div class="label">Выбери блюдо для слота ${slot}</div></div>`;
+    const slot = showcasePickState.slot;
+    const offset = showcasePickState.offset;
+    const limit = showcasePickState.limit;
 
-                if (items.length === 0) {
-                    html += `<div class="card"><div style="text-align:center; padding:16px;">Инвентарь пуст</div></div>`;
-                } else {
-                    for (const item of items) {
-                        html += `
-                            <div class="item" onclick="setShowcaseSlot(${slot}, '${item.code}')">
-                                <div class="item-img">${imgTag(item)}</div>
-                                <div class="item-info">
-                                    <div class="item-name">${item.rarity} ${escapeHtml(item.name)}</div>
-                                    <div class="item-price">${formatNumber(item.price)}₽</div>
-                                </div>
-                            </div>
-                        `;
-                    }
-                }
+    try {
+        const res = await fetch(
+            `${API_URL}/api/inventory?user_id=${user.id}&offset=${offset}&limit=${limit}&sort=price_desc`,
+            { headers: { "ngrok-skip-browser-warning": "true" } }
+        );
+        const data = await res.json();
+        if (!data.ok) throw new Error(data.error);
 
-                document.getElementById("content").innerHTML = html;
-            } catch (err) {
-                document.getElementById("content").innerHTML = `
-                    <div class="error">❌ Ошибка: ${escapeHtml(err.message)}</div>
-                    <button onclick="renderShowcaseEditor()">⬅️ Назад</button>
-                `;
-            }
-        }
+        showcasePickState.items = data.items;
+        showcasePickState.total = data.total_count;
+
+        renderShowcasePickPage();
+    } catch (err) {
+        document.getElementById("content").innerHTML = `
+            <div class="error">❌ Ошибка: ${escapeHtml(err.message)}</div>
+            <button onclick="renderShowcaseEditor()">⬅️ Назад</button>
+        `;
+    }
+}
+
+function renderShowcasePickPage() {
+    const { slot, offset, limit, items, total } = showcasePickState;
+    const currentPage = Math.floor(offset / limit) + 1;
+    const totalPages = Math.ceil(total / limit) || 1;
+
+    let html = `<button class="btn-back" onclick="renderShowcaseEditor()">⬅️ Назад</button>`;
+    html += `<div class="card"><div class="label">Выбери блюдо для слота ${slot}</div>
+        <div style="font-size:13px; color:var(--pixel-hint); margin-top:6px;">
+            Всего предметов: ${total}
+        </div>
+    </div>`;
+
+    if (items.length === 0) {
+        html += `<div class="card"><div style="text-align:center; padding:16px;">Инвентарь пуст</div></div>`;
+    } else {
+        for (const item of items) {
+    const alreadyOnShowcase = showcaseState.currentItems.some(s => s.code === item.code);
+    if (alreadyOnShowcase) continue;   // ← пропускаем уже на витрине
+    html += `
+        <div class="item" onclick="setShowcaseSlot(${slot}, '${item.code}')">
+            <div class="item-img">${imgTag(item)}</div>
+            <div class="item-info">
+                <div class="item-name">${item.rarity} ${escapeHtml(item.name)}</div>
+                <div class="item-price">${formatNumber(item.price)}₽</div>
+            </div>
+        </div>
+    `;
+}
+    }
+
+    // Пагинация
+    html += `
+        <div class="inv-pagination">
+            <button onclick="showcasePickPrev()" ${offset === 0 ? 'disabled' : ''}>⬅️</button>
+            <div class="page-info">${currentPage} / ${totalPages}</div>
+            <button onclick="showcasePickNext()" ${offset + limit >= total ? 'disabled' : ''}>➡️</button>
+        </div>
+    `;
+
+    document.getElementById("content").innerHTML = html;
+}
+
+function showcasePickPrev() {
+    const newOffset = showcasePickState.offset - showcasePickState.limit;
+    if (newOffset < 0) return;
+    showcasePickState.offset = newOffset;
+    loadShowcasePickPage();
+}
+
+function showcasePickNext() {
+    const newOffset = showcasePickState.offset + showcasePickState.limit;
+    if (newOffset >= showcasePickState.total) return;
+    showcasePickState.offset = newOffset;
+    loadShowcasePickPage();
+}
 
         async function setShowcaseSlot(slot, itemCode) {
             try {
