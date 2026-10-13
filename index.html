@@ -352,20 +352,30 @@
         border-color: var(--pixel-yellow);
     }
 
-    .item-img {
-        width: 56px;
-        height: 56px;
-        background: var(--pixel-black);
-        border: 2px solid var(--pixel-border);
-        border-radius: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 28px;
-        flex-shrink: 0;
-        overflow: hidden;
-        image-rendering: pixelated;
-    }
+   .item-img {
+    width: 56px;
+    height: 56px;
+    background: var(--pixel-black);
+    border: 2px solid var(--pixel-border);
+    border-radius: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    flex-shrink: 0;
+    overflow: hidden;
+    image-rendering: pixelated;
+    padding: 2px;   /* ← небольшой отступ от края */
+}
+
+.item-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;   /* ← КЛЮЧЕВОЕ: вписывает картинку целиком */
+    object-position: center;
+    image-rendering: pixelated;
+    display: block;
+}
 
     .item-info {
         flex: 1;
