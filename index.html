@@ -353,8 +353,8 @@
     }
 
    .item-img {
-    width: 80px;      /* ← было 56 */
-    height: 80px;
+    width: 72px;
+    height: 72px;
     background: var(--pixel-black);
     border: 2px solid var(--pixel-border);
     border-radius: 0;
@@ -362,20 +362,19 @@
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    overflow: hidden;
+    overflow: hidden;               /* ← обрезает всё лишнее */
     image-rendering: pixelated;
-    padding: 4px;
+    padding: 0;                     /* ← убираем отступ */
 }
 
 .item-img img {
     width: 100%;
     height: 100%;
-    object-fit: contain;   /* ← КЛЮЧЕВОЕ: вписывает картинку целиком */
+    object-fit: cover;              /* ← было contain — картинка ЗАПОЛНЯЕТ контейнер */
     object-position: center;
     image-rendering: pixelated;
     display: block;
 }
-
     .item-info {
         flex: 1;
         min-width: 0;
