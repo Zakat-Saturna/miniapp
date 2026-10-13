@@ -1654,23 +1654,88 @@
         } catch (err) { alert("❌ Ошибка: " + err.message); }
     }
 
-    async function openSeasonCase() {
+        async function openSeasonCase() {
         if (!confirm("🎁 Открыть сезонный кейс за 25 🎃?")) return;
+
         try {
+            // 1. Получаем пул для рулетки
+            const previewRes = await fetch(`${API_URL}/api/season/case_preview`, {
+                headers: { "ngrok-skip-browser-warning": "true" }
+            });
+            const previewData = await previewRes.json();
+            if (!previewData.ok) { alert("❌ " + previewData.error); return; }
+            const pool = previewData.pool;
+            if (!pool || pool.length === 0) { alert("❌ Пул пуст"); return; }
+
+            // 2. Открываем кейс на бэке
             const res = await fetch(`${API_URL}/api/season/open_case`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
                 body: JSON.stringify({ user_id: user.id })
             });
             const data = await res.json();
-            if (data.ok) {
-                showToast(`🎁 ${data.item.rarity} ${data.item.name}`);
+            if (!data.ok) { alert("❌ " + data.error); return; }
+
+            // 3. Показываем рулетку
+            showSeasonCaseRoulette(pool, data.item, () => {
                 loadBattlePass();
-            } else {
-                alert("❌ " + data.error);
-            }
+            });
         } catch (err) { alert("❌ Ошибка: " + err.message); }
     }
+
+    function showSeasonCaseRoulette(pool, item, onDone) {
+        const rouletteRoot = document.getElementById("roulette-root");
+        const RANDOM_BEFORE = 40, TOTAL_ITEMS = 60;
+
+        // Ищем индекс выпавшего предмета в пуле
+        let targetIndex = 0;
+        for (let i = 0; i < pool.length; i++) {
+            if (pool[i].code === item.code || pool[i].name === item.name) {
+                targetIndex = i;
+                break;
+            }
+        }
+
+        const strip = [];
+        for (let i = 0; i < RANDOM_BEFORE; i++) strip.push(pool[Math.floor(Math.random() * pool.length)]);
+        strip.push(pool[targetIndex]);
+        for (let i = 0; i < TOTAL_ITEMS - RANDOM_BEFORE - 1; i++) strip.push(pool[Math.floor(Math.random() * pool.length)]);
+
+        let trackHtml = "";
+        for (const p of strip) {
+            trackHtml += `<div class="roulette-item">${imgTag(p, "r-emoji")}<div class="r-name">${escapeHtml(p.name)}</div></div>`;
+        }
+
+        rouletteRoot.innerHTML = `
+            <div class="roulette-container">
+                <div class="roulette-title">🎃 Сезонный кейс</div>
+                <div class="roulette-viewport">
+                    <div class="roulette-pointer"></div>
+                    <div class="roulette-track" id="roulette-track">${trackHtml}</div>
+                </div>
+            </div>
+        `;
+
+        const ITEM_WIDTH = 140;
+        const viewportWidth = Math.min(window.innerWidth - 40, 500);
+        const pointerPos = viewportWidth / 2;
+        const winningCenter = RANDOM_BEFORE * ITEM_WIDTH + ITEM_WIDTH / 2;
+        const offset = winningCenter - pointerPos;
+        const randomShift = (Math.random() - 0.5) * 60;
+        const finalOffset = offset + randomShift;
+
+        setTimeout(() => {
+            const track = document.getElementById("roulette-track");
+            if (track) track.style.transform = `translateX(-${finalOffset}px)`;
+        }, 100);
+
+        setTimeout(() => {
+            closeRoulette();
+            showToast(`🎁 ${item.rarity} ${item.name}`);
+            if (onDone) onDone();
+        }, 4300);
+    }
+    
         async function loadBonus() {
         document.getElementById("username").textContent = `${user.first_name} (@${user.username || "no_username"})`;
         document.getElementById("content").innerHTML = `
