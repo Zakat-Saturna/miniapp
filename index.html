@@ -2546,9 +2546,13 @@
             const insuredBtn = item.insured
                 ? `<button class="btn-tiny btn-tiny-insure disabled" disabled>🛡</button>`
                 : `<button class="btn-tiny btn-tiny-insure" onclick="insureItem('${item.code}')">🛡</button>`;
+            const isSeason = item.is_season;
             const checkboxHtml = isArtifact
                 ? `<div class="item-checkbox-placeholder">⭐</div>`
-                : `<div class="item-checkbox ${isSelected ? 'checked' : ''}" onclick="toggleCart('${item.code}')">${isSelected ? '✓' : ''}</div>`;
+                : (isSeason
+                    ? `<div class="item-checkbox-placeholder">🎃</div>`
+                    : `<div class="item-checkbox ${isSelected ? 'checked' : ''}" onclick="toggleCart('${item.code}')">${isSelected ? '✓' : ''}</div>`
+                );
             const actionsHtml = isArtifact
                 ? `<button class="btn-tiny btn-tiny-gift" onclick="giftItem('${item.code}')">🎁</button>`
                 : `${insuredBtn}<button class="btn-tiny btn-tiny-gift" onclick="giftItem('${item.code}')">🎁</button>`;
