@@ -2418,6 +2418,27 @@
         const BOT_USERNAME = "piggy_chefBot";
 
         const tg = window.Telegram.WebApp;
+        // Отключаем двойной тап-зум
+let lastTouchEnd = 0;
+document.addEventListener('touchend', function(event) {
+    const now = Date.now();
+    if (now - lastTouchEnd <= 300) {
+        event.preventDefault();
+    }
+    lastTouchEnd = now;
+}, { passive: false });
+
+// Отключаем pinch-zoom (два пальца)
+document.addEventListener('gesturestart', function(e) {
+    e.preventDefault();
+});
+
+// Отключаем мультитач
+document.addEventListener('touchmove', function(e) {
+    if (e.touches.length > 1) {
+        e.preventDefault();
+    }
+}, { passive: false });
         tg.ready();
         tg.expand();
 
