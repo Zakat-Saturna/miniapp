@@ -2329,16 +2329,16 @@
         // ПРОФИЛЬ
         // ============================================================
         async function loadProfile() {
-        if (!user) {
+    if (!user) {
         document.getElementById("content").innerHTML = '<div class="error">❌ Открой меня внутри Telegram!</div>';
         return;
-        }
-        document.getElementById("username").textContent = `${user.first_name} (@${user.username || "no_username"})`;
-        document.getElementById("content").innerHTML = '<div class="loading">⏳ Загружаем данные...</div>';
+    }
+    document.getElementById("username").textContent = `${user.first_name} (@${user.username || "no_username"})`;
+    document.getElementById("content").innerHTML = '<div class="loading">⏳ Загружаем данные...</div>';
 
-        try {
+    try {
         const res = await fetch(`${API_URL}/api/profile?user_id=${user.id}`, {
-        headers: { "ngrok-skip-browser-warning": "true" }
+            headers: { "ngrok-skip-browser-warning": "true" }
         });
         const data = await res.json();
         if (!data.ok) throw new Error(data.error);
@@ -2350,25 +2350,26 @@
         currentUserPath = u.path || "neutral";
         currentUserIsWorker = u.is_worker || false;
 
-        document.getElementById("content").innerHTML = `        <div class="card"><div class="label">💰 Баланс</div><div class="value">${formatNumber(u.balance)}₽</div></div>
+        document.getElementById("content").innerHTML = `
+        <div class="card"><div class="label">💰 Баланс</div><div class="value">${formatNumber(u.balance)}₽</div></div>
         <div class="card"><div class="label">✨ Опыт</div><div class="value">${formatNumber(u.xp)} XP</div></div>
         <div class="row">
-        <div class="card"><div class="label">🏪 Ресторан</div><div class="value">${u.restaurant_level} ур.</div></div>
-        <div class="card"><div class="label">🔥 Стрик</div><div class="value">${u.streak} дн.</div></div>
+            <div class="card"><div class="label">🏪 Ресторан</div><div class="value">${u.restaurant_level} ур.</div></div>
+            <div class="card"><div class="label">🎖 Уровень</div><div class="value">${u.level || 1}</div></div>
         </div>
         <div class="row">
-        <div class="card"><div class="label">📦 Кейсов</div><div class="value">${formatNumber(u.total_cases)}</div></div>
-        <div class="card"><div class="label">⭐ Репутация</div><div class="value">${u.reputation}</div></div>
+            <div class="card"><div class="label">📦 Кейсов</div><div class="value">${formatNumber(u.total_cases)}</div></div>
+            <div class="card"><div class="label">⭐ Репутация</div><div class="value">${u.reputation}</div></div>
         </div>
-                ${u.discount > 0 ? `
-                <div class="card" style="background: rgba(39,174,96,0.15);">
-                    <div class="label">💸 Твоя скидка</div>
-                    <div class="value" style="color:#27ae60;">${u.discount}%</div>
-                    <div style="font-size:14px;color:#999;margin-top:4px;">на кейсы и апгрейды</div>
-                </div>` : ''}
-                ${u.path === "saint" ? `<div class="card" style="background: rgba(52,152,219,0.15);"><div class="label">😇 Добряк</div><div style="font-size:14px;color:#999;margin-top:4px;">Кулдаун воровства: 60 мин</div></div>` : ''}
-                ${u.path === "sinner" ? `<div class="card" style="background: rgba(231,76,60,0.15);"><div class="label">🎭 Злодей</div><div style="font-size:14px;color:#999;margin-top:4px;">Кулдаун воровства: 2 мин · Страховка −50%</div></div>` : ''}
-                ${u.is_worker ? `<div class="card" style="background: rgba(155,89,182,0.15);"><div class="label">🚫 Ты работаешь поваром</div><div style="font-size:14px;color:#999;margin-top:4px;">Кейсы временно недоступны. Уволься, чтобы играть.</div></div>` : ''}
+        ${u.discount > 0 ? `
+        <div class="card" style="background: rgba(39,174,96,0.15);">
+            <div class="label">💸 Твоя скидка</div>
+            <div class="value" style="color:#27ae60;">${u.discount}%</div>
+            <div style="font-size:14px;color:#999;margin-top:4px;">на кейсы и апгрейды</div>
+        </div>` : ''}
+        ${u.path === "saint" ? `<div class="card" style="background: rgba(52,152,219,0.15);"><div class="label">😇 Добряк</div><div style="font-size:14px;color:#999;margin-top:4px;">Кулдаун воровства: 60 мин</div></div>` : ''}
+        ${u.path === "sinner" ? `<div class="card" style="background: rgba(231,76,60,0.15);"><div class="label">🎭 Злодей</div><div style="font-size:14px;color:#999;margin-top:4px;">Кулдаун воровства: 2 мин · Страховка −50%</div></div>` : ''}
+        ${u.is_worker ? `<div class="card" style="background: rgba(155,89,182,0.15);"><div class="label">🚫 Ты работаешь поваром</div><div style="font-size:14px;color:#999;margin-top:4px;">Кейсы временно недоступны. Уволься, чтобы играть.</div></div>` : ''}
         <button onclick="openRestaurant()">🏪 Ресторан</button>
         <button onclick="openCraft()">🔨 Крафт</button>
         <button onclick="openCollection()">📖 Коллекция</button>
@@ -2378,10 +2379,10 @@
         <button onclick="openReferral()">🔗 Приглашения</button>
         <button onclick="loadProfile()">🔄 Обновить</button>
         `;
-        } catch (err) {
+    } catch (err) {
         document.getElementById("content").innerHTML = `<div class="error">❌ Ошибка: ${escapeHtml(err.message)}</div>`;
-        }
-        }
+    }
+}
 
         // ============================================================
         // BATTLE PASS
@@ -3317,11 +3318,65 @@
         } catch (e) { }
 
         let html = `<div class="card"><div class="label">⚔️ PvP</div><div style="font-size:16px;color:#999;margin-top:6px;">Выбери режим</div></div>`;
-        html += `<button class="battle-menu-btn" onclick="openBjMenu()">🎰 Баттл </button>`;
+        html += `<button class="battle-menu-btn" onclick="openBjBotMenu()">🤖 Баттл с ботом</button>`;
+        html += `<button class="battle-menu-btn" onclick="openBjMenu()">🎰 Баттл с игроком</button>`;
         html += `<button onclick="loadRob()">⚔️ Воровство</button>`;
 
         document.getElementById("content").innerHTML = html;
         }
+
+    function openBjBotMenu() {
+        const modalRoot = document.getElementById("modal-root");
+        modalRoot.innerHTML = `
+            <div class="modal-overlay" onclick="if(event.target === this) closeModal()">
+                <div class="modal">
+                    <h3>🤖 Баттл с ботом</h3>
+                    <div style="font-size:15px;color:#999;text-align:center;margin-bottom:12px;">
+                        Бот останавливается на 17+. Победитель забирает банк.<br>
+                        <span style="color:#27ae60;">Ставка вернётся, если проиграешь или ничья.</span>
+                    </div>
+                    <input type="number" id="bj-bot-bet-input" class="modal-input" placeholder="Ставка (мин. 100₽)" min="100" step="100" value="100">
+                    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:12px;">
+                        <button class="modal-btn" style="margin:0;text-align:center;" onclick="setBjBotBet(100)">100₽</button>
+                        <button class="modal-btn" style="margin:0;text-align:center;" onclick="setBjBotBet(500)">500₽</button>
+                        <button class="modal-btn" style="margin:0;text-align:center;" onclick="setBjBotBet(1000)">1K₽</button>
+                        <button class="modal-btn" style="margin:0;text-align:center;" onclick="setBjBotBet(5000)">5K₽</button>
+                        <button class="modal-btn" style="margin:0;text-align:center;" onclick="setBjBotBet(10000)">10K₽</button>
+                        <button class="modal-btn" style="margin:0;text-align:center;" onclick="setBjBotBet(50000)">50K₽</button>
+                    </div>
+                    <button class="modal-btn primary" onclick="startBjBotGame()">🤖 Начать игру</button>
+                    <button class="modal-btn cancel" onclick="closeModal()">❌ Отмена</button>
+                </div>
+            </div>
+        `;
+    }
+
+    function setBjBotBet(amount) {
+        const input = document.getElementById("bj-bot-bet-input");
+        if (input) input.value = amount;
+    }
+
+    async function startBjBotGame() {
+        const input = document.getElementById("bj-bot-bet-input");
+        const bet = parseInt(input.value || "0");
+        if (!bet || bet < 100) { alert("❌ Минимальная ставка 100₽"); return; }
+
+        closeModal();
+        try {
+            const res = await fetch(`${API_URL}/api/bj_challenge_bot`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
+                body: JSON.stringify({ user_id: user.id, bet: bet })
+            });
+            const data = await res.json();
+            if (data.ok) {
+                showToast("🤖 Игра с ботом началась!");
+                await refreshBjState();
+            } else {
+                alert("❌ " + data.error);
+            }
+        } catch (err) { alert("❌ Ошибка: " + err.message); }
+    }
 
         async function openBjMenu() {
         document.getElementById("content").innerHTML = '<div class="loading">⏳ Загружаем...</div>';
@@ -3645,12 +3700,14 @@
         }
 
         let rematchBtn = "";
-        if (me.rematch) {
-        rematchBtn = `<button disabled>⏳ Ждём соперника...</button>`;
+        if (their.id === -1 || their.name === "🤖 Бот") {
+            rematchBtn = `<button onclick="closeBjGame(); openBjBotMenu();" class="result-btn again" style="background:#9b59b6;">🤖 Сыграть снова</button>`;
+        } else if (me.rematch) {
+            rematchBtn = `<button disabled>⏳ Ждём соперника...</button>`;
         } else if (their.rematch) {
-        rematchBtn = `<button onclick="bjRematch()" class="result-btn again" style="background:#27ae60;">✅ Соперник хочет реванш — принять</button>`;
+            rematchBtn = `<button onclick="bjRematch()" class="result-btn again" style="background:#27ae60;">✅ Соперник хочет реванш — принять</button>`;
         } else {
-        rematchBtn = `<button onclick="bjRematch()" class="result-btn again">🔁 Сыграть ещё раз</button>`;
+            rematchBtn = `<button onclick="bjRematch()" class="result-btn again">🔁 Сыграть ещё раз</button>`;
         }
 
         let html = `<div class="bj-result">
@@ -3705,18 +3762,25 @@
         loadBattleAndRob();
         }
 
-        async function cancelBjGame() {
-        if (!confirm("Отменить игру? Ставки вернутся обоим игрокам.")) return;
+    async function cancelBjGame() {
+        const isBotGame = lastBjState && lastBjState.their && (lastBjState.their.id === -1 || lastBjState.their.name === "🤖 Бот");
+
+        const msg = isBotGame
+            ? "Сдаться? Ставка вернётся (с ботом не теряешь деньги)."
+            : "Сдаться? Ты потеряешь свою ставку, а соперник получит x2.";
+
+        if (!confirm(msg)) return;
+
         try {
-        await fetch(`${API_URL}/api/bj_cancel`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
-        body: JSON.stringify({ user_id: user.id })
-        });
+            await fetch(`${API_URL}/api/bj_surrender`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
+                body: JSON.stringify({ user_id: user.id })
+            });
         } catch (e) { }
         stopBjPolling();
         loadBattleAndRob();
-        }
+    }
 
         async function loadRob() {
         document.getElementById("content").innerHTML = '<div class="loading">⏳ Загружаем воровство...</div>';
