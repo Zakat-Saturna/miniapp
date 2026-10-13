@@ -1608,6 +1608,14 @@
         html += `</div>`;
 
         document.getElementById("content").innerHTML = html;
+
+        // Автоскролл к первому доступному уровню
+        setTimeout(() => {
+            const firstAvailable = document.querySelector(".bp-level.available");
+            if (firstAvailable) {
+                firstAvailable.scrollIntoView({ behavior: "smooth", block: "center" });
+            }
+        }, 100);
     }
 
     async function claimBpLevel(level) {
