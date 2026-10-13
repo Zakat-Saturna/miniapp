@@ -59,6 +59,7 @@
         .sort-btn.active { background: var(--tg-theme-button-color, #2481cc); color: var(--tg-theme-button-text-color, #fff); border-color: var(--tg-theme-button-color, #2481cc); }
         .item { display: flex; align-items: center; gap: 12px; background: var(--tg-theme-secondary-bg-color, #f5f5f5); border-radius: 14px; padding: 12px; margin-bottom: 8px; transition: background 0.15s; }
         .item.selected { background: rgba(39, 174, 96, 0.25); border: 2px solid #27ae60; }
+        .item.is-season { background: linear-gradient(135deg, rgba(255, 140, 0, 0.12), rgba(255, 90, 0, 0.08)); border: 1px solid rgba(255, 140, 0, 0.3); }
         .item-checkbox { width: 28px; height: 28px; border-radius: 8px; border: 2px solid #888; display: flex; align-items: center; justify-content: center; flex-shrink: 0; cursor: pointer; font-size: 22px; color: white; background: transparent; transition: all 0.15s; }
         .item-checkbox.checked { background: #27ae60; border-color: #27ae60; }
         .item-checkbox-placeholder { width: 28px; height: 28px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 24px; }
@@ -168,6 +169,47 @@
         .notif-btn.accept { background: #27ae60; }
         .notif-btn.decline { background: #e74c3c; }
         .notif-btn.close { background: #888; }
+
+        /* === BATTLE PASS === */
+        .bp-header { background: linear-gradient(135deg, #2c1810, #4a2810); border-radius: 14px; padding: 16px; margin-bottom: 12px; color: white; text-align: center; border: 2px solid #ff6b35; }
+        .bp-header .bp-title { font-size: 24px; margin-bottom: 6px; }
+        .bp-header .bp-timer { font-size: 15px; color: #ffb088; }
+        .bp-stats { display: flex; gap: 10px; margin-bottom: 12px; }
+        .bp-stats .bp-stat { flex: 1; background: var(--tg-theme-secondary-bg-color, #f5f5f5); border-radius: 12px; padding: 10px; text-align: center; }
+        .bp-stats .bp-stat .label { font-size: 14px; color: #999; }
+        .bp-stats .bp-stat .value { font-size: 22px; color: #27ae60; }
+        .bp-progress-bar { background: rgba(0,0,0,0.1); border-radius: 10px; height: 20px; overflow: hidden; margin-bottom: 6px; }
+        .bp-progress-fill { height: 100%; background: linear-gradient(90deg, #ff6b35, #ffb700); transition: width 0.4s; }
+        .bp-progress-text { font-size: 14px; color: #999; text-align: center; margin-bottom: 12px; }
+        .bp-case-btn { background: linear-gradient(135deg, #ff6b35, #ffb700); color: white; font-size: 20px; padding: 14px; margin-bottom: 16px; border-radius: 12px; border: none; cursor: pointer; width: 100%; font-family: inherit; }
+        .bp-case-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .bp-levels { display: flex; flex-direction: column; gap: 8px; padding-bottom: 40px; }
+        .bp-level { background: var(--tg-theme-secondary-bg-color, #f5f5f5); border-radius: 12px; padding: 12px; display: flex; align-items: center; gap: 12px; position: relative; border: 2px solid transparent; }
+        .bp-level.locked { opacity: 0.55; }
+        .bp-level.available { border-color: #27ae60; box-shadow: 0 0 12px rgba(39,174,96,0.4); cursor: pointer; }
+        .bp-level.claimed { background: rgba(39,174,96,0.15); }
+        .bp-level .bp-lvl-num { font-size: 22px; font-weight: bold; min-width: 40px; text-align: center; color: #ff6b35; }
+        .bp-level .bp-reward-info { flex: 1; }
+        .bp-level .bp-reward-info .name { font-size: 17px; }
+        .bp-level .bp-reward-info .sub { font-size: 14px; color: #999; }
+        .bp-level .bp-claim-btn { background: #27ae60; color: white; padding: 8px 14px; margin: 0; width: auto; font-size: 15px; border-radius: 8px; border: none; cursor: pointer; }
+        .bp-level .bp-claim-btn:disabled { background: #555; }
+        .bp-level .bp-check { font-size: 22px; color: #27ae60; }
+
+        /* Quests */
+        .quest-row { background: var(--tg-theme-secondary-bg-color, #f5f5f5); border-radius: 12px; padding: 12px; margin-bottom: 8px; }
+        .quest-row.ready { border: 2px solid #27ae60; }
+        .quest-row .q-desc { font-size: 17px; margin-bottom: 6px; }
+        .quest-row .q-progress-bar { background: rgba(0,0,0,0.1); border-radius: 6px; height: 10px; overflow: hidden; margin-bottom: 6px; }
+        .quest-row .q-progress-fill { height: 100%; background: linear-gradient(90deg, #3498db, #2ecc71); transition: width 0.3s; }
+        .quest-row .q-reward { font-size: 14px; color: #999; display: flex; justify-content: space-between; align-items: center; }
+        .quest-row .q-claim-btn { background: #27ae60; color: white; padding: 6px 12px; margin: 0; width: auto; font-size: 14px; border-radius: 6px; border: none; cursor: pointer; }
+        .quest-row .q-claim-btn:disabled { background: #555; }
+
+        /* Top tabs */
+        .top-tabs { display: flex; gap: 6px; margin-bottom: 12px; }
+        .top-tabs .top-tab { flex: 1; padding: 10px; background: var(--tg-theme-secondary-bg-color, #f5f5f5); color: var(--tg-theme-text-color, #000); border: none; border-radius: 10px; font-size: 18px; cursor: pointer; font-family: inherit; margin: 0; }
+        .top-tabs .top-tab.active { background: #9b59b6; color: white; }
 
         /* === БАТТЛ === */
         .battle-menu-btn { background: #9b59b6; }
@@ -283,156 +325,6 @@
 
         .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px); background: linear-gradient(135deg, #27ae60, #2ecc71); color: white; padding: 14px 24px; border-radius: 12px; font-size: 18px; box-shadow: 0 8px 24px rgba(0,0,0,0.3); z-index: 10000; opacity: 0; transition: all 0.3s ease; max-width: 90%; text-align: center; }
         .toast.visible { transform: translateX(-50%) translateY(0); opacity: 1; }
-                /* === BATTLE PASS === */
-        .bp-header {
-            background: linear-gradient(135deg, #2c1810, #4a2810);
-            border-radius: 14px;
-            padding: 16px;
-            margin-bottom: 12px;
-            color: white;
-            text-align: center;
-            border: 2px solid #ff6b35;
-        }
-        .bp-header .bp-title { font-size: 24px; margin-bottom: 6px; }
-        .bp-header .bp-timer { font-size: 15px; color: #ffb088; }
-        .bp-stats { display: flex; gap: 10px; margin-bottom: 12px; }
-        .bp-stats .bp-stat {
-            flex: 1;
-            background: var(--tg-theme-secondary-bg-color, #f5f5f5);
-            border-radius: 12px;
-            padding: 10px;
-            text-align: center;
-        }
-        .bp-stats .bp-stat .label { font-size: 14px; color: #999; }
-        .bp-stats .bp-stat .value { font-size: 22px; color: #27ae60; }
-        .bp-progress-bar {
-            background: rgba(0,0,0,0.1);
-            border-radius: 10px;
-            height: 20px;
-            overflow: hidden;
-            margin-bottom: 6px;
-        }
-        .bp-progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #ff6b35, #ffb700);
-            transition: width 0.4s;
-        }
-        .bp-progress-text {
-            font-size: 14px;
-            color: #999;
-            text-align: center;
-            margin-bottom: 12px;
-        }
-        .bp-case-btn {
-            background: linear-gradient(135deg, #ff6b35, #ffb700);
-            color: white;
-            font-size: 20px;
-            padding: 14px;
-            margin-bottom: 16px;
-            border-radius: 12px;
-            border: none;
-            cursor: pointer;
-            width: 100%;
-            font-family: inherit;
-        }
-        .bp-case-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-        .bp-levels { display: flex; flex-direction: column; gap: 8px; padding-bottom: 40px; }
-        .bp-level {
-            background: var(--tg-theme-secondary-bg-color, #f5f5f5);
-            border-radius: 12px;
-            padding: 12px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            position: relative;
-            border: 2px solid transparent;
-        }
-        .bp-level.locked { opacity: 0.55; }
-        .bp-level.available { border-color: #27ae60; box-shadow: 0 0 12px rgba(39,174,96,0.4); cursor: pointer; }
-        .bp-level.claimed { background: rgba(39,174,96,0.15); }
-        .bp-level .bp-lvl-num {
-            font-size: 22px;
-            font-weight: bold;
-            min-width: 40px;
-            text-align: center;
-            color: #ff6b35;
-        }
-        .bp-level .bp-reward-info { flex: 1; }
-        .bp-level .bp-reward-info .name { font-size: 17px; }
-        .bp-level .bp-reward-info .sub { font-size: 14px; color: #999; }
-        .bp-level .bp-claim-btn {
-            background: #27ae60;
-            color: white;
-            padding: 8px 14px;
-            margin: 0;
-            width: auto;
-            font-size: 15px;
-            border-radius: 8px;
-            border: none;
-            cursor: pointer;
-        }
-        .bp-level .bp-claim-btn:disabled { background: #555; }
-        .bp-level .bp-check { font-size: 22px; color: #27ae60; }
-
-        /* Quests */
-        .quest-row {
-            background: var(--tg-theme-secondary-bg-color, #f5f5f5);
-            border-radius: 12px;
-            padding: 12px;
-            margin-bottom: 8px;
-        }
-        .quest-row.ready { border: 2px solid #27ae60; }
-        .quest-row .q-desc { font-size: 17px; margin-bottom: 6px; }
-        .quest-row .q-progress-bar {
-            background: rgba(0,0,0,0.1);
-            border-radius: 6px;
-            height: 10px;
-            overflow: hidden;
-            margin-bottom: 6px;
-        }
-        .quest-row .q-progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #3498db, #2ecc71);
-            transition: width 0.3s;
-        }
-        .quest-row .q-reward {
-            font-size: 14px;
-            color: #999;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .quest-row .q-claim-btn {
-            background: #27ae60;
-            color: white;
-            padding: 6px 12px;
-            margin: 0;
-            width: auto;
-            font-size: 14px;
-            border-radius: 6px;
-            border: none;
-            cursor: pointer;
-        }
-        .quest-row .q-claim-btn:disabled { background: #555; }
-
-        /* Top tabs */
-        .top-tabs { display: flex; gap: 6px; margin-bottom: 12px; }
-        .top-tabs .top-tab {
-            flex: 1;
-            padding: 10px;
-            background: var(--tg-theme-secondary-bg-color, #f5f5f5);
-            color: var(--tg-theme-text-color, #000);
-            border: none;
-            border-radius: 10px;
-            font-size: 18px;
-            cursor: pointer;
-            font-family: inherit;
-            margin: 0;
-        }
-        .top-tabs .top-tab.active {
-            background: #9b59b6;
-            color: white;
-        }
     </style>
 </head>
 <body>
@@ -480,7 +372,7 @@
 <div id="roulette-root"></div>
 <script>
     const API_URL = "https://piggychef.serveousercontent.com";
-    const BOT_USERNAME = "piggy_chefBot"; // ← замени, без @
+    const BOT_USERNAME = "piggy_chefBot";
 
     const tg = window.Telegram.WebApp;
     tg.ready();
@@ -552,7 +444,6 @@
         }, duration);
     }
 
-    // КЕШ
     const staticCache = new Map();
     const dynamicCache = new Map();
 
@@ -576,7 +467,6 @@
 
     function clearDynamicCache() { dynamicCache.clear(); }
     function clearStaticCache() { staticCache.clear(); }
-    function clearAllCache() { staticCache.clear(); dynamicCache.clear(); }
 
     function updateBalance(b) {
         currentBalance = b;
@@ -672,7 +562,7 @@
                 headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
                 body: JSON.stringify({ user_id: user.id, notification_id: notifId })
             });
-        } catch (e) { /* ignore */ }
+        } catch (e) { }
     }
 
     async function dismissNotification(notifId, btn) {
@@ -742,7 +632,7 @@
                 shownNotifIds.add(notif.id);
                 renderNotification(notif);
             }
-        } catch (e) { /* ignore */ }
+        } catch (e) { }
     }
 
     function startNotificationPolling() {
@@ -798,8 +688,380 @@
     }
 
     // ============================================================
-    // РЕСТОРАН
+    // BATTLE PASS
     // ============================================================
+    let bpState = { season: null, progress: null };
+
+    async function loadBattlePass() {
+        if (!user) return;
+        document.getElementById("username").textContent = `${user.first_name} (@${user.username || "no_username"})`;
+        document.getElementById("content").innerHTML = '<div class="loading">⏳ Загружаем Баттл Пасс...</div>';
+
+        try {
+            const sRes = await fetch(`${API_URL}/api/season/current`, {
+                headers: { "ngrok-skip-browser-warning": "true" }
+            });
+            const sData = await sRes.json();
+            if (!sData.ok) throw new Error(sData.error || "нет сезона");
+
+            const pRes = await fetch(`${API_URL}/api/season/progress?user_id=${user.id}`, {
+                headers: { "ngrok-skip-browser-warning": "true" }
+            });
+            const pData = await pRes.json();
+            if (!pData.ok) throw new Error(pData.error);
+
+            const qRes = await fetch(`${API_URL}/api/season/quests?user_id=${user.id}`, {
+                headers: { "ngrok-skip-browser-warning": "true" }
+            });
+            const qData = await qRes.json();
+            const quests = qData.ok ? qData.quests : [];
+
+            try {
+                await fetch(`${API_URL}/api/season/daily_login`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
+                    body: JSON.stringify({ user_id: user.id })
+                });
+            } catch (e) {}
+
+            bpState.season = sData.season;
+            bpState.progress = pData;
+            renderBattlePass(sData.season, pData, quests);
+        } catch (err) {
+            document.getElementById("content").innerHTML = `<div class="error">❌ Ошибка: ${escapeHtml(err.message)}</div>`;
+        }
+    }
+
+    function formatTimeLeft(sec) {
+        const d = Math.floor(sec / 86400);
+        const h = Math.floor((sec % 86400) / 3600);
+        const m = Math.floor((sec % 3600) / 60);
+        if (d > 0) return `${d}д ${h}ч ${m}м`;
+        if (h > 0) return `${h}ч ${m}м`;
+        return `${m}м`;
+    }
+
+    function renderBattlePass(season, prog, quests) {
+        const { level, bp_xp, xp_in_level, xp_needed, season_coins, case_price, rewards, passive_xp_per_hour, free_cases } = prog;
+
+        const percent = xp_needed > 0 ? Math.min(100, Math.round((xp_in_level / xp_needed) * 100)) : 0;
+
+        let html = `
+            <div class="bp-header">
+                <div class="bp-title">${season.emoji} ${escapeHtml(season.name)}</div>
+                <div class="bp-timer">⏳ До конца: ${formatTimeLeft(season.seconds_left)}</div>
+            </div>
+
+            <div class="bp-stats">
+                <div class="bp-stat">
+                    <div class="label">Уровень</div>
+                    <div class="value">${level} / 100</div>
+                </div>
+                <div class="bp-stat">
+                    <div class="label">🎃 Тыквы</div>
+                    <div class="value">${season_coins}</div>
+                </div>
+                ${free_cases > 0 ? `
+                <div class="bp-stat" style="background: rgba(39,174,96,0.15);">
+                    <div class="label">🎁 Бесплатных</div>
+                    <div class="value" style="color:#27ae60;">${free_cases}</div>
+                </div>` : ''}
+            </div>
+
+            <div class="card">
+                <div class="label">Опыт БП</div>
+                <div class="bp-progress-bar"><div class="bp-progress-fill" style="width:${percent}%"></div></div>
+                <div class="bp-progress-text">${xp_in_level} / ${xp_needed} XP (${percent}%)</div>
+                ${passive_xp_per_hour > 0 ? `<div style="font-size:14px;color:#27ae60;text-align:center;">+${passive_xp_per_hour} XP/час с сезонных блюд</div>` : ''}
+            </div>
+
+            ${free_cases > 0
+                ? `<button class="bp-case-btn" onclick="openSeasonCase()" style="background: linear-gradient(135deg, #27ae60, #2ecc71);">
+                       🎁 Открыть сезонный кейс (бесплатно ×${free_cases})
+                   </button>`
+                : `<button class="bp-case-btn" onclick="openSeasonCase()" ${season_coins < case_price ? 'disabled' : ''}>
+                       🎁 Открыть сезонный кейс (${case_price} 🎃)
+                   </button>`
+            }
+
+            <div class="card"><div class="label">📋 Ежедневные задания</div></div>
+        `;
+
+        for (const q of quests) {
+            const qPercent = q.target > 0 ? Math.min(100, Math.round((q.progress / q.target) * 100)) : 0;
+            const ready = q.can_claim;
+            html += `
+                <div class="quest-row ${ready ? 'ready' : ''}">
+                    <div class="q-desc">${escapeHtml(q.desc)}</div>
+                    <div class="q-progress-bar"><div class="q-progress-fill" style="width:${qPercent}%"></div></div>
+                    <div class="q-reward">
+                        <span>${q.progress} / ${q.target} · +${q.reward_xp} XP</span>
+                        <button class="q-claim-btn" onclick="claimQuest(${q.id})" ${ready ? '' : 'disabled'}>
+                            ${ready ? '🎁 Забрать' : '⏳'}
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        html += `<div class="card" style="margin-top:16px;"><div class="label">🏆 Награды за уровни</div></div>`;
+        html += `<div class="bp-levels">`;
+
+        for (const r of rewards) {
+            const { level: lvl, reward, coins, claimed, available } = r;
+            let rowClass = "";
+            let rewardText = "";
+            let subText = `+${coins} 🎃`;
+
+            if (claimed) rowClass = "claimed";
+            else if (available) rowClass = "available";
+            else rowClass = "locked";
+
+            if (reward.type === "money") {
+                rewardText = `💰 ${formatNumber(reward.amount)}₽`;
+            } else if (reward.type === "season_case") {
+                rewardText = `🎁 Сезонный кейс ×${reward.count}`;
+            } else if (reward.type === "season_dish") {
+                rewardText = `🍽 Сезонное блюдо (${reward.code})`;
+            }
+
+            let actionHtml = "";
+            if (claimed) {
+                actionHtml = `<span class="bp-check">✅</span>`;
+            } else if (available) {
+                actionHtml = `<button class="bp-claim-btn" onclick="claimBpLevel(${lvl})">🎁 Забрать</button>`;
+            } else {
+                actionHtml = `<span style="color:#999;font-size:14px;">🔒</span>`;
+            }
+
+            html += `
+                <div class="bp-level ${rowClass}" onclick="${available ? `claimBpLevel(${lvl})` : ''}">
+                    <div class="bp-lvl-num">${lvl}</div>
+                    <div class="bp-reward-info">
+                        <div class="name">${rewardText}</div>
+                        <div class="sub">${subText}</div>
+                    </div>
+                    ${actionHtml}
+                </div>
+            `;
+        }
+
+        html += `</div>`;
+
+        document.getElementById("content").innerHTML = html;
+
+        setTimeout(() => {
+            const firstAvailable = document.querySelector(".bp-level.available");
+            if (firstAvailable) {
+                firstAvailable.scrollIntoView({ behavior: "smooth", block: "center" });
+            }
+        }, 100);
+    }
+
+    async function claimBpLevel(level) {
+        try {
+            const res = await fetch(`${API_URL}/api/season/claim`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
+                body: JSON.stringify({ user_id: user.id, level })
+            });
+            const data = await res.json();
+            if (data.ok) {
+                showToast(`🎁 Уровень ${level}: ${data.message}`);
+                if (data.new_balance !== undefined) updateBalance(data.new_balance);
+                clearDynamicCache();
+                loadBattlePass();
+            } else {
+                alert("❌ " + data.error);
+            }
+        } catch (err) { alert("❌ Ошибка: " + err.message); }
+    }
+
+    async function claimQuest(questId) {
+        try {
+            const res = await fetch(`${API_URL}/api/season/quest_claim`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
+                body: JSON.stringify({ user_id: user.id, quest_id: questId })
+            });
+            const data = await res.json();
+            if (data.ok) {
+                showToast(`🎁 +${data.reward_xp} XP`);
+                loadBattlePass();
+            } else {
+                alert("❌ " + data.error);
+            }
+        } catch (err) { alert("❌ Ошибка: " + err.message); }
+    }
+
+    async function openSeasonCase() {
+        if (!confirm("🎁 Открыть сезонный кейс?")) return;
+
+        try {
+            const previewRes = await fetch(`${API_URL}/api/season/case_preview`, {
+                headers: { "ngrok-skip-browser-warning": "true" }
+            });
+            const previewData = await previewRes.json();
+            if (!previewData.ok) { alert("❌ " + previewData.error); return; }
+            const pool = previewData.pool;
+            if (!pool || pool.length === 0) { alert("❌ Пул пуст"); return; }
+
+            const res = await fetch(`${API_URL}/api/season/open_case`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
+                body: JSON.stringify({ user_id: user.id })
+            });
+            const data = await res.json();
+            if (!data.ok) { alert("❌ " + data.error); return; }
+
+            showSeasonCaseRoulette(pool, data.item, () => {
+                loadBattlePass();
+            });
+        } catch (err) { alert("❌ Ошибка: " + err.message); }
+    }
+
+    function showSeasonCaseRoulette(pool, item, onDone) {
+        const rouletteRoot = document.getElementById("roulette-root");
+        const RANDOM_BEFORE = 40, TOTAL_ITEMS = 60;
+
+        let targetIndex = 0;
+        for (let i = 0; i < pool.length; i++) {
+            if (pool[i].code === item.code || pool[i].name === item.name) {
+                targetIndex = i;
+                break;
+            }
+        }
+
+        const strip = [];
+        for (let i = 0; i < RANDOM_BEFORE; i++) strip.push(pool[Math.floor(Math.random() * pool.length)]);
+        strip.push(pool[targetIndex]);
+        for (let i = 0; i < TOTAL_ITEMS - RANDOM_BEFORE - 1; i++) strip.push(pool[Math.floor(Math.random() * pool.length)]);
+
+        let trackHtml = "";
+        for (const p of strip) {
+            trackHtml += `<div class="roulette-item">${imgTag(p, "r-emoji")}<div class="r-name">${escapeHtml(p.name)}</div></div>`;
+        }
+
+        rouletteRoot.innerHTML = `
+            <div class="roulette-container">
+                <div class="roulette-title">🎃 Сезонный кейс</div>
+                <div class="roulette-viewport">
+                    <div class="roulette-pointer"></div>
+                    <div class="roulette-track" id="roulette-track">${trackHtml}</div>
+                </div>
+            </div>
+        `;
+
+        const ITEM_WIDTH = 140;
+        const viewportWidth = Math.min(window.innerWidth - 40, 500);
+        const pointerPos = viewportWidth / 2;
+        const winningCenter = RANDOM_BEFORE * ITEM_WIDTH + ITEM_WIDTH / 2;
+        const offset = winningCenter - pointerPos;
+        const randomShift = (Math.random() - 0.5) * 60;
+        const finalOffset = offset + randomShift;
+
+        setTimeout(() => {
+            const track = document.getElementById("roulette-track");
+            if (track) track.style.transform = `translateX(-${finalOffset}px)`;
+        }, 100);
+
+        setTimeout(() => {
+            closeRoulette();
+            showToast(`🎁 ${item.rarity} ${item.name}`);
+            if (onDone) onDone();
+        }, 4300);
+    }
+
+    // ============================================================
+    // ТОП
+    // ============================================================
+    let topActiveTab = "overall";
+
+    async function loadTop() {
+        document.getElementById("username").textContent = `${user.first_name} (@${user.username || "no_username"})`;
+
+        let html = `
+            <div class="top-tabs">
+                <button class="top-tab ${topActiveTab === 'overall' ? 'active' : ''}" onclick="switchTopTab('overall')">🏆 Общий</button>
+                <button class="top-tab ${topActiveTab === 'season' ? 'active' : ''}" onclick="switchTopTab('season')">🎃 Сезон</button>
+            </div>
+            <div id="top-content"><div class="loading">⏳</div></div>
+        `;
+        document.getElementById("content").innerHTML = html;
+        await renderTopContent();
+    }
+
+    function switchTopTab(tab) {
+        topActiveTab = tab;
+        loadTop();
+    }
+
+    async function renderTopContent() {
+        const el = document.getElementById("top-content");
+        try {
+            if (topActiveTab === "overall") {
+                const data = await fetchCached(`${API_URL}/api/top`, 30000);
+                if (!data.ok) throw new Error(data.error);
+                let html = "";
+                for (let i = 0; i < data.top.length; i++) {
+                    const u = data.top[i];
+                    const rank = i + 1;
+                    let medal = '', rowClass = '';
+                    if (rank === 1) { medal = '🥇'; rowClass = 'top1'; }
+                    else if (rank === 2) { medal = '🥈'; rowClass = 'top2'; }
+                    else if (rank === 3) { medal = '🥉'; rowClass = 'top3'; }
+                    else { medal = `#${rank}`; }
+                    let name = u.username ? `@${u.username}` : (u.first_name || `id${u.user_id}`);
+                    if (u.has_crown) name = '👑 ' + name;
+                    if (u.reputation >= 100) name = '😇 ' + name;
+                    else if (u.reputation <= -100) name = '🎭 ' + name;
+                    html += `
+                        <div class="top-row ${rowClass}">
+                            <div class="top-rank">${medal}</div>
+                            <div class="top-info">
+                                <div class="top-name">${escapeHtml(name)}</div>
+                                <div class="top-stats">Ур. ${u.level} · ✨ ${formatNumber(u.xp)} XP</div>
+                            </div>
+                            <div class="top-balance">${formatNumber(u.balance)}₽</div>
+                        </div>
+                    `;
+                }
+                el.innerHTML = html || '<div class="card"><div class="label">Пусто</div></div>';
+            } else {
+                const data = await fetchCached(`${API_URL}/api/season/top`, 15000);
+                if (!data.ok) throw new Error(data.error);
+                let html = "";
+                for (let i = 0; i < data.top.length; i++) {
+                    const u = data.top[i];
+                    const rank = i + 1;
+                    let medal = '', rowClass = '';
+                    if (rank === 1) { medal = '🥇'; rowClass = 'top1'; }
+                    else if (rank === 2) { medal = '🥈'; rowClass = 'top2'; }
+                    else if (rank === 3) { medal = '🥉'; rowClass = 'top3'; }
+                    else { medal = `#${rank}`; }
+                    let name = u.username ? `@${u.username}` : (u.first_name || `id${u.user_id}`);
+                    html += `
+                        <div class="top-row ${rowClass}">
+                            <div class="top-rank">${medal}</div>
+                            <div class="top-info">
+                                <div class="top-name">${escapeHtml(name)}</div>
+                                <div class="top-stats">Ур. БП ${u.level} · ✨ ${formatNumber(u.bp_xp)} XP</div>
+                            </div>
+                            <div class="top-balance">🎃 ${u.season_coins}</div>
+                        </div>
+                    `;
+                }
+                el.innerHTML = html || '<div class="card"><div class="label">Пусто</div></div>';
+            }
+        } catch (err) {
+            el.innerHTML = `<div class="error">❌ ${escapeHtml(err.message)}</div>`;
+        }
+    }
+
+    // ============================================================
+    // ОСТАЛЬНЫЕ ФУНКЦИИ (ресторан, друзья, работа, крафт, кейсы, инвентарь, баттл, воровство)
+    // ============================================================
+
     async function openRestaurant() {
         document.getElementById("content").innerHTML = '<div class="loading">⏳ Загружаем ресторан...</div>';
         try {
@@ -984,9 +1246,6 @@
         hireFromModal(value);
     }
 
-    // ============================================================
-    // ДРУЗЬЯ
-    // ============================================================
     async function openFriends() {
         document.getElementById("content").innerHTML = '<div class="loading">⏳ Загружаем друзей...</div>';
         try {
@@ -1074,9 +1333,6 @@
         } catch (err) { alert("❌ Ошибка: " + err.message); }
     }
 
-    // ============================================================
-    // РАБОТА
-    // ============================================================
     async function openJob() {
         document.getElementById("content").innerHTML = '<div class="loading">⏳ Загружаем...</div>';
         try {
@@ -1124,9 +1380,6 @@
         } catch (err) { alert("❌ Ошибка: " + err.message); }
     }
 
-    // ============================================================
-    // ПРИГЛАШЕНИЯ
-    // ============================================================
     async function openReferral() {
         document.getElementById("content").innerHTML = '<div class="loading">⏳ Загружаем...</div>';
         try {
@@ -1192,9 +1445,6 @@
         window.open(shareUrl, "_blank");
     }
 
-    // ============================================================
-    // КРАФТ
-    // ============================================================
     async function openCraft() {
         document.getElementById("content").innerHTML = '<div class="loading">⏳ Загружаем крафт...</div>';
         try {
@@ -1244,9 +1494,6 @@
         } catch (err) { alert("❌ Ошибка: " + err.message); }
     }
 
-    // ============================================================
-    // КОЛЛЕКЦИЯ
-    // ============================================================
     let collectionState = { collapsed: {} };
 
     async function openCollection() {
@@ -1299,9 +1546,6 @@
         }
     }
 
-    // ============================================================
-    // ДОСТИЖЕНИЯ
-    // ============================================================
     async function openAchievements() {
         document.getElementById("content").innerHTML = '<div class="loading">⏳ Загружаем достижения...</div>';
         try {
@@ -1360,448 +1604,10 @@
         } catch (err) { alert("❌ Ошибка: " + err.message); }
     }
 
-    // ============================================================
-    // ТОП
-    // ============================================================
-        let topActiveTab = "overall";
-
-    async function loadTop() {
-        document.getElementById("username").textContent = `${user.first_name} (@${user.username || "no_username"})`;
-        document.getElementById("content").innerHTML = '<div class="loading">⏳ Загружаем топ...</div>';
-
-        let html = `
-            <div class="top-tabs">
-                <button class="top-tab ${topActiveTab === 'overall' ? 'active' : ''}" onclick="switchTopTab('overall')">🏆 Общий</button>
-                <button class="top-tab ${topActiveTab === 'season' ? 'active' : ''}" onclick="switchTopTab('season')">🎃 Сезон</button>
-            </div>
-            <div id="top-content"><div class="loading">⏳</div></div>
-        `;
-        document.getElementById("content").innerHTML = html;
-        await renderTopContent();
-    }
-
-    function switchTopTab(tab) {
-        topActiveTab = tab;
-        loadTop();
-    }
-
-    async function renderTopContent() {
-        const el = document.getElementById("top-content");
-        try {
-            if (topActiveTab === "overall") {
-                const data = await fetchCached(`${API_URL}/api/top`, 30000);
-                if (!data.ok) throw new Error(data.error);
-                let html = "";
-                for (let i = 0; i < data.top.length; i++) {
-                    const u = data.top[i];
-                    const rank = i + 1;
-                    let medal = '', rowClass = '';
-                    if (rank === 1) { medal = '🥇'; rowClass = 'top1'; }
-                    else if (rank === 2) { medal = '🥈'; rowClass = 'top2'; }
-                    else if (rank === 3) { medal = '🥉'; rowClass = 'top3'; }
-                    else { medal = `#${rank}`; }
-                    let name = u.username ? `@${u.username}` : (u.first_name || `id${u.user_id}`);
-                    if (u.has_crown) name = '👑 ' + name;
-                    if (u.reputation >= 100) name = '😇 ' + name;
-                    else if (u.reputation <= -100) name = '🎭 ' + name;
-                    html += `
-                        <div class="top-row ${rowClass}">
-                            <div class="top-rank">${medal}</div>
-                            <div class="top-info">
-                                <div class="top-name">${escapeHtml(name)}</div>
-                                <div class="top-stats">Ур. ${u.level} · ✨ ${formatNumber(u.xp)} XP</div>
-                            </div>
-                            <div class="top-balance">${formatNumber(u.balance)}₽</div>
-                        </div>
-                    `;
-                }
-                el.innerHTML = html || '<div class="card"><div class="label">Пусто</div></div>';
-            } else {
-                const data = await fetchCached(`${API_URL}/api/season/top`, 15000);
-                if (!data.ok) throw new Error(data.error);
-                let html = "";
-                for (let i = 0; i < data.top.length; i++) {
-                    const u = data.top[i];
-                    const rank = i + 1;
-                    let medal = '', rowClass = '';
-                    if (rank === 1) { medal = '🥇'; rowClass = 'top1'; }
-                    else if (rank === 2) { medal = '🥈'; rowClass = 'top2'; }
-                    else if (rank === 3) { medal = '🥉'; rowClass = 'top3'; }
-                    else { medal = `#${rank}`; }
-                    let name = u.username ? `@${u.username}` : (u.first_name || `id${u.user_id}`);
-                    html += `
-                        <div class="top-row ${rowClass}">
-                            <div class="top-rank">${medal}</div>
-                            <div class="top-info">
-                                <div class="top-name">${escapeHtml(name)}</div>
-                                <div class="top-stats">Ур. БП ${u.level} · ✨ ${formatNumber(u.bp_xp)} XP</div>
-                            </div>
-                            <div class="top-balance">🎃 ${u.season_coins}</div>
-                        </div>
-                    `;
-                }
-                el.innerHTML = html || '<div class="card"><div class="label">Пусто</div></div>';
-            }
-        } catch (err) {
-            el.innerHTML = `<div class="error">❌ ${escapeHtml(err.message)}</div>`;
-        }
-    }
-
-    // ============================================================
-    // БОНУС
-    // ============================================================
-        // ============================================================
-    // BATTLE PASS
-    // ============================================================
-    let bpState = { season: null, progress: null };
-
-    async function loadBattlePass() {
-        if (!user) return;
-        document.getElementById("username").textContent = `${user.first_name} (@${user.username || "no_username"})`;
-        document.getElementById("content").innerHTML = '<div class="loading">⏳ Загружаем Баттл Пасс...</div>';
-
-        try {
-            // 1. Сезон
-            const sRes = await fetch(`${API_URL}/api/season/current`, {
-                headers: { "ngrok-skip-browser-warning": "true" }
-            });
-            const sData = await sRes.json();
-            if (!sData.ok) throw new Error(sData.error || "нет сезона");
-
-            // 2. Прогресс
-            const pRes = await fetch(`${API_URL}/api/season/progress?user_id=${user.id}`, {
-                headers: { "ngrok-skip-browser-warning": "true" }
-            });
-            const pData = await pRes.json();
-            if (!pData.ok) throw new Error(pData.error);
-
-            // 3. Задания
-            const qRes = await fetch(`${API_URL}/api/season/quests?user_id=${user.id}`, {
-                headers: { "ngrok-skip-browser-warning": "true" }
-            });
-            const qData = await qRes.json();
-            const quests = qData.ok ? qData.quests : [];
-
-            // 4. Вход в игру (начислить +100 XP)
-            try {
-                await fetch(`${API_URL}/api/season/daily_login`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
-                    body: JSON.stringify({ user_id: user.id })
-                });
-            } catch (e) {}
-
-            bpState.season = sData.season;
-            bpState.progress = pData;
-            renderBattlePass(sData.season, pData, quests);
-        } catch (err) {
-            document.getElementById("content").innerHTML = `<div class="error">❌ Ошибка: ${escapeHtml(err.message)}</div>`;
-        }
-    }
-
-    function formatTimeLeft(sec) {
-        const d = Math.floor(sec / 86400);
-        const h = Math.floor((sec % 86400) / 3600);
-        const m = Math.floor((sec % 3600) / 60);
-        if (d > 0) return `${d}д ${h}ч ${m}м`;
-        if (h > 0) return `${h}ч ${m}м`;
-        return `${m}м`;
-    }
-
-    function renderBattlePass(season, prog, quests) {
-        const { level, bp_xp, xp_in_level, xp_needed, season_coins, case_price, rewards, passive_xp_per_hour } = prog;
-
-        const percent = xp_needed > 0 ? Math.min(100, Math.round((xp_in_level / xp_needed) * 100)) : 0;
-
-        let html = `
-            <div class="bp-header">
-                <div class="bp-title">${season.emoji} ${escapeHtml(season.name)}</div>
-                <div class="bp-timer">⏳ До конца: ${formatTimeLeft(season.seconds_left)}</div>
-            </div>
-
-            <div class="bp-stats">
-                <div class="bp-stat">
-                    <div class="label">Уровень</div>
-                    <div class="value">${level} / 100</div>
-                </div>
-                <div class="bp-stat">
-                    <div class="label">🎃 Тыквы</div>
-                    <div class="value">${season_coins}</div>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="label">Опыт БП</div>
-                <div class="bp-progress-bar"><div class="bp-progress-fill" style="width:${percent}%"></div></div>
-                <div class="bp-progress-text">${xp_in_level} / ${xp_needed} XP (${percent}%)</div>
-                ${passive_xp_per_hour > 0 ? `<div style="font-size:14px;color:#27ae60;text-align:center;">+${passive_xp_per_hour} XP/час с сезонных блюд</div>` : ''}
-            </div>
-
-            <button class="bp-case-btn" onclick="openSeasonCase()" ${season_coins < case_price ? 'disabled' : ''}>
-                🎁 Открыть сезонный кейс (${case_price} 🎃)
-            </button>
-
-            <div class="card"><div class="label">📋 Ежедневные задания</div></div>
-        `;
-
-        for (const q of quests) {
-            const qPercent = q.target > 0 ? Math.min(100, Math.round((q.progress / q.target) * 100)) : 0;
-            const ready = q.can_claim;
-            html += `
-                <div class="quest-row ${ready ? 'ready' : ''}">
-                    <div class="q-desc">${escapeHtml(q.desc)}</div>
-                    <div class="q-progress-bar"><div class="q-progress-fill" style="width:${qPercent}%"></div></div>
-                    <div class="q-reward">
-                        <span>${q.progress} / ${q.target} · +${q.reward_xp} XP · +${q.reward_coins} 🎃</span>
-                        <button class="q-claim-btn" onclick="claimQuest(${q.id})" ${ready ? '' : 'disabled'}>
-                            ${ready ? '🎁 Забрать' : '⏳'}
-                        </button>
-                    </div>
-                </div>
-            `;
-        }
-
-        html += `<div class="card" style="margin-top:16px;"><div class="label">🏆 Награды за уровни (снизу вверх)</div></div>`;
-        html += `<div class="bp-levels">`;
-
-        for (const r of rewards) {
-            const { level: lvl, reward, coins, claimed, available } = r;
-            let rowClass = "";
-            let rewardText = "";
-            let subText = `+${coins} 🎃`;
-
-            if (claimed) rowClass = "claimed";
-            else if (available) rowClass = "available";
-            else rowClass = "locked";
-
-            if (reward.type === "money") {
-                rewardText = `💰 ${formatNumber(reward.amount)}₽`;
-            } else if (reward.type === "season_case") {
-                rewardText = `🎁 Сезонный кейс ×${reward.count}`;
-            } else if (reward.type === "season_dish") {
-                rewardText = `🍽 Сезонное блюдо (${reward.code})`;
-            }
-
-            let actionHtml = "";
-            if (claimed) {
-                actionHtml = `<span class="bp-check">✅</span>`;
-            } else if (available) {
-                actionHtml = `<button class="bp-claim-btn" onclick="claimBpLevel(${lvl})">🎁 Забрать</button>`;
-            } else {
-                actionHtml = `<span style="color:#999;font-size:14px;">🔒</span>`;
-            }
-
-            html += `
-                <div class="bp-level ${rowClass}" onclick="${available ? `claimBpLevel(${lvl})` : ''}">
-                    <div class="bp-lvl-num">${lvl}</div>
-                    <div class="bp-reward-info">
-                        <div class="name">${rewardText}</div>
-                        <div class="sub">${subText}</div>
-                    </div>
-                    ${actionHtml}
-                </div>
-            `;
-        }
-
-        html += `</div>`;
-
-        document.getElementById("content").innerHTML = html;
-
-        // Автоскролл к первому доступному уровню
-        setTimeout(() => {
-            const firstAvailable = document.querySelector(".bp-level.available");
-            if (firstAvailable) {
-                firstAvailable.scrollIntoView({ behavior: "smooth", block: "center" });
-            }
-        }, 100);
-    }
-
-    async function claimBpLevel(level) {
-        try {
-            const res = await fetch(`${API_URL}/api/season/claim`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
-                body: JSON.stringify({ user_id: user.id, level })
-            });
-            const data = await res.json();
-            if (data.ok) {
-                showToast(`🎁 Уровень ${level}: ${data.message}`);
-                if (data.new_balance !== undefined) updateBalance(data.new_balance);
-                clearDynamicCache();
-                loadBattlePass();
-            } else {
-                alert("❌ " + data.error);
-            }
-        } catch (err) { alert("❌ Ошибка: " + err.message); }
-    }
-
-    async function claimQuest(questId) {
-        try {
-            const res = await fetch(`${API_URL}/api/season/quest_claim`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
-                body: JSON.stringify({ user_id: user.id, quest_id: questId })
-            });
-            const data = await res.json();
-            if (data.ok) {
-                showToast(`🎁 +${data.reward_xp} XP, +${data.reward_coins} 🎃`);
-                loadBattlePass();
-            } else {
-                alert("❌ " + data.error);
-            }
-        } catch (err) { alert("❌ Ошибка: " + err.message); }
-    }
-
-        async function openSeasonCase() {
-        if (!confirm("🎁 Открыть сезонный кейс за 25 🎃?")) return;
-
-        try {
-            // 1. Получаем пул для рулетки
-            const previewRes = await fetch(`${API_URL}/api/season/case_preview`, {
-                headers: { "ngrok-skip-browser-warning": "true" }
-            });
-            const previewData = await previewRes.json();
-            if (!previewData.ok) { alert("❌ " + previewData.error); return; }
-            const pool = previewData.pool;
-            if (!pool || pool.length === 0) { alert("❌ Пул пуст"); return; }
-
-            // 2. Открываем кейс на бэке
-            const res = await fetch(`${API_URL}/api/season/open_case`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
-                body: JSON.stringify({ user_id: user.id })
-            });
-            const data = await res.json();
-            if (!data.ok) { alert("❌ " + data.error); return; }
-
-            // 3. Показываем рулетку
-            showSeasonCaseRoulette(pool, data.item, () => {
-                loadBattlePass();
-            });
-        } catch (err) { alert("❌ Ошибка: " + err.message); }
-    }
-
-    function showSeasonCaseRoulette(pool, item, onDone) {
-        const rouletteRoot = document.getElementById("roulette-root");
-        const RANDOM_BEFORE = 40, TOTAL_ITEMS = 60;
-
-        // Ищем индекс выпавшего предмета в пуле
-        let targetIndex = 0;
-        for (let i = 0; i < pool.length; i++) {
-            if (pool[i].code === item.code || pool[i].name === item.name) {
-                targetIndex = i;
-                break;
-            }
-        }
-
-        const strip = [];
-        for (let i = 0; i < RANDOM_BEFORE; i++) strip.push(pool[Math.floor(Math.random() * pool.length)]);
-        strip.push(pool[targetIndex]);
-        for (let i = 0; i < TOTAL_ITEMS - RANDOM_BEFORE - 1; i++) strip.push(pool[Math.floor(Math.random() * pool.length)]);
-
-        let trackHtml = "";
-        for (const p of strip) {
-            trackHtml += `<div class="roulette-item">${imgTag(p, "r-emoji")}<div class="r-name">${escapeHtml(p.name)}</div></div>`;
-        }
-
-        rouletteRoot.innerHTML = `
-            <div class="roulette-container">
-                <div class="roulette-title">🎃 Сезонный кейс</div>
-                <div class="roulette-viewport">
-                    <div class="roulette-pointer"></div>
-                    <div class="roulette-track" id="roulette-track">${trackHtml}</div>
-                </div>
-            </div>
-        `;
-
-        const ITEM_WIDTH = 140;
-        const viewportWidth = Math.min(window.innerWidth - 40, 500);
-        const pointerPos = viewportWidth / 2;
-        const winningCenter = RANDOM_BEFORE * ITEM_WIDTH + ITEM_WIDTH / 2;
-        const offset = winningCenter - pointerPos;
-        const randomShift = (Math.random() - 0.5) * 60;
-        const finalOffset = offset + randomShift;
-
-        setTimeout(() => {
-            const track = document.getElementById("roulette-track");
-            if (track) track.style.transform = `translateX(-${finalOffset}px)`;
-        }, 100);
-
-        setTimeout(() => {
-            closeRoulette();
-            showToast(`🎁 ${item.rarity} ${item.name}`);
-            if (onDone) onDone();
-        }, 4300);
-    }
-    
-        async function loadBonus() {
-        document.getElementById("username").textContent = `${user.first_name} (@${user.username || "no_username"})`;
-        document.getElementById("content").innerHTML = `
-            <button class="btn-back" onclick="loadProfile()">⬅️ Назад в профиль</button>
-            <div class="loading">⏳ Загружаем бонус...</div>
-        `;
-        try {
-            const res = await fetch(`${API_URL}/api/bonus_status?user_id=${user.id}`, {
-                headers: { "ngrok-skip-browser-warning": "true" }
-            });
-            const data = await res.json();
-            if (!data.ok) throw new Error(data.error);
-            let html = `<button class="btn-back" onclick="loadProfile()">⬅️ Назад в профиль</button>`;
-            if (data.can_claim) {
-                html += `
-                    <div class="bonus-card">
-                        <div class="bonus-label">🎁 Ежедневный бонус</div>
-                        <div class="bonus-amount">+${formatNumber(data.current_bonus)}₽</div>
-                        <div class="bonus-label">🔥 Стрик: ${data.next_streak} дн.</div>
-                        <button onclick="claimBonus()">🎁 Забрать бонус</button>
-                    </div>
-                    <div class="card"><div class="label">Завтра бонус будет</div><div class="value">+${formatNumber(data.next_bonus)}₽</div></div>
-                `;
-            } else {
-                const totalSec = data.time_left_sec;
-                const hours = Math.floor(totalSec / 3600);
-                const minutes = Math.floor((totalSec % 3600) / 60);
-                html += `
-                    <div class="bonus-card">
-                        <div class="bonus-label">⏳ Бонус уже забран</div>
-                        <div class="bonus-amount" style="color: #999; font-size: 36px;">${hours}ч ${minutes}м</div>
-                        <div class="bonus-label">до следующего</div>
-                    </div>
-                    <div class="card"><div class="label">🔥 Стрик</div><div class="value">${data.current_streak} дн.</div></div>
-                    <div class="card"><div class="label">Следующий бонус</div><div class="value">+${formatNumber(data.next_bonus)}₽</div></div>
-                `;
-            }
-            document.getElementById("content").innerHTML = html;
-        } catch (err) {
-            document.getElementById("content").innerHTML = `<div class="error">❌ Ошибка: ${escapeHtml(err.message)}</div>`;
-        }
-    }
-
-    async function claimBonus() {
-        try {
-            const res = await fetch(`${API_URL}/api/claim_bonus`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
-                body: JSON.stringify({ user_id: user.id })
-            });
-            const data = await res.json();
-            if (data.ok) {
-                updateBalance(data.new_balance);
-                alert(`🎁 +${formatNumber(data.bonus)}₽\n🔥 Стрик: ${data.new_streak} дн.`);
-                clearDynamicCache();
-                loadBonus();
-            } else alert("❌ " + data.error);
-        } catch (err) { alert("❌ Ошибка: " + err.message); }
-    }
-
-    // ============================================================
-    // БАТТЛ И ВОРОВСТВО (вкладка мечей)
-    // ============================================================
     async function loadBattleAndRob() {
         document.getElementById("username").textContent = `${user.first_name} (@${user.username || "no_username"})`;
         document.getElementById("content").innerHTML = '<div class="loading">⏳ Загружаем...</div>';
 
-        // Проверяем активную игру баттла
         try {
             const bjRes = await fetch(`${API_URL}/api/bj_state?user_id=${user.id}`, {
                 headers: { "ngrok-skip-browser-warning": "true" }
@@ -1809,13 +1615,11 @@
             const bjData = await bjRes.json();
 
             if (bjData.ok && bjData.game) {
-                // Есть активная игра — показываем игровой экран
                 renderBjScreen(bjData.game);
                 return;
             }
-        } catch (e) { /* ignore */ }
+        } catch (e) { }
 
-        // Иначе — меню выбора: баттл или воровство
         let html = `<div class="card"><div class="label">⚔️ PvP</div><div style="font-size:16px;color:#999;margin-top:6px;">Выбери режим</div></div>`;
         html += `<button class="battle-menu-btn" onclick="openBjMenu()">🎰 Баттл </button>`;
         html += `<button onclick="loadRob()">⚔️ Воровство</button>`;
@@ -1823,9 +1627,6 @@
         document.getElementById("content").innerHTML = html;
     }
 
-    // ============================================================
-    // МЕНЮ БАТТЛА
-    // ============================================================
     async function openBjMenu() {
         document.getElementById("content").innerHTML = '<div class="loading">⏳ Загружаем...</div>';
         try {
@@ -1914,9 +1715,7 @@
             const data = await res.json();
             if (data.ok) {
                 showToast("✅ " + data.message);
-                // Показываем экран ожидания
                 renderBjWaiting({ bet, opponent_name: "соперник" });
-                // Запускаем polling
                 startBjPolling();
             } else {
                 alert("❌ " + data.error);
@@ -1944,7 +1743,6 @@
         const value = (input.value || "").trim();
         if (!value) { alert("❌ Введи username или ID"); return; }
 
-        // Ищем игрока
         try {
             const clean = value.startsWith("@") ? value.slice(1) : value;
             const searchUrl = /^\d+$/.test(clean)
@@ -1959,9 +1757,6 @@
         } catch (err) { alert("❌ " + err.message); }
     }
 
-    // ============================================================
-    // ИГРОВОЙ ЭКРАН БАТТЛА
-    // ============================================================
     function renderBjWaiting(info) {
         let html = `<div class="card"><div class="label">🎰 Ожидание соперника</div></div>`;
         html += `<div class="bj-waiting">
@@ -1978,8 +1773,6 @@
         lastBjState = game;
 
         if (game.status === "pending") {
-            // Кто-то ещё ждёт
-            const isMe = game.role === "challenger";
             renderBjWaiting({ bet: game.bet, opponent_name: game.their.name });
             return;
         }
@@ -2002,20 +1795,16 @@
         const their = game.their;
 
         const myCardsHtml = me.cards.map(c => renderBjCard(c, false)).join("");
-
-        // Карты соперника всегда скрыты во время игры
         const theirCardsHtml = their.cards.map(c => renderBjCard(c, true)).join("");
 
         const myScoreClass = me.bust ? "bust" : "";
         const theirScoreClass = their.bust ? "bust" : "";
 
-        // Очки соперника видны только когда он завершил
         const theirDone = their.stand || their.bust;
         const theirScoreDisplay = theirDone
             ? `${their.score} / 21${their.bust ? " 💥" : ""}${their.stand ? " ✋" : ""}`
             : "? / 21";
 
-        // ФИКС: кнопки исчезают только когда Я завершил ход, а не когда соперник перебрал
         let actionsHtml = "";
         if (!me.stand && !me.bust) {
             actionsHtml = `
@@ -2055,9 +1844,6 @@
         if (hidden) {
             return `<div class="bj-card hidden"><div class="bj-card-val">?</div></div>`;
         }
-        // Пытаемся получить картинку карты
-        const filename = cardName.toLowerCase().replace(/ /g, "_").replace(/ё/g, "е") + ".png";
-        const imgUrl = `${API_URL}/images/${filename}`;
         return `
             <div class="bj-card">
                 <div class="bj-card-val">${getBjCardValue(cardName)}</div>
@@ -2090,9 +1876,7 @@
             const data = await res.json();
             if (data.ok) {
                 if (data.bust) showToast(`💥 Перебор! ${data.new_score}`);
-                // Немедленно обновим состояние
                 await refreshBjState();
-                // Если игра завершилась — останавливаем поллинг
                 if (data.game_finished) stopBjPolling();
             } else alert("❌ " + data.error);
         } catch (err) { alert("❌ Ошибка: " + err.message); }
@@ -2121,16 +1905,14 @@
             const data = await res.json();
             if (data.ok && data.game) {
                 renderBjScreen(data.game);
-                // Если игра завершилась — останавливаем поллинг
                 if (data.game.status === "awaiting_rematch") {
                     stopBjPolling();
                 }
             } else {
-                // Игры больше нет — вернёмся к меню
                 stopBjPolling();
                 loadBattleAndRob();
             }
-        } catch (e) { /* ignore */ }
+        } catch (e) { }
     }
 
     function startBjPolling() {
@@ -2165,9 +1947,6 @@
             titleClass = "lose";
             image = "bj_lose.png";
         }
-
-        const myCardsHtml = me.cards.map(c => renderBjCard(c, false)).join("");
-        const theirCardsHtml = their.cards.map(c => renderBjCard(c, false)).join("");
 
         let rematchBtn = "";
         if (me.rematch) {
@@ -2225,7 +2004,7 @@
                 headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
                 body: JSON.stringify({ user_id: user.id })
             });
-        } catch (e) { /* ignore */ }
+        } catch (e) { }
         stopBjPolling();
         loadBattleAndRob();
     }
@@ -2238,14 +2017,11 @@
                 headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
                 body: JSON.stringify({ user_id: user.id })
             });
-        } catch (e) { /* ignore */ }
+        } catch (e) { }
         stopBjPolling();
         loadBattleAndRob();
     }
 
-    // ============================================================
-    // ВОРОВСТВО
-    // ============================================================
     async function loadRob() {
         document.getElementById("content").innerHTML = '<div class="loading">⏳ Загружаем воровство...</div>';
         try {
@@ -2364,7 +2140,7 @@
             const data = await res.json();
             if (!data.ok) throw new Error(data.error);
 
-            const available = data.items.filter(i => !i.is_artifact && !i.insured);
+            const available = data.items.filter(i => !i.is_artifact && !i.insured && !i.is_season);
 
             if (available.length === 0) {
                 alert("❌ Нет доступных предметов для ставки");
@@ -2492,9 +2268,6 @@
 
     function closeRoulette() { document.getElementById("roulette-root").innerHTML = ""; }
 
-    // ============================================================
-    // ИНВЕНТАРЬ
-    // ============================================================
     async function loadInventory() {
         if (!user) return;
         document.getElementById("username").textContent = `${user.first_name} (@${user.username || "no_username"})`;
@@ -2540,29 +2313,33 @@
         for (const item of items) {
             const isSelected = cart.has(item.code);
             const isArtifact = item.is_artifact;
+            const isSeason = item.is_season;
             const imgHtml = imgTag(item);
             const insuredBtn = item.insured
                 ? `<button class="btn-tiny btn-tiny-insure disabled" disabled>🛡</button>`
                 : `<button class="btn-tiny btn-tiny-insure" onclick="insureItem('${item.code}')">🛡</button>`;
-            const isSeason = item.is_season;
-            const checkboxHtml = isArtifact
-                ? `<div class="item-checkbox-placeholder">⭐</div>`
-                : (isSeason
-                    ? `<div class="item-checkbox-placeholder">🎃</div>`
-                    : `<div class="item-checkbox ${isSelected ? 'checked' : ''}" onclick="toggleCart('${item.code}')">${isSelected ? '✓' : ''}</div>`
-                );
+
+            let checkboxHtml;
+            if (isArtifact) {
+                checkboxHtml = `<div class="item-checkbox-placeholder">⭐</div>`;
+            } else if (isSeason) {
+                checkboxHtml = `<div class="item-checkbox-placeholder">🎃</div>`;
+            } else {
+                checkboxHtml = `<div class="item-checkbox ${isSelected ? 'checked' : ''}" onclick="toggleCart('${item.code}')">${isSelected ? '✓' : ''}</div>`;
+            }
+
             const actionsHtml = isArtifact
                 ? `<button class="btn-tiny btn-tiny-gift" onclick="giftItem('${item.code}')">🎁</button>`
                 : `${insuredBtn}<button class="btn-tiny btn-tiny-gift" onclick="giftItem('${item.code}')">🎁</button>`;
 
             html += `
-                <div class="item ${isSelected ? 'selected' : ''}">
+                <div class="item ${isSelected ? 'selected' : ''} ${isSeason ? 'is-season' : ''}">
                     ${checkboxHtml}
                     <div class="item-img">${imgHtml}</div>
                     <div class="item-info">
                         <div class="item-name">${item.rarity} ${escapeHtml(item.name)}</div>
                         <div class="item-price">${formatNumber(item.price)}₽</div>
-                        <div class="item-code">${item.code}${item.insured ? ' 🛡' : ''}${isArtifact ? ' ⭐' : ''}</div>
+                        <div class="item-code">${item.code}${item.insured ? ' 🛡' : ''}${isArtifact ? ' ⭐' : ''}${isSeason ? ' 🎃 сезонное' : ''}</div>
                     </div>
                     <div class="item-actions">${actionsHtml}</div>
                 </div>
@@ -2762,9 +2539,6 @@
 
     function closeModal() { document.getElementById("modal-root").innerHTML = ""; }
 
-    // ============================================================
-    // КЕЙСЫ
-    // ============================================================
     async function loadCases() {
         if (!user) return;
         document.getElementById("username").textContent = `${user.first_name} (@${user.username || "no_username"})`;
@@ -2953,8 +2727,6 @@
         setTimeout(onDone, 4300);
     }
 
-    function closeRoulette() { document.getElementById("roulette-root").innerHTML = ""; }
-
     function showMultiResult(results, caseId, count) {
         const rouletteRoot = document.getElementById("roulette-root");
         let listHtml = "";
@@ -3003,9 +2775,6 @@
         } catch (err) { alert("❌ Ошибка: " + err.message); }
     }
 
-    // ============================================================
-    // ПРОГРЕВ КАРТИНОК
-    // ============================================================
     const ALL_DISH_NAMES = [
         "Крошка хлеба", "Кусок хлеба", "Гренка", "Варёное яйцо", "Овсянка",
         "Макароны", "Картошка", "Сосиска", "Салат из огурцов", "Помидор", "Лук", "Чеснок",
@@ -3091,7 +2860,6 @@
         const workers = [];
         for (let i = 0; i < CONCURRENCY; i++) workers.push(worker());
         await Promise.all(workers);
-        console.log(`🔥 Прогрев: ${loaded} ok, ${failed} fail, ${Date.now() - startTime}мс`);
     }
 
     async function initApp() {
@@ -3119,7 +2887,6 @@
         hidePreloader();
         switchTab("profile");
         startNotificationPolling();
-        console.log(`⏱ Запуск: ${Date.now() - startTime}мс`);
     }
 
     initApp();
