@@ -5451,25 +5451,39 @@ function showcasePickNext() {
         loadBattleAndRob();
         }
 
-    async function cancelBjGame() {
-        const isBotGame = lastBjState && lastBjState.their && (lastBjState.their.id === -1 || lastBjState.their.name === "🤖 Бот");
+   async function cancelBjGame() {
+    const gameStatus = lastBjState ? lastBjState.status : null;
+    const isBotGame = lastBjState && lastBjState.their && (lastBjState.their.id === -1 || lastBjState.their.name === "🤖 Бот");
 
-        const msg = isBotGame
+    // Определяем, что делаем: отменяем ожидание или сдаёмся
+    let endpoint, msg;
+
+    if (gameStatus === "pending") {
+        // Отмена ожидания — соперник ещё не принял
+        endpoint = "bj_cancel";
+        msg = isBotGame
+            ? "Отменить вызов?"
+            : "Отменить вызов? Соперник ещё не принял — ничего не потеряешь.";
+    } else {
+        // Сдача во время игры
+        endpoint = "bj_surrender";
+        msg = isBotGame
             ? "Сдаться? Ставка вернётся (с ботом не теряешь деньги)."
             : "Сдаться? Ты потеряешь свою ставку, а соперник получит x2.";
-
-        if (!confirm(msg)) return;
-
-        try {
-            await fetch(`${API_URL}/api/bj_surrender`, {
-                method: "POST",
-                headers: authHeaders({ "Content-Type": "application/json" }),
-                body: JSON.stringify({ user_id: user.id })
-            });
-        } catch (e) { }
-        stopBjPolling();
-        loadBattleAndRob();
     }
+
+    if (!confirm(msg)) return;
+
+    try {
+        await fetch(`${API_URL}/api/${endpoint}`, {
+            method: "POST",
+            headers: authHeaders({ "Content-Type": "application/json" }),
+            body: JSON.stringify({ user_id: user.id })
+        });
+    } catch (e) { }
+    stopBjPolling();
+    loadBattleAndRob();
+}
 
         async function loadRob() {
         document.getElementById("content").innerHTML = '<div class="loading">⏳ Загружаем воровство...</div>';
