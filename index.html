@@ -4031,7 +4031,8 @@ function showcasePickNext() {
         ${u.path === "saint" ? `<div class="card" style="background: rgba(52,152,219,0.15);"><div class="label">😇 Добряк</div><div style="font-size:14px;color:#999;margin-top:4px;">Кулдаун воровства: 60 мин</div></div>` : ''}
         ${u.path === "sinner" ? `<div class="card" style="background: rgba(231,76,60,0.15);"><div class="label">🎭 Злодей</div><div style="font-size:14px;color:#999;margin-top:4px;">Кулдаун воровства: 2 мин · Страховка −50%</div></div>` : ''}
         ${u.is_worker ? `<div class="card" style="background: rgba(155,89,182,0.15);"><div class="label">🚫 Ты работаешь поваром</div><div style="font-size:14px;color:#999;margin-top:4px;">Кейсы временно недоступны. Уволься, чтобы играть.</div></div>` : ''}
-        <button onclick="openShowcaseEditor()">НАСТРОИТЬ ВИТРИНУ</button>
+                <button onclick="openShowcaseEditor()">НАСТРОИТЬ ВИТРИНУ</button>
+<button onclick="loadInventory()">ИНВЕНТАРЬ</button>
 <div class="profile-buttons-grid">
     <button class="profile-btn" onclick="openCraft()">КРАФТ</button>
     <button class="profile-btn" onclick="openCollection()">КОЛЛЕКЦИЯ</button>
@@ -4040,7 +4041,6 @@ function showcasePickNext() {
     <button class="profile-btn" onclick="openJob()">РАБОТА</button>
     <button class="profile-btn" onclick="openReferral()">РЕФЕРАЛКА</button>
 </div>
-<button onclick="loadInventory()">ИНВЕНТАРЬ</button>
         `;
     } catch (err) {
         document.getElementById("content").innerHTML = `<div class="error">❌ Ошибка: ${escapeHtml(err.message)}</div>`;
@@ -4446,7 +4446,7 @@ function showcasePickNext() {
         const r = data.restaurant;
         updateBalance(r.balance);
 
-        let html = `<button class="btn-back" onclick="loadProfile()">⬅️ Назад в профиль</button>`;
+                let html = ``;
 
         if (r.image) html += `<img src="${API_URL}${r.image}" class="restaurant-image" alt="Ресторан" loading="lazy" decoding="async">`;
         else html += `<div class="restaurant-image-placeholder">🏪</div>`;
