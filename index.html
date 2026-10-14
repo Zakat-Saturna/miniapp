@@ -5575,43 +5575,7 @@ function renderCasesMain() {
     document.getElementById("content").innerHTML = html;
 }
 
-function renderCaseList(catId) {
-    const cat = casesData.find(c => c.id === catId);
-    if (!cat) return;
 
-    const catName = CATEGORY_NAMES[catId] || cat.name.toUpperCase();
-
-    let html = `<button class="btn-back" onclick="renderCasesMain()">⬅️ НАЗАД</button>`;
-    html += `<div class="cases-header">
-        <div class="cases-title">${escapeHtml(catName)}</div>
-    </div>`;
-
-    for (const c of cat.cases) {
-    const caseImg = `${API_URL}/images/case_${c.id}.png`;
-        const d = c.discount || currentUserDiscount || 0;
-        const rp = c.real_price || c.price;
-        const hasDiscount = d > 0 && rp < c.price;
-
-        html += `
-            <div class="case-tile" onclick="showCasePreview('${c.id}', '${catId}')">
-                <div class="case-tile-img">
-                    <img src="${caseImg}" alt="${escapeHtml(c.name)}" loading="lazy" decoding="async"
-                         onerror="this.style.display='none'; this.parentElement.innerHTML='📦';">
-                </div>
-                <div class="case-tile-info">
-                    <div class="case-tile-name">${escapeHtml(c.name)}</div>
-                    <div class="case-tile-price">
-                        ${hasDiscount
-                            ? `<span class="old">${formatNumber(c.price)}₽</span> ${formatNumber(rp)}₽`
-                            : `${formatNumber(c.price)}₽`}
-                    </div>
-                </div>
-            </div>
-        `;
-    }
-
-    document.getElementById("content").innerHTML = html;
-}
 
 async function showCasePreview(caseId, catId) {
     document.getElementById("content").innerHTML = '<div class="loading">⏳ Загружаем кейс...</div>';
@@ -5708,33 +5672,7 @@ async function showCasePreview(caseId, catId) {
 }
 
         
-        function renderCaseList(catId) {
-        const cat = casesData.find(c => c.id === catId);
-        if (!cat) return;
-        let html = `<button class="btn-back" onclick="renderCategories()">⬅️ Назад к категориям</button>`;
-        html += `<div class="card"><div class="label">${escapeHtml(cat.name)}</div></div>`;
-        for (const c of cat.cases) {
-        html += `
-        <div class="case-item">
-        <div class="case-name">${escapeHtml(c.name)}</div>
-        ${(() => {
-                        const d = c.discount || currentUserDiscount || 0;
-                        const rp = c.real_price || c.price;
-                        if (d > 0 && rp < c.price) {
-                            return `<div class="case-price"><span style="text-decoration: line-through; color:#999;">${formatNumber(c.price)}₽</span> <b style="color:#27ae60;">${formatNumber(rp)}₽</b> <span style="color:#27ae60;font-size:14px;">(−${d}%)</span></div>`;
-                        }
-                        return `<div class="case-price">${formatNumber(c.price)}₽</div>`;
-                    })()}
-        <div class="case-buttons">
-        <button class="btn-case btn-x1" onclick="openCase('${c.id}', 1)">×1</button>
-        <button class="btn-case btn-x3" onclick="openCase('${c.id}', 3)">×3</button>
-        <button class="btn-case btn-x10" onclick="openCase('${c.id}', 10)">×10</button>
-        </div>
-        </div>
-        `;
-        }
-        document.getElementById("content").innerHTML = html;
-        }
+        
 
         async function openCase(caseId, count) {
         if (!user) return;
