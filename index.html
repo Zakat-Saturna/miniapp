@@ -4189,8 +4189,10 @@ function showcasePickNext() {
         else if (available) rowClass = "available";
         else rowClass = "locked";
 
-        if (reward.type === "money") {
+                if (reward.type === "money") {
         rewardText = `💰 ${formatNumber(reward.amount)}₽`;
+        } else if (reward.type === "pumpkins") {
+        rewardText = `🎃 ${reward.amount} тыкв`;
         } else if (reward.type === "season_case") {
         rewardText = `🎁 Сезонный кейс ×${reward.count}`;
         } else if (reward.type === "season_dish") {
@@ -5235,15 +5237,27 @@ function showcasePickNext() {
         const their = game.their;
 
         const myCardsHtml = me.cards.map(c => renderBjCard(c, false)).join("");
-        const theirCardsHtml = their.cards.map(c => renderBjCard(c, true)).join("");
+                // Если бэк не отдаёт карты (игра идёт) — рисуем N закрытых карт
+        // Если игра закончилась — показываем настоящие
+        let theirCardsHtml = "";
+        if (their.cards && their.cards.length > 0) {
+            theirCardsHtml = their.cards.map(c => renderBjCard(c, false)).join("");
+        } else {
+            // Рисуем две закрытые карты (по числу начальных)
+            const count = 2;
+            theirCardsHtml = Array(count).fill(0).map(() =>
+                `<div class="bj-card hidden"><div class="bj-card-val">?</div></div>`
+            ).join("");
+        }
 
         const myScoreClass = me.bust ? "bust" : "";
         const theirScoreClass = their.bust ? "bust" : "";
 
-        const theirDone = their.stand || their.bust;
-        const theirScoreDisplay = theirDone
-        ? `${their.score} / 21${their.bust ? " 💥" : ""}${their.stand ? " ✋" : ""}`
-        : "? / 21";
+                // Если игра не закончена — не показываем счёт
+        const gameFinished = game.status === "awaiting_rematch";
+        const theirScoreDisplay = gameFinished
+            ? `${their.score} / 21${their.bust ? " 💥" : ""}${their.stand ? " ✋" : ""}`
+            : "? / 21";
 
         let actionsHtml = "";
         if (!me.stand && !me.bust) {
