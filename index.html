@@ -4016,7 +4016,7 @@ function showcasePickNext() {
             ? `<img src="${escapeHtml(myPhoto)}" alt="" style="width:88px;height:88px;object-fit:cover;border:3px solid var(--pixel-border);image-rendering:pixelated;">`
             : `<div style="font-size:64px;">👤</div>`;
 
-        document.getElementById("content").innerHTML = `
+                document.getElementById("content").innerHTML = `
         <div class="card" style="text-align:center;">
             ${avatarHtml}
             <div style="font-size:18px; font-weight:bold; margin-top:10px;">
@@ -4024,6 +4024,7 @@ function showcasePickNext() {
             </div>
             ${user?.username ? `<div style="font-size:13px; color:var(--pixel-hint); margin-top:4px;">@${escapeHtml(user.username)}</div>` : ""}
         </div>
+        <button onclick="loadInventory()">🎒 ИНВЕНТАРЬ</button>
         <div class="card"><div class="label">💰 Баланс</div><div class="value">${formatNumber(u.balance)}₽</div></div>
         <div class="card"><div class="label">✨ Опыт</div><div class="value">${formatNumber(u.xp)} XP</div></div>
         <div class="row">
@@ -4044,7 +4045,6 @@ function showcasePickNext() {
         ${u.path === "sinner" ? `<div class="card" style="background: rgba(231,76,60,0.15);"><div class="label">🎭 Злодей</div><div style="font-size:14px;color:#999;margin-top:4px;">Кулдаун воровства: 2 мин · Страховка −50%</div></div>` : ''}
         ${u.is_worker ? `<div class="card" style="background: rgba(155,89,182,0.15);"><div class="label">🚫 Ты работаешь поваром</div><div style="font-size:14px;color:#999;margin-top:4px;">Кейсы временно недоступны. Уволься, чтобы играть.</div></div>` : ''}
                 <button onclick="openShowcaseEditor()">НАСТРОИТЬ ВИТРИНУ</button>
-<button onclick="loadInventory()">ИНВЕНТАРЬ</button>
 <div class="profile-buttons-grid">
     <button class="profile-btn" onclick="openCraft()">КРАФТ</button>
     <button class="profile-btn" onclick="openCollection()">КОЛЛЕКЦИЯ</button>
