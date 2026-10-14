@@ -2920,10 +2920,13 @@
         const BOT_USERNAME = "piggy_chefBot";
 
         const tg = window.Telegram.WebApp;
-        try {
+       try {
     if (tg.disableVerticalSwipes) tg.disableVerticalSwipes();
     if (tg.enableClosingConfirmation) tg.enableClosingConfirmation();
-    if (tg.lockOrientation) tg.lockOrientation();
+    if (tg.lockOrientation) {
+        try { tg.lockOrientation("portrait"); }
+        catch (e2) { /* старые версии могут не поддерживать параметр */ }
+    }
 } catch (e) {
     console.warn('Telegram WebApp метод недоступен:', e);
 }
@@ -2976,11 +2979,11 @@ document.addEventListener('touchmove', function(e) {
         return new Set();
     }
     function saveShownNotifIds(set) {
-        try {
-            const arr = Array.from(set).slice(-500);
-            localStorage.setItem("shown_notif_ids", JSON.stringify(arr));
-        } catch (e) {}
-    }
+    try {
+        const arr = Array.from(set).slice(-300);
+        localStorage.setItem("shown_notif_ids", JSON.stringify(arr));
+    } catch (e) {}
+}
     let shownNotifIds = loadShownNotifIds();
         let bjPollingTimer = null;
     let lastBjState = null;
@@ -3000,15 +3003,19 @@ document.addEventListener('touchmove', function(e) {
         };
 
         function formatNumber(n) {
-        if (!n) return "0";
-        n = Number(n);
-        if (n < 1000) return n.toString();
-        if (n < 1000000) return (n / 1000).toFixed(1) + "K";
-        if (n < 1000000000) return (n / 1000000).toFixed(1) + "M";
-        if (n < 1000000000000) return (n / 1000000000).toFixed(1) + "B";
-        if (n < 1000000000000000) return (n / 1000000000000).toFixed(1) + "T";
-        return (n / 1000000000000000).toFixed(1) + "Qa";
-        }
+    if (n === null || n === undefined || n === "") return "0";
+    n = Number(n);
+    if (!isFinite(n) || isNaN(n)) return "0";
+    if (n === 0) return "0";
+    const sign = n < 0 ? "-" : "";
+    n = Math.abs(n);
+    if (n < 1000) return sign + Math.floor(n).toString();
+    if (n < 1000000) return sign + (n / 1000).toFixed(1) + "K";
+    if (n < 1000000000) return sign + (n / 1000000).toFixed(1) + "M";
+    if (n < 1000000000000) return sign + (n / 1000000000).toFixed(1) + "B";
+    if (n < 1000000000000000) return sign + (n / 1000000000000).toFixed(1) + "T";
+    return sign + (n / 1000000000000000).toFixed(1) + "Qa";
+}
 
         function escapeJs(s) {
         if (!s) return "";
@@ -3026,12 +3033,14 @@ document.addEventListener('touchmove', function(e) {
         return div.innerHTML;
         }
 
-        function imgTag(item, extraClass = "") {
-        if (item && item.image_url) {
-        return `<img src="${API_URL}${item.image_url}" loading="lazy" decoding="async" alt="" class="${extraClass}">`;
-        }
-        return `<span>${item ? item.rarity : "❓"}</span>`;
-        }
+      function imgTag(item, extraClass = "") {
+    if (item && item.image_url) {
+        const safeClass = escapeHtml(extraClass || "");
+        return `<img src="${API_URL}${escapeHtml(item.image_url)}" loading="lazy" decoding="async" alt="" class="${safeClass}">`;
+    }
+    const rar = (item && item.rarity) ? escapeHtml(item.rarity) : "❓";
+    return `<span>${rar}</span>`;
+}
 
         function showToast(message, duration = 2500) {
         const existing = document.getElementById("toast");
@@ -3078,6 +3087,9 @@ document.addEventListener('touchmove', function(e) {
         }
 
        function switchTab(tab) {
+    // Останавливаем поллинг баттла при смене вкладки
+    if (typeof stopBjPolling === "function") stopBjPolling();
+
     // Активная кнопка в нижней навигации
     document.querySelectorAll(".nav-btn").forEach(t => t.classList.remove("active"));
     const activeBtn = document.querySelector(`.nav-btn[data-tab="${tab}"]`);
@@ -3095,7 +3107,7 @@ document.addEventListener('touchmove', function(e) {
     if (tab === "restaurant") openRestaurant();
     if (tab === "cases") loadCases();
     if (tab === "battlepass") loadBattlePass();
-    if (tab === "pvp") loadBattleAndRob();          // топ открывается отдельно, не через навигацию
+    if (tab === "pvp") loadBattleAndRob();
 }
 
         // ============================================================
@@ -3232,21 +3244,22 @@ document.addEventListener('touchmove', function(e) {
         }
 
         async function pollNotifications() {
-        if (!user) return;
-        try {
+    if (!user) return;
+    if (document.hidden) return; // не поллим в фоне
+    try {
         const res = await fetch(`${API_URL}/api/notifications?user_id=${user.id}`, {
-        headers: { "ngrok-skip-browser-warning": "true" }
+            headers: { "ngrok-skip-browser-warning": "true" }
         });
         const data = await res.json();
         if (!data.ok) return;
         for (const notif of data.notifications) {
-        if (shownNotifIds.has(notif.id)) continue;
-        shownNotifIds.add(notif.id);
-        saveShownNotifIds(shownNotifIds);
-                renderNotification(notif);
+            if (shownNotifIds.has(notif.id)) continue;
+            shownNotifIds.add(notif.id);
+            saveShownNotifIds(shownNotifIds);
+            renderNotification(notif);
         }
-        } catch (e) { }
-        }
+    } catch (e) { }
+}
 
         function startNotificationPolling() {
         if (notifPollingTimer) return;
@@ -3286,7 +3299,7 @@ document.addEventListener('touchmove', function(e) {
                 else if (u.reputation <= -100) repIcon = "🎭 ";
                 if (u.has_crown) repIcon = "👑 " + repIcon;
 
-                let html = `<button class="btn-back" onclick="loadTop()">⬅️ Назад</button>`;
+                let html = `<button class="btn-back" onclick="${__profileBackFn}()">⬅️ Назад</button>`;
 
                 html += `
                     <div class="card" style="text-align:center;">
@@ -3345,7 +3358,7 @@ document.addEventListener('touchmove', function(e) {
             } catch (err) {
                 document.getElementById("content").innerHTML = `
                     <div class="error">❌ Ошибка: ${escapeHtml(err.message)}</div>
-                    <button onclick="loadTop()">⬅️ Назад</button>
+                    <button onclick="${__profileBackFn}()">⬅️ Назад</button>
                 `;
             }
         }
@@ -3464,14 +3477,14 @@ function renderShowcasePickPage() {
     const alreadyOnShowcase = showcaseState.currentItems.some(s => s.code === item.code);
     if (alreadyOnShowcase) continue;   // ← пропускаем уже на витрине
     html += `
-        <div class="item" onclick="setShowcaseSlot(${slot}, '${item.code}')">
-            <div class="item-img">${imgTag(item)}</div>
-            <div class="item-info">
-                <div class="item-name">${item.rarity} ${escapeHtml(item.name)}</div>
-                <div class="item-price">${formatNumber(item.price)}₽</div>
-            </div>
+    <div class="item" onclick="setShowcaseSlot(${slot}, '${escapeJs(item.code)}')">
+        <div class="item-img">${imgTag(item)}</div>
+        <div class="item-info">
+            <div class="item-name">${item.rarity} ${escapeHtml(item.name)}</div>
+            <div class="item-price">${formatNumber(item.price)}₽</div>
         </div>
-    `;
+    </div>
+`;
 }
     }
 
@@ -3888,6 +3901,7 @@ function showcasePickNext() {
         let topActiveTab = "overall";
 
         async function loadTop() {
+            __profileBackFn = "loadTop";
     let html = `
         <button class="btn-back" onclick="switchTab('cases')">⬅️ НАЗАД В КЕЙСЫ</button>
         <div class="top-tabs">
@@ -4156,6 +4170,7 @@ function showcasePickNext() {
         }
 
         async function openFriends() {
+             __profileBackFn = "openFriends";
         document.getElementById("content").innerHTML = '<div class="loading">⏳ Загружаем друзей...</div>';
         try {
         const res = await fetch(`${API_URL}/api/friends_detail?user_id=${user.id}`, {
@@ -4419,7 +4434,7 @@ function showcasePickNext() {
         const arrow = isCollapsed ? '▶️' : '🔽';
         html += `
         <div class="coll-rarity-block">
-        <div class="coll-rarity-header" onclick="toggleCollapse('${block.rarity}')">
+        <div class="coll-rarity-header" onclick="toggleCollapse('${escapeJs(block.rarity)}')">
         <span>${arrow} ${block.rarity}</span>
         <span class="coll-rarity-progress">${block.opened} / ${block.total}</span>
         </div>
@@ -4721,16 +4736,17 @@ function showcasePickNext() {
         }
 
         function renderBjWaiting(info) {
-        let html = `<div class="card"><div class="label">🎰 Ожидание соперника</div></div>`;
-        html += `<div class="bj-waiting">
+    const oppName = info.opponent_name ? escapeHtml(info.opponent_name) : "соперника";
+    let html = `<div class="card"><div class="label">🎰 Ожидание соперника</div></div>`;
+    html += `<div class="bj-waiting">
         <div class="bj-waiting-icon">⏳</div>
-        <div style="font-size:20px;margin-bottom:8px;">Ждём ответа соперника...</div>
+        <div style="font-size:20px;margin-bottom:8px;">Ждём ответа ${oppName}...</div>
         <div style="color:#999;font-size:16px;">Ставка: <b style="color:#27ae60;">${formatNumber(info.bet)}₽</b></div>
         <div style="color:#999;font-size:14px;margin-top:12px;">Если не ответит в течение 5 минут — вызов отменится</div>
-        </div>`;
-        html += `<button onclick="cancelBjGame()" style="background:#e74c3c;">❌ Отменить вызов</button>`;
-        document.getElementById("content").innerHTML = html;
-        }
+    </div>`;
+    html += `<button onclick="cancelBjGame()" style="background:#e74c3c;">❌ Отменить вызов</button>`;
+    document.getElementById("content").innerHTML = html;
+}
 
         function renderBjScreen(game) {
         lastBjState = game;
@@ -5090,7 +5106,7 @@ function showcasePickNext() {
         html += `<div class="card"><div class="label">⚔️ Жертва: ${escapeHtml(robState.victimName)}</div><div style="font-size:16px;color:#999;margin-top:6px;">Выбери, что украсть</div></div>`;
         for (const item of robState.victimItems) {
         html += `
-        <div class="item" onclick="pickMyItem('${item.code}')">
+        <div class="item" onclick="pickMyItem('${escapeJs(item.code)}')">
         <div class="item-img">${imgTag(item)}</div>
         <div class="item-info">
         <div class="item-name">${item.rarity} ${escapeHtml(item.name)}</div>
@@ -5125,7 +5141,7 @@ function showcasePickNext() {
 
         for (const item of available) {
         html += `
-        <div class="item" onclick="doSteal('${item.code}')">
+        <div class="item" onclick="doSteal('${escapeJs(item.code)}')">
         <div class="item-img">${imgTag(item)}</div>
         <div class="item-info">
         <div class="item-name">${item.rarity} ${escapeHtml(item.name)}</div>
@@ -5282,14 +5298,15 @@ function showcasePickNext() {
         </div>
         `;
 
-        for (const item of items) {
+               for (const item of items) {
         const isSelected = cart.has(item.code);
         const isArtifact = item.is_artifact;
         const isSeason = item.is_season;
         const imgHtml = imgTag(item);
+        const safeCode = escapeJs(item.code);
         const insuredBtn = item.insured
         ? `<button class="btn-tiny btn-tiny-insure disabled" disabled>🛡</button>`
-        : `<button class="btn-tiny btn-tiny-insure" onclick="insureItem('${item.code}')">🛡</button>`;
+        : `<button class="btn-tiny btn-tiny-insure" onclick="insureItem('${safeCode}')">🛡</button>`;
 
         let checkboxHtml;
         if (isArtifact) {
@@ -5297,13 +5314,13 @@ function showcasePickNext() {
         } else if (isSeason) {
         checkboxHtml = `<div class="item-checkbox-placeholder">🎃</div>`;
         } else {
-        checkboxHtml = `<div class="item-checkbox ${isSelected ? 'checked' : ''}" onclick="toggleCart('${item.code}')">${isSelected ? '✓' : ''}</div>`;
+        checkboxHtml = `<div class="item-checkbox ${isSelected ? 'checked' : ''}" onclick="toggleCart('${safeCode}')">${isSelected ? '✓' : ''}</div>`;
         }
 
         const actionsHtml = isArtifact
-        ? `<button class="btn-tiny btn-tiny-gift" onclick="giftItem('${item.code}')">🎁</button>`
-        : `${insuredBtn}<button class="btn-tiny btn-tiny-gift" onclick="giftItem('${item.code}')">🎁</button>`;
-
+        ? `<button class="btn-tiny btn-tiny-gift" onclick="giftItem('${safeCode}')">🎁</button>`
+        : `${insuredBtn}<button class="btn-tiny btn-tiny-gift" onclick="giftItem('${safeCode}')">🎁</button>`;
+                   
         html += `
         <div class="item ${isSelected ? 'selected' : ''} ${isSeason ? 'is-season' : ''}">
         ${checkboxHtml}
@@ -5441,8 +5458,9 @@ function showcasePickNext() {
         .catch(err => alert("❌ Ошибка: " + err.message));
         }
 
-        function showGiftModal(code, friends) {
+                function showGiftModal(code, friends) {
         const modalRoot = document.getElementById("modal-root");
+        const safeCode = escapeJs(code);
         let friendsHtml = "";
         if (friends.length === 0) {
         friendsHtml = '<div style="text-align:center;color:#999;padding:10px;">Нет друзей</div>';
@@ -5450,14 +5468,14 @@ function showcasePickNext() {
         for (const f of friends) {
         const displayName = f.first_name || f.username || `id${f.user_id}`;
         const uname = f.username ? `@${f.username}` : `id${f.user_id}`;
-        friendsHtml += `<button class="modal-btn" onclick="sendGift('${code}', ${f.user_id}, null)">${escapeHtml(displayName)}<span class="friend-username">${escapeHtml(uname)}</span></button>`;
+        friendsHtml += `<button class="modal-btn" onclick="sendGift('${safeCode}', ${f.user_id}, null)">${escapeHtml(displayName)}<span class="friend-username">${escapeHtml(uname)}</span></button>`;
         }
         }
         modalRoot.innerHTML = `
         <div class="modal-overlay" onclick="if(event.target === this) closeModal()">
         <div class="modal">
         <h3>🎁 Кому подарить?</h3>
-        <button class="modal-btn primary" onclick="showUsernameInput('${code}')">✏️ Ввести @username</button>
+        <button class="modal-btn primary" onclick="showUsernameInput('${safeCode}')">✏️ Ввести @username</button>
         <div style="margin-top:12px;margin-bottom:8px;font-size:15px;color:#999;text-align:center;">или выбери из друзей:</div>
         ${friendsHtml}
         <button class="modal-btn cancel" onclick="closeModal()">❌ Отмена</button>
@@ -5466,15 +5484,16 @@ function showcasePickNext() {
         `;
         }
 
-        function showUsernameInput(code) {
+               function showUsernameInput(code) {
         const modalRoot = document.getElementById("modal-root");
+        const safeCode = escapeJs(code);
         modalRoot.innerHTML = `
         <div class="modal-overlay" onclick="if(event.target === this) closeModal()">
         <div class="modal">
         <h3>🎁 Введи @username</h3>
         <input type="text" id="gift-username-input" class="modal-input" placeholder="@username или ID" autocomplete="off">
-        <button class="modal-btn primary" onclick="sendGiftByUsername('${code}')">✅ Отправить</button>
-        <button class="modal-btn cancel" onclick="giftItem('${code}')">⬅️ Назад</button>
+        <button class="modal-btn primary" onclick="sendGiftByUsername('${safeCode}')">✅ Отправить</button>
+        <button class="modal-btn cancel" onclick="giftItem('${safeCode}')">⬅️ Назад</button>
         </div>
         </div>
         `;
@@ -5575,7 +5594,56 @@ function renderCasesMain() {
     document.getElementById("content").innerHTML = html;
 }
 
+// ============================================================
+// СПИСОК КЕЙСОВ В КАТЕГОРИИ
+// ============================================================
+function renderCaseList(catId) {
+    if (!casesData) {
+        showToast("❌ Данные кейсов не загружены");
+        loadCases();
+        return;
+    }
 
+    const cat = casesData.find(c => c.id === catId);
+    if (!cat) {
+        showToast("❌ Категория не найдена");
+        renderCasesMain();
+        return;
+    }
+
+    let html = `<button class="btn-back" onclick="renderCasesMain()">⬅️ НАЗАД</button>`;
+    html += `<div class="cases-header">
+        <div class="cases-title">${escapeHtml(CATEGORY_NAMES[catId] || cat.name || catId)}</div>
+    </div>`;
+
+    if (!cat.cases || cat.cases.length === 0) {
+        html += `<div class="card"><div class="label">В категории пусто</div></div>`;
+    } else {
+        for (const c of cat.cases) {
+            const caseImg = `${API_URL}/images/case_${c.id}.png`;
+            const realPrice = (c.real_price !== undefined) ? c.real_price : c.price;
+            const hasDiscount = realPrice < c.price;
+            html += `
+                <div class="case-tile" onclick="showCasePreview('${escapeJs(c.id)}', '${escapeJs(catId)}')">
+                    <div class="case-tile-img">
+                        <img src="${caseImg}" alt="${escapeHtml(c.name || '')}" loading="lazy" decoding="async"
+                             onerror="this.style.display='none'; this.parentElement.innerHTML='📦';">
+                    </div>
+                    <div class="case-tile-info">
+                        <div class="case-tile-name">${escapeHtml(c.name || 'Кейс')}</div>
+                        <div class="case-tile-price">
+                            ${hasDiscount
+                                ? `<span class="old">${formatNumber(c.price)}₽</span> ${formatNumber(realPrice)}₽`
+                                : `${formatNumber(realPrice)}₽`}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+    }
+
+    document.getElementById("content").innerHTML = html;
+}
 
 async function showCasePreview(caseId, catId) {
     document.getElementById("content").innerHTML = '<div class="loading">⏳ Загружаем кейс...</div>';
@@ -5588,17 +5656,29 @@ async function showCasePreview(caseId, catId) {
         const caseName = data.case_name || "Кейс";
 
         // Находим цену кейса
-        let casePrice = 0;
-        let caseRealPrice = 0;
-        for (const cat of casesData) {
-            for (const c of cat.cases) {
-                if (c.id === caseId) {
-                    casePrice = c.price;
-                    caseRealPrice = c.real_price || c.price;
-                    break;
-                }
-            }
+       if (!casesData) {
+    document.getElementById("content").innerHTML = `<div class="error">❌ Данные кейсов не загружены</div>`;
+    return;
+}
+let casePrice = 0;
+let caseRealPrice = 0;
+let found = false;
+for (const cat of casesData) {
+    if (!cat.cases) continue;
+    for (const c of cat.cases) {
+        if (c.id === caseId) {
+            casePrice = c.price;
+            caseRealPrice = (c.real_price !== undefined) ? c.real_price : c.price;
+            found = true;
+            break;
         }
+    }
+    if (found) break;
+}
+if (!found) {
+    document.getElementById("content").innerHTML = `<div class="error">❌ Кейс не найден</div>`;
+    return;
+}
 
         const caseImg = `${API_URL}/images/case_${caseId}.png`;
         const hasDiscount = caseRealPrice < casePrice;
@@ -5674,59 +5754,97 @@ async function showCasePreview(caseId, catId) {
         
         
 
-        async function openCase(caseId, count) {
-        if (!user) return;
-        let casePrice = 0;
-        for (const cat of casesData) {
+      let __caseOpening = false; // глобальный флаг
+
+async function openCase(caseId, count) {
+    if (!user) return;
+    if (__caseOpening) return; // защита от двойного клика
+
+    if (!casesData) {
+        showToast("❌ Данные кейсов не загружены");
+        loadCases();
+        return;
+    }
+
+    let casePrice = null;
+    for (const cat of casesData) {
+        if (!cat.cases) continue;
         for (const c of cat.cases) {
-        if (c.id === caseId) {
-            // используем реальную цену со скидкой
-            casePrice = c.real_price !== undefined ? c.real_price : c.price;
-            break;
+            if (c.id === caseId) {
+                casePrice = (c.real_price !== undefined) ? c.real_price : c.price;
+                break;
+            }
         }
-        }
-        }
-const total = casePrice * count;
-        if (currentBalance < total) {
+        if (casePrice !== null) break;
+    }
+
+    if (casePrice === null) {
+        alert("❌ Кейс не найден");
+        return;
+    }
+
+    const total = casePrice * count;
+    if (currentBalance < total) {
         alert(`❌ Нужно ${formatNumber(total)}₽, у тебя ${formatNumber(currentBalance)}₽`);
         return;
-        }
+    }
 
-        let pool = [], caseName = "";
-        try {
+    __caseOpening = true;
+
+    let pool = [], caseName = "";
+    try {
         const data = await fetchStatic(`${API_URL}/api/case_preview?case_id=${caseId}`);
-        if (!data.ok) { alert("❌ " + data.error); return; }
+        if (!data.ok) { alert("❌ " + data.error); __caseOpening = false; return; }
         pool = data.pool || [];
         caseName = data.case_name || "";
-        } catch (err) { alert("❌ " + err.message); return; }
+    } catch (err) {
+        alert("❌ " + err.message);
+        __caseOpening = false;
+        return;
+    }
 
-        if (pool.length === 0) { alert("❌ Кейс пустой"); return; }
+    if (pool.length === 0) {
+        alert("❌ Кейс пустой");
+        __caseOpening = false;
+        return;
+    }
 
-        let openResult;
-        try {
+    let openResult;
+    try {
         const res = await fetch(`${API_URL}/api/open_case`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
-        body: JSON.stringify({ user_id: user.id, case_id: caseId, count })
+            method: "POST",
+            headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
+            body: JSON.stringify({ user_id: user.id, case_id: caseId, count })
         });
         openResult = await res.json();
-        if (!openResult.ok) { alert("❌ " + openResult.error); return; }
-        } catch (err) { alert("❌ " + err.message); return; }
+        if (!openResult.ok) {
+            alert("❌ " + openResult.error);
+            __caseOpening = false;
+            return;
+        }
+    } catch (err) {
+        alert("❌ " + err.message);
+        __caseOpening = false;
+        return;
+    }
 
-        updateBalance(openResult.new_balance);
-        clearDynamicCache();
+    updateBalance(openResult.new_balance);
+    clearDynamicCache();
 
-        if (count === 1) {
+    const doneCb = () => { __caseOpening = false; };
+
+    if (count === 1) {
         showSingleBigRoulette(caseName, pool, openResult.results[0], () => {
-        showMultiResult(openResult.results, caseId, count);
+            showMultiResult(openResult.results, caseId, count);
+            doneCb();
         });
-        } else {
+    } else {
         showAllMiniRoulettes(caseName, count, pool, openResult.results, () => {
-        showMultiResult(openResult.results, caseId, count);
+            showMultiResult(openResult.results, caseId, count);
+            doneCb();
         });
-        }
-        }
-
+    }
+}
         function showSingleBigRoulette(caseName, pool, result, onDone) {
         const rouletteRoot = document.getElementById("roulette-root");
         const targetIndex = result.pool_index !== undefined ? result.pool_index : Math.floor(Math.random() * pool.length);
@@ -5823,53 +5941,62 @@ const total = casePrice * count;
         setTimeout(onDone, 4300);
         }
 
-        function showMultiResult(results, caseId, count) {
-        const rouletteRoot = document.getElementById("roulette-root");
-        let listHtml = "";
-        let totalValue = 0;
-        for (const r of results) {
+        let __lastResults = []; // глобальное хранилище
+
+function showMultiResult(results, caseId, count) {
+    __lastResults = results; // сохраняем
+    const rouletteRoot = document.getElementById("roulette-root");
+    let listHtml = "";
+    let totalValue = 0;
+    for (const r of results) {
         totalValue += r.price;
         listHtml += `
-        <div class="multi-result-row">
-        <div class="m-img">${imgTag(r)}</div>
-        <div class="multi-result-info">
-        <div class="multi-result-name">${r.rarity} ${escapeHtml(r.name)}</div>
-        <div class="multi-result-price">${formatNumber(r.price)}₽</div>
-        </div>
-        </div>
+            <div class="multi-result-row">
+                <div class="m-img">${imgTag(r)}</div>
+                <div class="multi-result-info">
+                    <div class="multi-result-name">${r.rarity} ${escapeHtml(r.name)}</div>
+                    <div class="multi-result-price">${formatNumber(r.price)}₽</div>
+                </div>
+            </div>
         `;
-        }
-        rouletteRoot.innerHTML = `
+    }
+    rouletteRoot.innerHTML = `
         <div class="result-container">
-        <div class="result-header">🎁 Открыто ${count} кейсов</div>
-        <div class="result-total">💰 Всего: ${formatNumber(totalValue)}₽</div>
-        <div class="multi-result-list">${listHtml}</div>
-        <div class="result-buttons">
-        <button class="result-btn sell" onclick="sellAllResults(${JSON.stringify(results.map(r => r.code)).replace(/"/g, '&quot;')})">💵 Продать всё за ${formatNumber(totalValue)}₽</button>
-        <button class="result-btn again" onclick="closeRoulette(); openCase('${caseId}', ${count})">🔁 Открыть ещё ×${count}</button>
-        <button class="result-btn close" onclick="closeRoulette()">⬅️ К кейсам</button>
+            <div class="result-header">🎁 Открыто ${count} кейсов</div>
+            <div class="result-total">💰 Всего: ${formatNumber(totalValue)}₽</div>
+            <div class="multi-result-list">${listHtml}</div>
+            <div class="result-buttons">
+                <button class="result-btn sell" onclick="sellAllResults()">💵 Продать всё за ${formatNumber(totalValue)}₽</button>
+                <button class="result-btn again" onclick="closeRoulette(); openCase('${escapeJs(caseId)}', ${count})">🔁 Открыть ещё ×${count}</button>
+                <button class="result-btn close" onclick="closeRoulette()">⬅️ К кейсам</button>
+            </div>
         </div>
-        </div>
-        `;
-        }
+    `;
+}
 
-        async function sellAllResults(codes) {
-        if (!confirm(`💵 Продать всё за ${codes.length} предметов?`)) return;
-        try {
+async function sellAllResults() {
+    const codes = __lastResults.map(r => r.code);
+    if (codes.length === 0) return;
+    if (!confirm(`💵 Продать всё за ${codes.length} предметов?`)) return;
+    try {
         const res = await fetch(`${API_URL}/api/sell_bulk`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
-        body: JSON.stringify({ user_id: user.id, codes: codes })
+            method: "POST",
+            headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
+            body: JSON.stringify({ user_id: user.id, codes: codes })
         });
         const data = await res.json();
         if (data.ok) {
-        updateBalance(data.new_balance);
-        clearDynamicCache();
-        closeRoulette();
+            updateBalance(data.new_balance);
+            clearDynamicCache();
+            __lastResults = [];
+            closeRoulette();
+        } else {
+            alert("❌ " + data.error);
         }
-        else alert("❌ " + data.error);
-        } catch (err) { alert("❌ Ошибка: " + err.message); }
-        }
+    } catch (err) {
+        alert("❌ Ошибка: " + err.message);
+    }
+}
 
         const ALL_DISH_NAMES = [
         "Крошка хлеба", "Кусок хлеба", "Гренка", "Варёное яйцо", "Овсянка",
@@ -5920,30 +6047,28 @@ const total = casePrice * count;
         const queue = [...ALL_DISH_NAMES];
 
         async function loadOne(name) {
-        return new Promise((resolve) => {
+    return new Promise((resolve) => {
         const filename = name.toLowerCase().replace(/ /g, "_").replace(/ё/g, "е") + ".png";
         const url = `${API_URL}/images/${filename}`;
         const img = new Image();
-        const timeout = setTimeout(() => {
-        failed++; done++;
-        updatePreloaderProgress(done, total, "Загрузка блюд...");
-        resolve();
-        }, 5000);
-        img.onload = () => {
-        clearTimeout(timeout);
-        loaded++; done++;
-        updatePreloaderProgress(done, total, "Загрузка блюд...");
-        resolve();
+        let settled = false;
+
+        const finish = (ok) => {
+            if (settled) return;
+            settled = true;
+            clearTimeout(timeout);
+            if (ok) loaded++; else failed++;
+            done++;
+            updatePreloaderProgress(done, total, "Загрузка блюд...");
+            resolve();
         };
-        img.onerror = () => {
-        clearTimeout(timeout);
-        failed++; done++;
-        updatePreloaderProgress(done, total, "Загрузка блюд...");
-        resolve();
-        };
+
+        const timeout = setTimeout(() => finish(false), 5000);
+        img.onload = () => finish(true);
+        img.onerror = () => finish(false);
         img.src = url;
-        });
-        }
+    });
+}
 
         async function worker() {
         while (queue.length > 0) {
