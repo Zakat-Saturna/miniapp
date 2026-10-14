@@ -587,19 +587,20 @@
     /* ============================================================ */
     /* КОРЗИНА */
     /* ============================================================ */
-    .cart-bar {
+            .cart-bar {
         position: fixed;
-        bottom: 0;
+        bottom: calc(88px + env(safe-area-inset-bottom, 0px) + 8px); /* ← ВЫСОТА nav + отступ */
         left: 0;
         right: 0;
         background: var(--pixel-dark);
         border-top: 4px solid var(--pixel-green);
+        border-bottom: 4px solid var(--pixel-border); /* ← ДОБАВИЛ нижнюю границу для визуала */
         padding: 12px 16px;
         display: flex;
         justify-content: space-between;
         align-items: center;
         gap: 12px;
-        z-index: 100;
+        z-index: 400;                 /* ← меньше 500 (nav), больше контента */
         box-shadow: 0 -4px 0 var(--pixel-border);
     }
 
