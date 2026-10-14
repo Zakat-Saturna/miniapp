@@ -3426,12 +3426,24 @@ document.addEventListener('touchmove', function(e) {
         }, duration);
         }
 
-        const staticCache = new Map();
+               const staticCache = new Map();
         const dynamicCache = new Map();
+
+        // ============================================================
+        // ЗАГОЛОВКИ АВТОРИЗАЦИИ
+        // ============================================================
+        function authHeaders(extra = {}) {
+            const h = { "ngrok-skip-browser-warning": "true", ...extra };
+            try {
+                const initData = tg?.initData || "";
+                if (initData) h["X-Telegram-Init-Data"] = initData;
+            } catch (e) {}
+            return h;
+        }
 
         async function fetchStatic(url) {
         if (staticCache.has(url)) return staticCache.get(url);
-        const res = await fetch(url, { headers: { "ngrok-skip-browser-warning": "true" } });
+        const res = await fetch(url, { headers: authHeaders() });
         const data = await res.json();
         staticCache.set(url, data);
         return data;
@@ -3441,7 +3453,7 @@ document.addEventListener('touchmove', function(e) {
         const now = Date.now();
         const hit = dynamicCache.get(url);
         if (hit && now - hit.time < ttl) return hit.data;
-        const res = await fetch(url, { headers: { "ngrok-skip-browser-warning": "true" } });
+        const res = await fetch(url, { headers: authHeaders() });
         const data = await res.json();
         dynamicCache.set(url, { data, time: now });
         return data;
@@ -3606,7 +3618,7 @@ document.addEventListener('touchmove', function(e) {
         try {
         await fetch(`${API_URL}/api/notification_seen`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
+        headers: authHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({ user_id: user.id, notification_id: notifId })
         });
         } catch (e) { }
@@ -3624,7 +3636,7 @@ document.addEventListener('touchmove', function(e) {
         try {
         const res = await fetch(`${API_URL}/api/job_accept`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
+        headers: authHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({ user_id: user.id, owner_id: ownerId, notification_id: notifId })
         });
         const data = await res.json();
@@ -3637,7 +3649,7 @@ document.addEventListener('touchmove', function(e) {
         try {
         await fetch(`${API_URL}/api/job_decline`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
+        headers: authHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({ user_id: user.id, owner_id: ownerId, notification_id: notifId })
         });
         dismissNotification(notifId, btn);
@@ -3648,7 +3660,7 @@ document.addEventListener('touchmove', function(e) {
         try {
         const res = await fetch(`${API_URL}/api/bj_accept`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
+        headers: authHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({ user_id: user.id, game_id: gameId, notification_id: notifId })
         });
         const data = await res.json();
@@ -3661,7 +3673,7 @@ document.addEventListener('touchmove', function(e) {
         try {
         await fetch(`${API_URL}/api/bj_decline`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
+        headers: authHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({ user_id: user.id, game_id: gameId, notification_id: notifId })
         });
         dismissNotification(notifId, btn);
@@ -3673,7 +3685,7 @@ document.addEventListener('touchmove', function(e) {
     if (document.hidden) return; // не поллим в фоне
     try {
         const res = await fetch(`${API_URL}/api/notifications?user_id=${user.id}`, {
-            headers: { "ngrok-skip-browser-warning": "true" }
+            headers: authHeaders()
         });
         const data = await res.json();
         if (!data.ok) return;
@@ -3711,7 +3723,7 @@ document.addEventListener('touchmove', function(e) {
 
             try {
                 const res = await fetch(`${API_URL}/api/user_profile?user_id=${targetUserId}`, {
-                    headers: { "ngrok-skip-browser-warning": "true" }
+                    headers: authHeaders()
                 });
                 const data = await res.json();
                 if (!data.ok) throw new Error(data.error);
@@ -3798,7 +3810,7 @@ document.addEventListener('touchmove', function(e) {
 
             try {
                 const res = await fetch(`${API_URL}/api/my_showcase?user_id=${user.id}`, {
-                    headers: { "ngrok-skip-browser-warning": "true" }
+                    headers: authHeaders()
                 });
                 const data = await res.json();
                 if (!data.ok) throw new Error(data.error);
@@ -3866,7 +3878,7 @@ async function loadShowcasePickPage() {
     try {
         const res = await fetch(
             `${API_URL}/api/inventory?user_id=${user.id}&offset=${offset}&limit=${limit}&sort=price_desc`,
-            { headers: { "ngrok-skip-browser-warning": "true" } }
+            { headers: authHeaders() }
         );
         const data = await res.json();
         if (!data.ok) throw new Error(data.error);
@@ -3943,7 +3955,7 @@ function showcasePickNext() {
             try {
                 const res = await fetch(`${API_URL}/api/set_showcase_slot`, {
                     method: "POST",
-                    headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
+                    headers: authHeaders({ "Content-Type": "application/json" }),
                     body: JSON.stringify({ user_id: user.id, slot: slot, item_code: itemCode })
                 });
                 const data = await res.json();
@@ -3963,7 +3975,7 @@ function showcasePickNext() {
             try {
                 const res = await fetch(`${API_URL}/api/set_showcase_slot`, {
                     method: "POST",
-                    headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
+                    headers: authHeaders({ "Content-Type": "application/json" }),
                     body: JSON.stringify({ user_id: user.id, slot: slot, item_code: null })
                 });
                 const data = await res.json();
@@ -3987,7 +3999,7 @@ function showcasePickNext() {
 
     try {
         const res = await fetch(`${API_URL}/api/profile?user_id=${user.id}`, {
-            headers: { "ngrok-skip-browser-warning": "true" }
+            headers: authHeaders()
         });
         const data = await res.json();
         if (!data.ok) throw new Error(data.error);
@@ -4059,19 +4071,19 @@ function showcasePickNext() {
 
         try {
         const sRes = await fetch(`${API_URL}/api/season/current`, {
-        headers: { "ngrok-skip-browser-warning": "true" }
+        headers: authHeaders()
         });
         const sData = await sRes.json();
         if (!sData.ok) throw new Error(sData.error || "нет сезона");
 
         const pRes = await fetch(`${API_URL}/api/season/progress?user_id=${user.id}`, {
-        headers: { "ngrok-skip-browser-warning": "true" }
+        headers: authHeaders()
         });
         const pData = await pRes.json();
         if (!pData.ok) throw new Error(pData.error);
 
         const qRes = await fetch(`${API_URL}/api/season/quests?user_id=${user.id}`, {
-        headers: { "ngrok-skip-browser-warning": "true" }
+        headers: authHeaders()
         });
         const qData = await qRes.json();
         const quests = qData.ok ? qData.quests : [];
@@ -4079,7 +4091,7 @@ function showcasePickNext() {
         try {
         await fetch(`${API_URL}/api/season/daily_login`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
+        headers: authHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({ user_id: user.id })
         });
         } catch (e) {}
@@ -4222,7 +4234,7 @@ function showcasePickNext() {
         try {
         const res = await fetch(`${API_URL}/api/season/claim`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
+        headers: authHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({ user_id: user.id, level })
         });
         const data = await res.json();
@@ -4241,7 +4253,7 @@ function showcasePickNext() {
         try {
         const res = await fetch(`${API_URL}/api/season/quest_claim`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
+        headers: authHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({ user_id: user.id, quest_id: questId })
         });
         const data = await res.json();
@@ -4259,7 +4271,7 @@ function showcasePickNext() {
 
         try {
         const previewRes = await fetch(`${API_URL}/api/season/case_preview`, {
-        headers: { "ngrok-skip-browser-warning": "true" }
+        headers: authHeaders()
         });
         const previewData = await previewRes.json();
         if (!previewData.ok) { alert("❌ " + previewData.error); return; }
@@ -4268,7 +4280,7 @@ function showcasePickNext() {
 
         const res = await fetch(`${API_URL}/api/season/open_case`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
+        headers: authHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({ user_id: user.id })
         });
         const data = await res.json();
@@ -4438,7 +4450,7 @@ function showcasePickNext() {
         document.getElementById("content").innerHTML = '<div class="loading">⏳ Загружаем ресторан...</div>';
         try {
         const res = await fetch(`${API_URL}/api/restaurant?user_id=${user.id}`, {
-        headers: { "ngrok-skip-browser-warning": "true" }
+        headers: authHeaders()
         });
         const data = await res.json();
         if (!data.ok) throw new Error(data.error);
@@ -4511,7 +4523,7 @@ function showcasePickNext() {
         try {
         const res = await fetch(`${API_URL}/api/collect_income`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
+        headers: authHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({ user_id: user.id })
         });
         const data = await res.json();
@@ -4526,7 +4538,7 @@ function showcasePickNext() {
         try {
         const res = await fetch(`${API_URL}/api/upgrade`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
+        headers: authHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({ user_id: user.id, type: type })
         });
         const data = await res.json();
@@ -4539,7 +4551,7 @@ function showcasePickNext() {
         try {
         const res = await fetch(`${API_URL}/api/restaurant_fire`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
+        headers: authHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({ user_id: user.id, worker_id: workerId })
         });
         const data = await res.json();
@@ -4551,7 +4563,7 @@ function showcasePickNext() {
         async function openHireModal() {
         try {
         const res = await fetch(`${API_URL}/api/friends_detail?user_id=${user.id}`, {
-        headers: { "ngrok-skip-browser-warning": "true" }
+        headers: authHeaders()
         });
         const data = await res.json();
         const friends = (data.ok && data.friends) ? data.friends : [];
@@ -4587,7 +4599,7 @@ function showcasePickNext() {
         try {
         const res = await fetch(`${API_URL}/api/restaurant_hire`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
+        headers: authHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({ user_id: user.id, target: target })
         });
         const data = await res.json();
@@ -4623,7 +4635,7 @@ function showcasePickNext() {
         document.getElementById("content").innerHTML = '<div class="loading">⏳ Загружаем друзей...</div>';
         try {
         const res = await fetch(`${API_URL}/api/friends_detail?user_id=${user.id}`, {
-        headers: { "ngrok-skip-browser-warning": "true" }
+        headers: authHeaders()
         });
         const data = await res.json();
         if (!data.ok) throw new Error(data.error);
@@ -4683,7 +4695,7 @@ function showcasePickNext() {
         try {
         const res = await fetch(`${API_URL}/api/friend_add`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
+        headers: authHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({ user_id: user.id, target: value })
         });
         const data = await res.json();
@@ -4697,7 +4709,7 @@ function showcasePickNext() {
         try {
         const res = await fetch(`${API_URL}/api/friend_remove`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
+        headers: authHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({ user_id: user.id, friend_id: friendId })
         });
         const data = await res.json();
@@ -4710,7 +4722,7 @@ function showcasePickNext() {
         document.getElementById("content").innerHTML = '<div class="loading">⏳ Загружаем...</div>';
         try {
         const res = await fetch(`${API_URL}/api/my_job?user_id=${user.id}`, {
-        headers: { "ngrok-skip-browser-warning": "true" }
+        headers: authHeaders()
         });
         const data = await res.json();
         if (!data.ok) throw new Error(data.error);
@@ -4744,7 +4756,7 @@ function showcasePickNext() {
         try {
         const res = await fetch(`${API_URL}/api/job_quit`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
+        headers: authHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({ user_id: user.id })
         });
         const data = await res.json();
@@ -4757,7 +4769,7 @@ function showcasePickNext() {
         document.getElementById("content").innerHTML = '<div class="loading">⏳ Загружаем...</div>';
         try {
         const res = await fetch(`${API_URL}/api/referral?user_id=${user.id}`, {
-        headers: { "ngrok-skip-browser-warning": "true" }
+        headers: authHeaders()
         });
         const data = await res.json();
         if (!data.ok) throw new Error(data.error);
@@ -4855,7 +4867,7 @@ function showcasePickNext() {
         try {
         const res = await fetch(`${API_URL}/api/craft`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
+        headers: authHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({ user_id: user.id, rarity: rarity })
         });
         const data = await res.json();
@@ -4964,7 +4976,7 @@ function showcasePickNext() {
         try {
         const res = await fetch(`${API_URL}/api/claim_achievement`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
+        headers: authHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({ user_id: user.id, achievement_id: achId })
         });
         const data = await res.json();
@@ -4983,7 +4995,7 @@ function showcasePickNext() {
 
         try {
         const bjRes = await fetch(`${API_URL}/api/bj_state?user_id=${user.id}`, {
-        headers: { "ngrok-skip-browser-warning": "true" }
+        headers: authHeaders()
         });
         const bjData = await bjRes.json();
 
@@ -5041,7 +5053,7 @@ function showcasePickNext() {
         try {
             const res = await fetch(`${API_URL}/api/bj_challenge_bot`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
+                headers: authHeaders({ "Content-Type": "application/json" }),
                 body: JSON.stringify({ user_id: user.id, bet: bet })
             });
             const data = await res.json();
@@ -5058,7 +5070,7 @@ function showcasePickNext() {
         document.getElementById("content").innerHTML = '<div class="loading">⏳ Загружаем...</div>';
         try {
         const res = await fetch(`${API_URL}/api/friends_detail?user_id=${user.id}`, {
-        headers: { "ngrok-skip-browser-warning": "true" }
+        headers: authHeaders()
         });
         const data = await res.json();
         const friends = (data.ok && data.friends) ? data.friends : [];
@@ -5136,7 +5148,7 @@ function showcasePickNext() {
         try {
         const res = await fetch(`${API_URL}/api/bj_challenge`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
+        headers: authHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({ user_id: user.id, target: String(opponentId), bet: bet })
         });
         const data = await res.json();
@@ -5175,7 +5187,7 @@ function showcasePickNext() {
         const searchUrl = /^\d+$/.test(clean)
         ? `${API_URL}/api/rob_search?by_id=${clean}`
         : `${API_URL}/api/rob_search?username=${encodeURIComponent(clean)}`;
-        const res = await fetch(searchUrl, { headers: { "ngrok-skip-browser-warning": "true" } });
+        const res = await fetch(searchUrl, { headers: authHeaders() });
         const data = await res.json();
         if (!data.ok) { alert("❌ " + data.error); return; }
         closeModal();
@@ -5298,7 +5310,7 @@ function showcasePickNext() {
         try {
         const res = await fetch(`${API_URL}/api/bj_hit`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
+        headers: authHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({ user_id: user.id })
         });
         const data = await res.json();
@@ -5314,7 +5326,7 @@ function showcasePickNext() {
         try {
         const res = await fetch(`${API_URL}/api/bj_stand`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
+        headers: authHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({ user_id: user.id })
         });
         const data = await res.json();
@@ -5328,7 +5340,7 @@ function showcasePickNext() {
         async function refreshBjState() {
         try {
         const res = await fetch(`${API_URL}/api/bj_state?user_id=${user.id}`, {
-        headers: { "ngrok-skip-browser-warning": "true" }
+        headers: authHeaders()
         });
         const data = await res.json();
         if (data.ok && data.game) {
@@ -5409,7 +5421,7 @@ function showcasePickNext() {
         try {
         const res = await fetch(`${API_URL}/api/bj_rematch`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
+        headers: authHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({ user_id: user.id })
         });
         const data = await res.json();
@@ -5431,7 +5443,7 @@ function showcasePickNext() {
         try {
         await fetch(`${API_URL}/api/bj_close`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
+        headers: authHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({ user_id: user.id })
         });
         } catch (e) { }
@@ -5451,7 +5463,7 @@ function showcasePickNext() {
         try {
             await fetch(`${API_URL}/api/bj_surrender`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
+                headers: authHeaders({ "Content-Type": "application/json" }),
                 body: JSON.stringify({ user_id: user.id })
             });
         } catch (e) { }
@@ -5463,7 +5475,7 @@ function showcasePickNext() {
         document.getElementById("content").innerHTML = '<div class="loading">⏳ Загружаем воровство...</div>';
         try {
         const statRes = await fetch(`${API_URL}/api/rob_status?user_id=${user.id}`, {
-        headers: { "ngrok-skip-browser-warning": "true" }
+        headers: authHeaders()
         });
         const stat = await statRes.json();
         if (!stat.ok) throw new Error(stat.error);
@@ -5485,7 +5497,7 @@ function showcasePickNext() {
         html += `<div class="card"><div class="label">⚔️ Воровство</div><div style="font-size:16px;color:#999;margin-top:6px;">Выбери жертву из друзей или введи @username</div></div>`;
 
         const frRes = await fetch(`${API_URL}/api/rob_friends?user_id=${user.id}`, {
-        headers: { "ngrok-skip-browser-warning": "true" }
+        headers: authHeaders()
         });
         const frData = await frRes.json();
 
@@ -5526,14 +5538,14 @@ function showcasePickNext() {
         const searchUrl = /^\d+$/.test(cleanRaw)
         ? `${API_URL}/api/rob_search?by_id=${cleanRaw}`
         : `${API_URL}/api/rob_search?username=${encodeURIComponent(cleanRaw)}`;
-        const searchRes = await fetch(searchUrl, { headers: { "ngrok-skip-browser-warning": "true" } });
+        const searchRes = await fetch(searchUrl, { headers: authHeaders() });
         const searchData = await searchRes.json();
         if (!searchData.ok) { alert("❌ " + searchData.error); loadRob(); return; }
         victimId = searchData.user_id;
         url = `${API_URL}/api/victim_inventory?victim_id=${victimId}`;
         }
 
-        const res = await fetch(url, { headers: { "ngrok-skip-browser-warning": "true" } });
+        const res = await fetch(url, { headers: authHeaders() });
         const data = await res.json();
         if (!data.ok) { alert("❌ " + data.error); loadRob(); return; }
 
@@ -5572,7 +5584,7 @@ function showcasePickNext() {
         document.getElementById("content").innerHTML = '<div class="loading">⏳ Загружаем твой инвентарь...</div>';
         try {
         const res = await fetch(`${API_URL}/api/inventory?user_id=${user.id}&offset=0&limit=50&sort=price_desc`, {
-        headers: { "ngrok-skip-browser-warning": "true" }
+        headers: authHeaders()
         });
         const data = await res.json();
         if (!data.ok) throw new Error(data.error);
@@ -5610,7 +5622,7 @@ function showcasePickNext() {
         try {
         const res = await fetch(`${API_URL}/api/steal`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
+        headers: authHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({
         user_id: user.id,
         victim_id: robState.victimId,
@@ -5797,7 +5809,7 @@ function showcasePickNext() {
         try {
         const res = await fetch(
         `${API_URL}/api/inventory?user_id=${user.id}&offset=${offset}&limit=${inventoryState.limit}&sort=${inventoryState.sort}`,
-        { headers: { "ngrok-skip-browser-warning": "true" } }
+        { headers: authHeaders() }
         );
         const data = await res.json();
         if (!data.ok) throw new Error(data.error);
@@ -5929,7 +5941,7 @@ function showcasePickNext() {
         try {
         const res = await fetch(`${API_URL}/api/sell_bulk`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
+        headers: authHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({ user_id: user.id, codes: Array.from(cart) })
         });
         const data = await res.json();
@@ -5947,7 +5959,7 @@ function showcasePickNext() {
         try {
         const res = await fetch(`${API_URL}/api/sell_inventory`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
+        headers: authHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({ user_id: user.id })
         });
         const data = await res.json();
@@ -5965,7 +5977,7 @@ function showcasePickNext() {
         try {
         const res = await fetch(`${API_URL}/api/insure_item`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
+        headers: authHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({ user_id: user.id, item_code: code })
         });
         const data = await res.json();
@@ -5978,7 +5990,7 @@ function showcasePickNext() {
 
         function giftItem(code) {
         fetch(`${API_URL}/api/friends_detail?user_id=${user.id}`, {
-        headers: { "ngrok-skip-browser-warning": "true" }
+        headers: authHeaders()
         })
         .then(r => r.json())
         .then(data => {
@@ -6047,7 +6059,7 @@ function showcasePickNext() {
         try {
         const res = await fetch(`${API_URL}/api/gift_item`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
+        headers: authHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify(body)
         });
         const data = await res.json();
@@ -6084,7 +6096,7 @@ async function loadCases() {
     document.getElementById("content").innerHTML = '<div class="loading">⏳ Загружаем кейсы...</div>';
     try {
         const res = await fetch(`${API_URL}/api/cases?user_id=${user.id}`, {
-            headers: { "ngrok-skip-browser-warning": "true" }
+            headers: authHeaders()
         });
         const data = await res.json();
         if (!data.ok) throw new Error(data.error);
@@ -6344,7 +6356,7 @@ async function openCase(caseId, count) {
     try {
         const res = await fetch(`${API_URL}/api/open_case`, {
             method: "POST",
-            headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
+            headers: authHeaders({ "Content-Type": "application/json" }),
             body: JSON.stringify({ user_id: user.id, case_id: caseId, count })
         });
         openResult = await res.json();
@@ -6552,7 +6564,7 @@ async function sellAllResults() {
     try {
         const res = await fetch(`${API_URL}/api/sell_bulk`, {
             method: "POST",
-            headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" },
+            headers: authHeaders({ "Content-Type": "application/json" }),
             body: JSON.stringify({ user_id: user.id, codes: codes })
         });
         const data = await res.json();
@@ -6662,7 +6674,7 @@ async function sellAllResults() {
 
         const profilePromise = user
         ? fetch(`${API_URL}/api/profile?user_id=${user.id}`, {
-        headers: { "ngrok-skip-browser-warning": "true" }
+        headers: authHeaders()
         }).then(r => r.json()).catch(() => null)
         : Promise.resolve(null);
 
