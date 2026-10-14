@@ -61,7 +61,7 @@
 
     body {
         padding: 16px;
-        padding-bottom: 90px;
+        padding-bottom: 110px;
         background: var(--pixel-bg);
         color: var(--pixel-text);
         font-size: 16px;
@@ -151,9 +151,10 @@
     border-top: 4px solid var(--pixel-border);
     z-index: 500;
     box-shadow: 0 -4px 0 rgba(0, 0, 0, 0.3);
-    padding-bottom: env(safe-area-inset-bottom, 0);
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 8px);   /* ← отступ снизу */
+    padding-top: 6px;                                              /* ← отступ сверху */
+    min-height: 88px;                                              /* ← ВЫСОТА навигации */
 }
-
 /* Пиксельная полоска над навигацией */
 .bottom-nav::before {
     content: "";
@@ -173,7 +174,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 8px 4px 10px 4px;
+    padding: 10px 4px 12px 4px;
     background: transparent;
     border: none;
     border-radius: 0;
@@ -182,15 +183,15 @@
     color: var(--pixel-hint);
     text-transform: uppercase;
     font-weight: bold;
-    font-size: 10px;
+    font-size: 11px;                    /* ← было 10, стало 11 */
     letter-spacing: 0.5px;
     transition: none;
     margin: 0;
     width: auto;
     box-shadow: none;
-    min-height: 64px;
+    min-height: 80px;                    /* ← было 64, стало 80 */
     position: relative;
-    gap: 2px;
+    gap: 4px;                            /* ← было 2, стало 4 */
 }
 
 .nav-btn:active {
@@ -199,23 +200,24 @@
 }
 
 .nav-icon {
-    width: 36px;
-    height: 36px;
+    width: 44px;                        /* ← было 36, стало 44 */
+    height: 44px;
     object-fit: contain;
     image-rendering: pixelated;
     filter: grayscale(1) brightness(0.6);
     transition: none;
     pointer-events: none;
 }
-
+     
 .nav-label {
-    font-size: 10px;
+    font-size: 11px;                    /* ← было 10, стало 11 */
     text-align: center;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     max-width: 100%;
     line-height: 1;
+    margin-top: 2px;
 }
 
 /* Активная вкладка — выделяется как в Clash Royale */
@@ -2848,6 +2850,13 @@
         margin-top: 12px;
         letter-spacing: 1px;
     }
+         .nav-fallback {
+        font-size: 32px;
+        line-height: 1;
+        display: block;
+        margin-bottom: 2px;
+        pointer-events: none;
+    }
 </style>
 </head>
 <body>
@@ -2877,26 +2886,31 @@
         <div class="loading">⏳ Загружаем данные...</div>
     </div>
 
-    <div class="bottom-nav">
+        <div class="bottom-nav">
         <button class="nav-btn" data-tab="profile" onclick="switchTab('profile')">
-            <img src="images/nav_profile.png" alt="Профиль" class="nav-icon" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-            <span class="nav-label">Профиль</span>
+            <img src="https://piggychef.serveousercontent.com/images/nav_profile.png" alt="" class="nav-icon"
+                 onerror="this.style.display='none'; this.insertAdjacentHTML('afterend', '<span class=&quot;nav-fallback&quot;>👤</span>');">
+            <span class="nav-label">ПРОФИЛЬ</span>
         </button>
         <button class="nav-btn" data-tab="restaurant" onclick="switchTab('restaurant')">
-            <img src="images/nav_restaurant.png" alt="Ресторан" class="nav-icon" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-            <span class="nav-label">Ресторан</span>
+            <img src="https://piggychef.serveousercontent.com/images/nav_restaurant.png" alt="" class="nav-icon"
+                 onerror="this.style.display='none'; this.insertAdjacentHTML('afterend', '<span class=&quot;nav-fallback&quot;>🏪</span>');">
+            <span class="nav-label">РЕСТОРАН</span>
         </button>
         <button class="nav-btn active" data-tab="cases" onclick="switchTab('cases')">
-            <img src="images/nav_cases.png" alt="Кейсы" class="nav-icon" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-            <span class="nav-label">Кейсы</span>
+            <img src="https://piggychef.serveousercontent.com/images/nav_cases.png" alt="" class="nav-icon"
+                 onerror="this.style.display='none'; this.insertAdjacentHTML('afterend', '<span class=&quot;nav-fallback&quot;>📦</span>');">
+            <span class="nav-label">КЕЙСЫ</span>
         </button>
         <button class="nav-btn" data-tab="battlepass" onclick="switchTab('battlepass')">
-            <img src="images/nav_battlepass.png" alt="БП" class="nav-icon" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+            <img src="https://piggychef.serveousercontent.com/images/nav_battlepass.png" alt="" class="nav-icon"
+                 onerror="this.style.display='none'; this.insertAdjacentHTML('afterend', '<span class=&quot;nav-fallback&quot;>🎫</span>');">
             <span class="nav-label">БП</span>
         </button>
         <button class="nav-btn" data-tab="pvp" onclick="switchTab('pvp')">
-            <img src="images/nav_pvp.png" alt="ПвП" class="nav-icon" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-            <span class="nav-label">ПвП</span>
+            <img src="https://piggychef.serveousercontent.com/images/nav_pvp.png" alt="" class="nav-icon"
+                 onerror="this.style.display='none'; this.insertAdjacentHTML('afterend', '<span class=&quot;nav-fallback&quot;>⚔️</span>');">
+            <span class="nav-label">ПВП</span>
         </button>
     </div>
     <div id="modal-root"></div>
@@ -5539,9 +5553,9 @@ function renderCasesMain() {
     let html = `
         <div class="cases-header">
             <div class="cases-title">КЕЙСЫ</div>
-            <button class="top-btn" onclick="loadTop()">
-                <img src="images/nav_top.png" alt="Топ" onerror="this.style.display='none'; this.parentElement.innerHTML='🏆';">
-            </button>
+           <button class="top-btn" onclick="loadTop()">
+    <img src="${API_URL}/images/nav_top.png" alt="Топ" onerror="this.style.display='none'; this.parentElement.innerHTML='🏆';">
+</button>
         </div>
         <div class="categories-grid">
     `;
@@ -5573,7 +5587,7 @@ function renderCaseList(catId) {
     </div>`;
 
     for (const c of cat.cases) {
-        const caseImg = `images/case_${c.id}.png`;
+    const caseImg = `${API_URL}/images/case_${c.id}.png`;
         const d = c.discount || currentUserDiscount || 0;
         const rp = c.real_price || c.price;
         const hasDiscount = d > 0 && rp < c.price;
@@ -5622,7 +5636,7 @@ async function showCasePreview(caseId, catId) {
             }
         }
 
-        const caseImg = `images/case_${caseId}.png`;
+        const caseImg = `${API_URL}/images/case_${caseId}.png`;
         const hasDiscount = caseRealPrice < casePrice;
 
         let html = `<button class="btn-back" onclick="renderCaseList('${catId}')">⬅️ НАЗАД</button>`;
