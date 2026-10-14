@@ -3079,6 +3079,115 @@
         transform: translate(3px, 3px);
         box-shadow: 1px 1px 0 var(--pixel-border);
     }
+         /* ============================================================ */
+    /* ЛЕТЯЩАЯ ЦИФРА "+N₽" */
+    /* ============================================================ */
+    .floating-money {
+        position: fixed;
+        z-index: 9000;
+        font-family: inherit;
+        font-size: 22px;
+        font-weight: bold;
+        color: var(--pixel-green);
+        text-shadow:
+            2px 2px 0 var(--pixel-border),
+            -1px -1px 0 var(--pixel-border),
+            1px -1px 0 var(--pixel-border),
+            -1px 1px 0 var(--pixel-border);
+        pointer-events: none;
+        user-select: none;
+        animation: floating-money-fly 1.5s ease-out forwards;
+        letter-spacing: 1px;
+    }
+    .floating-money.negative {
+        color: var(--pixel-red);
+    }
+
+    @keyframes floating-money-fly {
+        0%   { transform: translateY(0) scale(1); opacity: 1; }
+        20%  { transform: translateY(-30px) scale(1.25); opacity: 1; }
+        100% { transform: translateY(-130px) scale(0.9); opacity: 0; }
+    }
+
+    /* Пульс баланса при изменении */
+    @keyframes balance-pulse {
+        0%, 100% { transform: scale(1); }
+        40%      { transform: scale(1.15); color: var(--pixel-yellow); }
+    }
+    #balance-display.pulse {
+        animation: balance-pulse 0.5s ease-out;
+    }
+
+         /* ============================================================ */
+    /* ПОЯВЛЕНИЕ КОНТЕНТА (для всех экранов) */
+    /* ============================================================ */
+    @keyframes content-fade-in {
+        from { opacity: 0; transform: translateY(12px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    #content > * {
+        animation: content-fade-in 0.35s ease-out backwards;
+    }
+
+    /* Каскадное появление карточек */
+    #content > *:nth-child(1) { animation-delay: 0.00s; }
+    #content > *:nth-child(2) { animation-delay: 0.04s; }
+    #content > *:nth-child(3) { animation-delay: 0.08s; }
+    #content > *:nth-child(4) { animation-delay: 0.12s; }
+    #content > *:nth-child(5) { animation-delay: 0.16s; }
+    #content > *:nth-child(6) { animation-delay: 0.20s; }
+    #content > *:nth-child(7) { animation-delay: 0.24s; }
+    #content > *:nth-child(8) { animation-delay: 0.28s; }
+    #content > *:nth-child(n+9) { animation-delay: 0.32s; }
+
+    /* Появление строк списков (инвентарь, друзья, топ) */
+    @keyframes row-slide-in {
+        from { opacity: 0; transform: translateX(-16px); }
+        to   { opacity: 1; transform: translateX(0); }
+    }
+
+    .item, .friend-row, .top-row, .worker-row, .craft-row,
+    .coll-dish, .ach-row, .quest-row, .bp-level, .multi-result-row,
+    .case-tile, .category-tile, .upgrade-block, .showcase-slot {
+        animation: row-slide-in 0.3s ease-out backwards;
+    }
+
+    /* Каскад для длинных списков через CSS-переменную --i */
+    .item { animation-delay: calc(var(--i, 0) * 0.03s); }
+    .friend-row, .top-row, .worker-row { animation-delay: calc(var(--i, 0) * 0.04s); }
+    .craft-row, .coll-dish, .ach-row { animation-delay: calc(var(--i, 0) * 0.025s); }
+    .case-tile, .category-tile { animation-delay: calc(var(--i, 0) * 0.05s); }
+    .showcase-slot { animation-delay: calc(var(--i, 0) * 0.06s); }
+
+    /* Появление модалок */
+    .modal {
+        animation: modal-pop 0.25s ease-out backwards;
+    }
+    @keyframes modal-pop {
+        from { opacity: 0; transform: scale(0.9); }
+        to   { opacity: 1; transform: scale(1); }
+    }
+
+    /* Навигация: active tab */
+    .nav-btn.active {
+        animation: nav-tab-pop 0.3s ease-out;
+    }
+    @keyframes nav-tab-pop {
+        0%   { transform: scale(0.95); }
+        60%  { transform: scale(1.05); }
+        100% { transform: scale(1); }
+    }
+
+    /* Карточки баланса/уровня — лёгкий pulse при появлении */
+    @keyframes card-pop {
+        from { opacity: 0; transform: scale(0.96); }
+        to   { opacity: 1; transform: scale(1); }
+    }
+    .card {
+        animation: card-pop 0.3s ease-out backwards;
+    }
+     
 </style>
 </head>
 <body>
@@ -3176,7 +3285,22 @@ document.addEventListener('touchmove', function(e) {
         tg.ready();
         tg.expand();
 
-        const user = tg.initDataUnsafe?.user;
+                const user = tg.initDataUnsafe?.user;
+
+        // ============================================================
+        // HAPTIC FEEDBACK (вибрация Telegram)
+        // ============================================================
+        const haptic = {
+            tap: () => { try { tg.HapticFeedback?.impactOccurred("light"); } catch (e) {} },
+            soft: () => { try { tg.HapticFeedback?.impactOccurred("soft"); } catch (e) {} },
+            medium: () => { try { tg.HapticFeedback?.impactOccurred("medium"); } catch (e) {} },
+            heavy: () => { try { tg.HapticFeedback?.impactOccurred("heavy"); } catch (e) {} },
+            rigid: () => { try { tg.HapticFeedback?.impactOccurred("rigid"); } catch (e) {} },
+            success: () => { try { tg.HapticFeedback?.notificationOccurred("success"); } catch (e) {} },
+            warning: () => { try { tg.HapticFeedback?.notificationOccurred("warning"); } catch (e) {} },
+            error: () => { try { tg.HapticFeedback?.notificationOccurred("error"); } catch (e) {} },
+            selection: () => { try { tg.HapticFeedback?.selectionChanged(); } catch (e) {} },
+        };
 
         if (tg.colorScheme === "dark") {
         document.body.classList.add("tg-dark");
@@ -3255,6 +3379,23 @@ document.addEventListener('touchmove', function(e) {
         return div.innerHTML;
         }
 
+        // ============================================================
+        // АВАТАРКА ИГРОКА
+        // ============================================================
+        function avatarTag(userId, size = 44, extraClass = "") {
+            const isMe = user && user.id === userId;
+            const url = isMe ? user.photo_url : null; // у других игроков фото нет
+
+            if (url) {
+                return `<img src="${escapeHtml(url)}" alt="" loading="lazy" decoding="async"
+                             style="width:100%;height:100%;object-fit:cover;image-rendering:pixelated;"
+                             class="${escapeHtml(extraClass)}">`;
+            }
+            // Фолбэк — emoji
+            const emoji = isMe ? "👤" : "👤";
+            return `<span style="font-size:${Math.floor(size * 0.55)}px;">${emoji}</span>`;
+        }
+        
       function imgTag(item, extraClass = "") {
     if (item && item.image_url) {
         const safeClass = escapeHtml(extraClass || "");
@@ -3264,7 +3405,12 @@ document.addEventListener('touchmove', function(e) {
     return `<span>${rar}</span>`;
 }
 
-        function showToast(message, duration = 2500) {
+                function showToast(message, duration = 2500, hapticType = "success") {
+            try {
+                if (hapticType === "success") haptic.success();
+                else if (hapticType === "error") haptic.error();
+                else if (hapticType === "warning") haptic.warning();
+            } catch (e) {}
         const existing = document.getElementById("toast");
         if (existing) existing.remove();
         const toast = document.createElement("div");
@@ -3303,11 +3449,67 @@ document.addEventListener('touchmove', function(e) {
         function clearDynamicCache() { dynamicCache.clear(); }
         function clearStaticCache() { staticCache.clear(); }
 
-        function updateBalance(b) {
-        currentBalance = b;
-        document.getElementById("balance-display").textContent = formatNumber(b) + "₽";
+                function updateBalance(b, showDelta = true) {
+            const oldBalance = currentBalance;
+            currentBalance = b;
+            const el = document.getElementById("balance-display");
+            el.textContent = formatNumber(b) + "₽";
+
+            // Пульс баланса
+            el.classList.remove("pulse");
+            void el.offsetWidth;
+            el.classList.add("pulse");
+
+            // Летящая цифра
+            if (showDelta && typeof oldBalance === "number" && b !== oldBalance) {
+                const delta = b - oldBalance;
+                showFloatingMoney(delta, el);
+            }
         }
 
+        function showFloatingMoney(delta, anchorEl) {
+            if (!delta) return;
+            const rect = anchorEl.getBoundingClientRect();
+            const el = document.createElement("div");
+            el.className = "floating-money" + (delta < 0 ? " negative" : "");
+            el.textContent = (delta > 0 ? "+" : "") + formatNumber(Math.abs(delta) * Math.sign(delta)) + "₽";
+            if (delta < 0) el.textContent = "-" + formatNumber(Math.abs(delta)) + "₽";
+            el.style.left = (rect.left + rect.width / 2) + "px";
+            el.style.top = (rect.top) + "px";
+            el.style.transform = "translateX(-50%)";
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 1600);
+        }
+        // ============================================================
+        // АВТО-КАСКАД для строк списков
+        // ============================================================
+        let __cascadeTimer = null;
+        function applyCascade() {
+            clearTimeout(__cascadeTimer);
+            __cascadeTimer = setTimeout(() => {
+                const selectors = ".item, .friend-row, .top-row, .worker-row, .craft-row, .coll-dish, .ach-row, .quest-row, .bp-level, .multi-result-row, .case-tile, .category-tile, .showcase-slot";
+                const nodes = document.querySelectorAll(selectors);
+                nodes.forEach((el, i) => {
+                    if (!el.style.getPropertyValue("--i")) {
+                        el.style.setProperty("--i", i);
+                    }
+                });
+            }, 30);
+        }
+
+        // Следим за изменениями #content
+        const __contentObserver = new MutationObserver(() => {
+            applyCascade();
+        });
+
+        // Запускаем observer после загрузки DOM
+        document.addEventListener("DOMContentLoaded", () => {
+            const content = document.getElementById("content");
+            if (content) {
+                __contentObserver.observe(content, { childList: true, subtree: false });
+            }
+            applyCascade();
+        });
        function switchTab(tab) {
     // Останавливаем поллинг баттла при смене вкладки
     if (typeof stopBjPolling === "function") stopBjPolling();
@@ -3523,9 +3725,9 @@ document.addEventListener('touchmove', function(e) {
 
                 let html = `<button class="btn-back" onclick="${__profileBackFn}()">⬅️ Назад</button>`;
 
-                html += `
+                              html += `
                     <div class="card" style="text-align:center;">
-                        <div style="font-size:48px; margin-bottom:8px;">👤</div>
+                        <div style="font-size:64px; margin-bottom:8px;">👤</div>
                         <div style="font-size:22px; font-weight:bold; margin-bottom:4px;">
                             ${repIcon}${escapeHtml(u.first_name || u.username || ("id" + u.user_id))}
                         </div>
@@ -3796,7 +3998,19 @@ function showcasePickNext() {
         currentUserPath = u.path || "neutral";
         currentUserIsWorker = u.is_worker || false;
 
+                const myPhoto = user?.photo_url || null;
+        const avatarHtml = myPhoto
+            ? `<img src="${escapeHtml(myPhoto)}" alt="" style="width:88px;height:88px;object-fit:cover;border:3px solid var(--pixel-border);image-rendering:pixelated;">`
+            : `<div style="font-size:64px;">👤</div>`;
+
         document.getElementById("content").innerHTML = `
+        <div class="card" style="text-align:center;">
+            ${avatarHtml}
+            <div style="font-size:18px; font-weight:bold; margin-top:10px;">
+                ${escapeHtml(user?.first_name || user?.username || "Игрок")}
+            </div>
+            ${user?.username ? `<div style="font-size:13px; color:var(--pixel-hint); margin-top:4px;">@${escapeHtml(user.username)}</div>` : ""}
+        </div>
         <div class="card"><div class="label">💰 Баланс</div><div class="value">${formatNumber(u.balance)}₽</div></div>
         <div class="card"><div class="label">✨ Опыт</div><div class="value">${formatNumber(u.xp)} XP</div></div>
         <div class="row">
@@ -6104,7 +6318,8 @@ async function openCase(caseId, count) {
         return;
     }
 
-    __caseOpening = true;
+       __caseOpening = true;
+    haptic.medium();
 
     let pool = [], caseName = "";
     try {
@@ -6197,9 +6412,10 @@ async function openCase(caseId, count) {
         if (track) track.style.transform = `translateX(-${finalOffset}px)`;
         }, 100);
 
-        setTimeout(() => {
+                setTimeout(() => {
             const track = document.getElementById("roulette-track");
             highlightRouletteWinner(track, ".roulette-item");
+            haptic.heavy();
         }, 4900);
 
         setTimeout(onDone, 5500);
@@ -6260,11 +6476,12 @@ async function openCase(caseId, count) {
         }
         }, 100);
 
-        setTimeout(() => {
+                setTimeout(() => {
             for (const cfg of configs) {
                 const track = document.getElementById(`mini-track-${cfg.idx}`);
                 highlightRouletteWinner(track, ".mini-roulette-item");
             }
+            haptic.heavy();
         }, 4400);
 
         setTimeout(onDone, 5000);
@@ -6452,8 +6669,8 @@ async function sellAllResults() {
 
         const [profileResult] = await Promise.all([profilePromise, preloadPromise]);
 
-        if (profileResult && profileResult.ok) {
-            updateBalance(profileResult.user.balance);
+               if (profileResult && profileResult.ok) {
+            updateBalance(profileResult.user.balance, false);
             currentUserDiscount = profileResult.user.discount || 0;
             currentUserRep = profileResult.user.reputation || 0;
             currentUserPath = profileResult.user.path || "neutral";
@@ -6466,6 +6683,19 @@ async function sellAllResults() {
         switchTab("cases");
         startNotificationPolling();
         }
+
+                // Глобальный haptic на клики
+        document.addEventListener("click", (e) => {
+            const t = e.target.closest("button, .category-tile, .case-tile, .item, .top-row, .friend-row, .showcase-slot, .bp-level, .nav-btn");
+            if (t) haptic.tap();
+        }, { passive: true });
+
+                // Принудительно применяем каскад после загрузки
+        setTimeout(() => {
+            const content = document.getElementById("content");
+            if (content) __contentObserver.observe(content, { childList: true, subtree: false });
+            applyCascade();
+        }, 500);
 
         initApp();
     </script>
