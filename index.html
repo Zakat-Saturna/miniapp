@@ -61,6 +61,7 @@
 
     body {
         padding: 16px;
+        padding-bottom: 90px;
         background: var(--pixel-bg);
         color: var(--pixel-text);
         font-size: 16px;
@@ -97,88 +98,157 @@
     /* ============================================================ */
     /* ХЕДЕР */
     /* ============================================================ */
-    .header {
-        text-align: center;
-        margin-bottom: 16px;
-    }
+   /* ============================================================ */
+/* ВЕРХНЯЯ ЧАСТЬ — БАЛАНС */
+/* ============================================================ */
+.app-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--pixel-bg);
+    padding-bottom: 8px;
+    margin-bottom: 12px;
+}
 
-    .header h1 {
-        font-size: 32px;
-        margin-bottom: 8px;
-        color: var(--pixel-yellow);
-        text-transform: uppercase;
-        letter-spacing: 2px;
-        text-shadow: 3px 3px 0 var(--pixel-border);
-    }
+.balance-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--pixel-dark);
+    border: 3px solid var(--pixel-border);
+    border-radius: 0;
+    padding: 10px 14px;
+    font-size: 14px;
+    box-shadow: var(--pixel-shadow-sm);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
 
-    .header .username {
-        color: var(--pixel-hint);
-        font-size: 16px;
-    }
+.balance-bar .balance-label {
+    color: var(--pixel-hint);
+    font-size: 12px;
+    font-weight: bold;
+}
 
-    /* ============================================================ */
-    /* БАЛАНС */
-    /* ============================================================ */
-    .balance-bar {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        background: var(--pixel-dark);
-        border: 3px solid var(--pixel-border);
-        border-radius: 0;
-        padding: 12px 16px;
-        margin-bottom: 16px;
-        font-size: 16px;
-        box-shadow: var(--pixel-shadow);
-        text-transform: uppercase;
-    }
+.balance-bar .balance {
+    color: var(--pixel-green);
+    font-size: 20px;
+    font-weight: bold;
+}
 
-    .balance-bar .balance {
-        color: var(--pixel-green);
-        font-size: 22px;
-        font-weight: bold;
-    }
+/* ============================================================ */
+/* НИЖНЯЯ НАВИГАЦИЯ */
+/* ============================================================ */
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-around;
+    align-items: stretch;
+    background: var(--pixel-dark);
+    border-top: 4px solid var(--pixel-border);
+    z-index: 500;
+    box-shadow: 0 -4px 0 rgba(0, 0, 0, 0.3);
+    padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+/* Пиксельная полоска над навигацией */
+.bottom-nav::before {
+    content: "";
+    position: absolute;
+    top: -8px;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--pixel-yellow);
+    box-shadow: 0 -4px 0 var(--pixel-border);
+    pointer-events: none;
+}
+
+.nav-btn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 4px 10px 4px;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    cursor: pointer;
+    font-family: inherit;
+    color: var(--pixel-hint);
+    text-transform: uppercase;
+    font-weight: bold;
+    font-size: 10px;
+    letter-spacing: 0.5px;
+    transition: none;
+    margin: 0;
+    width: auto;
+    box-shadow: none;
+    min-height: 64px;
+    position: relative;
+    gap: 2px;
+}
+
+.nav-btn:active {
+    transform: none;
+    box-shadow: none;
+}
+
+.nav-icon {
+    width: 36px;
+    height: 36px;
+    object-fit: contain;
+    image-rendering: pixelated;
+    filter: grayscale(1) brightness(0.6);
+    transition: none;
+    pointer-events: none;
+}
+
+.nav-label {
+    font-size: 10px;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+    line-height: 1;
+}
+
+/* Активная вкладка — выделяется как в Clash Royale */
+.nav-btn.active {
+    background: var(--pixel-black);
+    color: var(--pixel-yellow);
+}
+
+.nav-btn.active .nav-icon {
+    filter: none;              /* полная яркость */
+    transform: scale(1.1);
+}
+
+.nav-btn.active::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 10%;
+    right: 10%;
+    height: 3px;
+    background: var(--pixel-yellow);
+    box-shadow: 0 0 8px var(--pixel-yellow);
+}
+
+
 
     /* ============================================================ */
     /* ТАБЫ */
     /* ============================================================ */
-    .tabs-row {
-        display: flex;
-        gap: 6px;
-        margin-bottom: 6px;
-    }
+    
 
-    .tabs-row:last-of-type {
-        margin-bottom: 16px;
-    }
-
-    .tab {
-        flex: 1;
-        padding: 14px 6px;
-        font-size: 24px;
-        background: var(--pixel-dark);
-        color: var(--pixel-text);
-        border: 3px solid var(--pixel-border);
-        border-radius: 0;
-        cursor: pointer;
-        font-family: inherit;
-        line-height: 1;
-        min-width: 0;
-        box-shadow: var(--pixel-shadow-sm);
-        transition: none;
-    }
-
-    .tab.active {
-        background: var(--pixel-green);
-        color: var(--pixel-black);
-        transform: translate(2px, 2px);
-        box-shadow: 1px 1px 0 var(--pixel-border);
-    }
-
-    .tab:active {
-        transform: translate(2px, 2px);
-        box-shadow: 1px 1px 0 var(--pixel-border);
-    }
+   
+   
 
     /* ============================================================ */
     /* КАРТОЧКИ */
@@ -2457,6 +2527,327 @@
         text-transform: uppercase;
         font-weight: bold;
     }
+         /* ============================================================ */
+    /* КНОПКИ ПРОФИЛЯ — СЕТКА 2×3 */
+    /* ============================================================ */
+    .profile-buttons-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 6px;
+        margin-bottom: 12px;
+    }
+
+    .profile-btn {
+        padding: 10px 6px;
+        font-size: 11px;
+        background: var(--pixel-dark);
+        color: var(--pixel-text);
+        border: 3px solid var(--pixel-border);
+        border-radius: 0;
+        cursor: pointer;
+        font-family: inherit;
+        font-weight: bold;
+        text-transform: uppercase;
+        box-shadow: var(--pixel-shadow-xs);
+        transition: none;
+        margin: 0;
+        min-height: 44px;
+        letter-spacing: 0.5px;
+        width: auto;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .profile-btn:active {
+        transform: translate(2px, 2px);
+        box-shadow: none;
+    }
+         /* ============================================================ */
+    /* ГЛАВНАЯ — КЕЙСЫ */
+    /* ============================================================ */
+    .cases-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 16px;
+    }
+
+    .cases-title {
+        font-size: 22px;
+        font-weight: bold;
+        color: var(--pixel-yellow);
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        text-shadow: 2px 2px 0 var(--pixel-border);
+    }
+
+    .top-btn {
+        width: 52px;
+        height: 52px;
+        padding: 0;
+        margin: 0;
+        background: var(--pixel-dark);
+        border: 3px solid var(--pixel-border);
+        border-radius: 0;
+        cursor: pointer;
+        box-shadow: var(--pixel-shadow-sm);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        transition: none;
+    }
+
+    .top-btn:active {
+        transform: translate(2px, 2px);
+        box-shadow: none;
+    }
+
+    .top-btn img {
+        width: 36px;
+        height: 36px;
+        object-fit: contain;
+        image-rendering: pixelated;
+    }
+
+    /* Сетка категорий — 5 окошек */
+    .categories-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-bottom: 12px;
+    }
+
+    .category-tile {
+        background: var(--pixel-dark);
+        border: 3px solid var(--pixel-border);
+        border-radius: 0;
+        padding: 20px 12px;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        box-shadow: var(--pixel-shadow);
+        transition: none;
+        min-height: 120px;
+        text-align: center;
+    }
+
+    .category-tile:active {
+        transform: translate(3px, 3px);
+        box-shadow: 1px 1px 0 var(--pixel-border);
+    }
+
+    .category-tile .cat-icon {
+        width: 56px;
+        height: 56px;
+        object-fit: contain;
+        image-rendering: pixelated;
+        pointer-events: none;
+    }
+
+    .category-tile .cat-name {
+        font-size: 13px;
+        font-weight: bold;
+        color: var(--pixel-text);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        line-height: 1.2;
+    }
+
+    /* Кейс — плитка с превьюшкой */
+    .case-tile {
+        background: var(--pixel-dark);
+        border: 3px solid var(--pixel-border);
+        border-radius: 0;
+        padding: 12px;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        box-shadow: var(--pixel-shadow);
+        cursor: pointer;
+        transition: none;
+    }
+
+    .case-tile:active {
+        transform: translate(3px, 3px);
+        box-shadow: 1px 1px 0 var(--pixel-border);
+    }
+
+    .case-tile-img {
+        width: 72px;
+        height: 72px;
+        flex-shrink: 0;
+        background: var(--pixel-black);
+        border: 2px solid var(--pixel-border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+
+    .case-tile-img img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        image-rendering: pixelated;
+    }
+
+    .case-tile-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .case-tile-name {
+        font-size: 16px;
+        font-weight: bold;
+        color: var(--pixel-yellow);
+        text-transform: uppercase;
+        margin-bottom: 6px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .case-tile-price {
+        font-size: 15px;
+        color: var(--pixel-green);
+        font-weight: bold;
+    }
+
+    .case-tile-price .old {
+        text-decoration: line-through;
+        color: var(--pixel-hint);
+        font-weight: normal;
+        font-size: 13px;
+    }
+
+    /* Экран превью кейса */
+    .case-preview-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 14px;
+    }
+
+    .case-preview-img {
+        width: 80px;
+        height: 80px;
+        background: var(--pixel-black);
+        border: 3px solid var(--pixel-border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        overflow: hidden;
+    }
+
+    .case-preview-img img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        image-rendering: pixelated;
+    }
+
+    .case-preview-name {
+        font-size: 18px;
+        font-weight: bold;
+        color: var(--pixel-yellow);
+        text-transform: uppercase;
+        margin-bottom: 4px;
+    }
+
+    .case-preview-price {
+        font-size: 16px;
+        color: var(--pixel-green);
+        font-weight: bold;
+    }
+
+    .case-pool-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 6px;
+        margin-bottom: 14px;
+    }
+
+    @media (max-width: 400px) {
+        .case-pool-grid {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+
+    .case-pool-item {
+        background: var(--pixel-black);
+        border: 2px solid var(--pixel-border);
+        padding: 6px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 88px;
+        text-align: center;
+        overflow: hidden;
+    }
+
+    .case-pool-item img {
+        width: 44px;
+        height: 44px;
+        object-fit: contain;
+        image-rendering: pixelated;
+        margin-bottom: 4px;
+    }
+
+    .case-pool-item .pool-emoji {
+        font-size: 30px;
+        margin-bottom: 2px;
+    }
+
+    .case-pool-item .pool-name {
+        font-size: 9px;
+        color: var(--pixel-text);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        width: 100%;
+        line-height: 1.1;
+    }
+
+    .case-pool-item .pool-price {
+        font-size: 10px;
+        color: var(--pixel-green);
+        font-weight: bold;
+        margin-top: 2px;
+    }
+
+    /* Кнопки ×1 / ×3 / ×10 */
+    .case-actions-row {
+        display: flex;
+        gap: 8px;
+        margin-top: 14px;
+        margin-bottom: 14px;
+    }
+
+    .case-actions-row .btn-case {
+        flex: 1;
+        padding: 14px 8px;
+        font-size: 16px;
+        font-weight: bold;
+    }
+
+    /* Лейбл редкости в превью пула */
+    .case-pool-rarity-header {
+        font-size: 13px;
+        color: var(--pixel-hint);
+        text-transform: uppercase;
+        margin-bottom: 6px;
+        margin-top: 12px;
+        letter-spacing: 1px;
+    }
 </style>
 </head>
 <body>
@@ -2475,31 +2866,39 @@
         </div>
     </div>
 
-    <div class="header">
-        <h1>🍽 Piggy Chef</h1>
-        <div class="username" id="username">Загрузка...</div>
-    </div>
-
-    <div class="balance-bar">
-        <span>💰 Баланс:</span>
-        <span class="balance" id="balance-display">...</span>
-    </div>
-
-    <div class="tabs-row">
-        <button class="tab active" data-tab="profile" onclick="switchTab('profile')">👤</button>
-        <button class="tab" data-tab="inventory" onclick="switchTab('inventory')">🎒</button>
-        <button class="tab" data-tab="battlepass" onclick="switchTab('battlepass')">🎫</button>
-    </div>
-    <div class="tabs-row">
-        <button class="tab" data-tab="cases" onclick="switchTab('cases')">📦</button>
-        <button class="tab" data-tab="top" onclick="switchTab('top')">🏆</button>
-        <button class="tab" data-tab="rob" onclick="switchTab('rob')">⚔️</button>
+           <div class="app-header">
+        <div class="balance-bar">
+            <span class="balance-label">БАЛАНС</span>
+            <span class="balance" id="balance-display">...</span>
+        </div>
     </div>
 
     <div id="content">
         <div class="loading">⏳ Загружаем данные...</div>
     </div>
 
+    <div class="bottom-nav">
+        <button class="nav-btn" data-tab="profile" onclick="switchTab('profile')">
+            <img src="images/nav_profile.png" alt="Профиль" class="nav-icon" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+            <span class="nav-label">Профиль</span>
+        </button>
+        <button class="nav-btn" data-tab="restaurant" onclick="switchTab('restaurant')">
+            <img src="images/nav_restaurant.png" alt="Ресторан" class="nav-icon" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+            <span class="nav-label">Ресторан</span>
+        </button>
+        <button class="nav-btn active" data-tab="cases" onclick="switchTab('cases')">
+            <img src="images/nav_cases.png" alt="Кейсы" class="nav-icon" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+            <span class="nav-label">Кейсы</span>
+        </button>
+        <button class="nav-btn" data-tab="battlepass" onclick="switchTab('battlepass')">
+            <img src="images/nav_battlepass.png" alt="БП" class="nav-icon" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+            <span class="nav-label">БП</span>
+        </button>
+        <button class="nav-btn" data-tab="pvp" onclick="switchTab('pvp')">
+            <img src="images/nav_pvp.png" alt="ПвП" class="nav-icon" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+            <span class="nav-label">ПвП</span>
+        </button>
+    </div>
     <div id="modal-root"></div>
     <div id="roulette-root"></div>
     <script>
@@ -2664,20 +3063,26 @@ document.addEventListener('touchmove', function(e) {
         document.getElementById("balance-display").textContent = formatNumber(b) + "₽";
         }
 
-        function switchTab(tab) {
-        document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
-        document.querySelector(`[data-tab="${tab}"]`).classList.add("active");
+       function switchTab(tab) {
+    // Активная кнопка в нижней навигации
+    document.querySelectorAll(".nav-btn").forEach(t => t.classList.remove("active"));
+    const activeBtn = document.querySelector(`.nav-btn[data-tab="${tab}"]`);
+    if (activeBtn) activeBtn.classList.add("active");
 
-        const oldCart = document.getElementById("cart-bar");
-        if (oldCart) oldCart.remove();
+    // Убираем корзину, если была
+    const oldCart = document.getElementById("cart-bar");
+    if (oldCart) oldCart.remove();
 
-        if (tab === "profile") loadProfile();
-        if (tab === "inventory") loadInventory();
-        if (tab === "cases") loadCases();
-        if (tab === "top") loadTop();
-        if (tab === "battlepass") loadBattlePass();
-        if (tab === "rob") loadBattleAndRob();
-        }
+    // Обновляем верхний баланс
+    updateBalance(currentBalance);
+
+    // Роутинг
+    if (tab === "profile") loadProfile();
+    if (tab === "restaurant") openRestaurant();
+    if (tab === "cases") loadCases();
+    if (tab === "battlepass") loadBattlePass();
+    if (tab === "pvp") loadBattleAndRob();          // топ открывается отдельно, не через навигацию
+}
 
         // ============================================================
         // УВЕДОМЛЕНИЯ
@@ -2796,7 +3201,7 @@ document.addEventListener('touchmove', function(e) {
         body: JSON.stringify({ user_id: user.id, game_id: gameId, notification_id: notifId })
         });
         const data = await res.json();
-        if (data.ok) { showToast("🎰 Игра началась!"); dismissNotification(notifId, btn); switchTab("rob"); }
+        if (data.ok) { showToast("🎰 Игра началась!"); dismissNotification(notifId, btn); switchTab("pvp"); }
         else { alert("❌ " + data.error); await markNotificationSeen(notifId); btn.closest(".notif").remove(); }
         } catch (err) { alert("❌ " + err.message); }
         }
@@ -3126,7 +3531,6 @@ function showcasePickNext() {
         document.getElementById("content").innerHTML = '<div class="error">❌ Открой меня внутри Telegram!</div>';
         return;
     }
-    document.getElementById("username").textContent = `${user.first_name} (@${user.username || "no_username"})`;
     document.getElementById("content").innerHTML = '<div class="loading">⏳ Загружаем данные...</div>';
 
     try {
@@ -3163,15 +3567,16 @@ function showcasePickNext() {
         ${u.path === "saint" ? `<div class="card" style="background: rgba(52,152,219,0.15);"><div class="label">😇 Добряк</div><div style="font-size:14px;color:#999;margin-top:4px;">Кулдаун воровства: 60 мин</div></div>` : ''}
         ${u.path === "sinner" ? `<div class="card" style="background: rgba(231,76,60,0.15);"><div class="label">🎭 Злодей</div><div style="font-size:14px;color:#999;margin-top:4px;">Кулдаун воровства: 2 мин · Страховка −50%</div></div>` : ''}
         ${u.is_worker ? `<div class="card" style="background: rgba(155,89,182,0.15);"><div class="label">🚫 Ты работаешь поваром</div><div style="font-size:14px;color:#999;margin-top:4px;">Кейсы временно недоступны. Уволься, чтобы играть.</div></div>` : ''}
-        <button onclick="openShowcaseEditor()">🏆 Настроить витрину</button>
-        <button onclick="openRestaurant()">🏪 Ресторан</button>
-        <button onclick="openCraft()">🔨 Крафт</button>
-        <button onclick="openCollection()">📖 Коллекция</button>
-        <button onclick="openAchievements()">🏅 Достижения</button>
-        <button onclick="openFriends()">👥 Друзья</button>
-        <button onclick="openJob()">💼 Работа</button>
-        <button onclick="openReferral()">🔗 Приглашения</button>
-        <button onclick="loadProfile()">🔄 Обновить</button>
+        <button onclick="openShowcaseEditor()">НАСТРОИТЬ ВИТРИНУ</button>
+<div class="profile-buttons-grid">
+    <button class="profile-btn" onclick="openCraft()">КРАФТ</button>
+    <button class="profile-btn" onclick="openCollection()">КОЛЛЕКЦИЯ</button>
+    <button class="profile-btn" onclick="openAchievements()">ДОСТИЖЕНИЯ</button>
+    <button class="profile-btn" onclick="openFriends()">ДРУЗЬЯ</button>
+    <button class="profile-btn" onclick="openJob()">РАБОТА</button>
+    <button class="profile-btn" onclick="openReferral()">РЕФЕРАЛКА</button>
+</div>
+<button onclick="loadInventory()">ИНВЕНТАРЬ</button>
         `;
     } catch (err) {
         document.getElementById("content").innerHTML = `<div class="error">❌ Ошибка: ${escapeHtml(err.message)}</div>`;
@@ -3185,7 +3590,7 @@ function showcasePickNext() {
 
         async function loadBattlePass() {
         if (!user) return;
-        document.getElementById("username").textContent = `${user.first_name} (@${user.username || "no_username"})`;
+        
         document.getElementById("content").innerHTML = '<div class="loading">⏳ Загружаем Баттл Пасс...</div>';
 
         try {
@@ -3469,18 +3874,17 @@ function showcasePickNext() {
         let topActiveTab = "overall";
 
         async function loadTop() {
-        document.getElementById("username").textContent = `${user.first_name} (@${user.username || "no_username"})`;
-
-        let html = `
+    let html = `
+        <button class="btn-back" onclick="switchTab('cases')">⬅️ НАЗАД В КЕЙСЫ</button>
         <div class="top-tabs">
-        <button class="top-tab ${topActiveTab === 'overall' ? 'active' : ''}" onclick="switchTopTab('overall')">🏆 Общий</button>
-        <button class="top-tab ${topActiveTab === 'season' ? 'active' : ''}" onclick="switchTopTab('season')">🎃 Сезон</button>
+        <button class="top-tab ${topActiveTab === 'overall' ? 'active' : ''}" onclick="switchTopTab('overall')">🏆 ОБЩИЙ</button>
+        <button class="top-tab ${topActiveTab === 'season' ? 'active' : ''}" onclick="switchTopTab('season')">🎃 СЕЗОН</button>
         </div>
         <div id="top-content"><div class="loading">⏳</div></div>
-        `;
-        document.getElementById("content").innerHTML = html;
-        await renderTopContent();
-        }
+    `;
+    document.getElementById("content").innerHTML = html;
+    await renderTopContent();
+}
 
         function switchTopTab(tab) {
         topActiveTab = tab;
@@ -4096,7 +4500,7 @@ function showcasePickNext() {
         }
 
         async function loadBattleAndRob() {
-        document.getElementById("username").textContent = `${user.first_name} (@${user.username || "no_username"})`;
+        
         document.getElementById("content").innerHTML = '<div class="loading">⏳ Загружаем...</div>';
 
         try {
@@ -4824,7 +5228,7 @@ function showcasePickNext() {
 
         async function loadInventory() {
         if (!user) return;
-        document.getElementById("username").textContent = `${user.first_name} (@${user.username || "no_username"})`;
+        
         await fetchInventoryPage(inventoryState.offset);
         }
 
@@ -5093,34 +5497,203 @@ function showcasePickNext() {
 
         function closeModal() { document.getElementById("modal-root").innerHTML = ""; }
 
-        async function loadCases() {
-        if (!user) return;
-        document.getElementById("username").textContent = `${user.first_name} (@${user.username || "no_username"})`;
-        document.getElementById("content").innerHTML = '<div class="loading">⏳ Загружаем кейсы...</div>';
-        try {
+        // Карта эмодзи/иконок категорий
+const CATEGORY_ICONS = {
+    "cheap": "🟢",
+    "medium": "🔵",
+    "expensive": "🟣",
+    "top": "🔴",
+    "exclusive": "⭐"
+};
+
+// Красивые названия категорий (без эмодзи)
+const CATEGORY_NAMES = {
+    "cheap": "БЮДЖЕТНЫЕ",
+    "medium": "СРЕДНИЕ",
+    "expensive": "ДОРОГИЕ",
+    "top": "ЛУЧШИЕ",
+    "exclusive": "ЭКСКЛЮЗИВНЫЕ"
+};
+
+async function loadCases() {
+    if (!user) return;
+
+    document.getElementById("content").innerHTML = '<div class="loading">⏳ Загружаем кейсы...</div>';
+    try {
         const res = await fetch(`${API_URL}/api/cases?user_id=${user.id}`, {
-                headers: { "ngrok-skip-browser-warning": "true" }
-            });
-            const data = await res.json();
-            if (!data.ok) throw new Error(data.error);
-            casesData = data.categories;
-            currentUserDiscount = data.discount || 0;
-            currentUserIsWorker = data.is_worker || false;
-            currentUserRep = data.user_rep || 0;
-            renderCategories();
-        } catch (err) {
+            headers: { "ngrok-skip-browser-warning": "true" }
+        });
+        const data = await res.json();
+        if (!data.ok) throw new Error(data.error);
+        casesData = data.categories;
+        currentUserDiscount = data.discount || 0;
+        currentUserIsWorker = data.is_worker || false;
+        currentUserRep = data.user_rep || 0;
+        renderCasesMain();
+    } catch (err) {
         document.getElementById("content").innerHTML = `<div class="error">❌ Ошибка: ${escapeHtml(err.message)}</div>`;
-        }
-        }
+    }
+}
 
-        function renderCategories() {
-        let html = '<div class="card"><div class="label">📦 Выбери категорию</div></div>';
+function renderCasesMain() {
+    let html = `
+        <div class="cases-header">
+            <div class="cases-title">КЕЙСЫ</div>
+            <button class="top-btn" onclick="loadTop()">
+                <img src="images/nav_top.png" alt="Топ" onerror="this.style.display='none'; this.parentElement.innerHTML='🏆';">
+            </button>
+        </div>
+        <div class="categories-grid">
+    `;
+
+    for (const cat of casesData) {
+        const name = CATEGORY_NAMES[cat.id] || cat.name.toUpperCase();
+        const icon = CATEGORY_ICONS[cat.id] || "📦";
+        html += `
+            <div class="category-tile" onclick="renderCaseList('${cat.id}')">
+                <div class="cat-icon" style="font-size:48px; line-height:1;">${icon}</div>
+                <div class="cat-name">${escapeHtml(name)}</div>
+            </div>
+        `;
+    }
+
+    html += `</div>`;
+    document.getElementById("content").innerHTML = html;
+}
+
+function renderCaseList(catId) {
+    const cat = casesData.find(c => c.id === catId);
+    if (!cat) return;
+
+    const catName = CATEGORY_NAMES[catId] || cat.name.toUpperCase();
+
+    let html = `<button class="btn-back" onclick="renderCasesMain()">⬅️ НАЗАД</button>`;
+    html += `<div class="cases-header">
+        <div class="cases-title">${escapeHtml(catName)}</div>
+    </div>`;
+
+    for (const c of cat.cases) {
+        const caseImg = `images/case_${c.id}.png`;
+        const d = c.discount || currentUserDiscount || 0;
+        const rp = c.real_price || c.price;
+        const hasDiscount = d > 0 && rp < c.price;
+
+        html += `
+            <div class="case-tile" onclick="showCasePreview('${c.id}', '${catId}')">
+                <div class="case-tile-img">
+                    <img src="${caseImg}" alt="${escapeHtml(c.name)}" loading="lazy" decoding="async"
+                         onerror="this.style.display='none'; this.parentElement.innerHTML='📦';">
+                </div>
+                <div class="case-tile-info">
+                    <div class="case-tile-name">${escapeHtml(c.name)}</div>
+                    <div class="case-tile-price">
+                        ${hasDiscount
+                            ? `<span class="old">${formatNumber(c.price)}₽</span> ${formatNumber(rp)}₽`
+                            : `${formatNumber(c.price)}₽`}
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    document.getElementById("content").innerHTML = html;
+}
+
+async function showCasePreview(caseId, catId) {
+    document.getElementById("content").innerHTML = '<div class="loading">⏳ Загружаем кейс...</div>';
+
+    try {
+        const data = await fetchStatic(`${API_URL}/api/case_preview?case_id=${caseId}`);
+        if (!data.ok) { alert("❌ " + data.error); return; }
+
+        const pool = data.pool || [];
+        const caseName = data.case_name || "Кейс";
+
+        // Находим цену кейса
+        let casePrice = 0;
+        let caseRealPrice = 0;
         for (const cat of casesData) {
-        html += `<div class="case-category" onclick="renderCaseList('${cat.id}')"><span>${escapeHtml(cat.name)}</span><span>▶️</span></div>`;
-        }
-        document.getElementById("content").innerHTML = html;
+            for (const c of cat.cases) {
+                if (c.id === caseId) {
+                    casePrice = c.price;
+                    caseRealPrice = c.real_price || c.price;
+                    break;
+                }
+            }
         }
 
+        const caseImg = `images/case_${caseId}.png`;
+        const hasDiscount = caseRealPrice < casePrice;
+
+        let html = `<button class="btn-back" onclick="renderCaseList('${catId}')">⬅️ НАЗАД</button>`;
+
+        html += `
+            <div class="case-preview-header">
+                <div class="case-preview-img">
+                    <img src="${caseImg}" alt="${escapeHtml(caseName)}" loading="lazy" decoding="async"
+                         onerror="this.style.display='none'; this.parentElement.innerHTML='📦';">
+                </div>
+                <div style="flex:1; min-width:0;">
+                    <div class="case-preview-name">${escapeHtml(caseName)}</div>
+                    <div class="case-preview-price">
+                        ${hasDiscount
+                            ? `<span style="text-decoration:line-through; color:var(--pixel-hint); font-size:13px;">${formatNumber(casePrice)}₽</span> ${formatNumber(caseRealPrice)}₽`
+                            : `${formatNumber(casePrice)}₽`}
+                    </div>
+                </div>
+            </div>
+        `;
+
+        html += `<div class="card"><div class="label">📦 Что может выпасть</div></div>`;
+        html += `<div class="case-pool-grid">`;
+
+        for (const item of pool) {
+            if (item.image_url) {
+                html += `
+                    <div class="case-pool-item">
+                        <img src="${API_URL}${item.image_url}" alt="${escapeHtml(item.name)}" loading="lazy" decoding="async"
+                             onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                        <div class="pool-emoji" style="display:none;">${item.rarity}</div>
+                        <div class="pool-name">${escapeHtml(item.name)}</div>
+                        <div class="pool-price">${formatNumber(item.price)}₽</div>
+                    </div>
+                `;
+            } else {
+                html += `
+                    <div class="case-pool-item">
+                        <div class="pool-emoji">${item.rarity}</div>
+                        <div class="pool-name">${escapeHtml(item.name)}</div>
+                        <div class="pool-price">${formatNumber(item.price)}₽</div>
+                    </div>
+                `;
+            }
+        }
+
+        html += `</div>`;
+
+        // Кнопки открытия
+        const canAfford1 = currentBalance >= caseRealPrice;
+        const canAfford3 = currentBalance >= caseRealPrice * 3;
+        const canAfford10 = currentBalance >= caseRealPrice * 10;
+
+        html += `
+            <div class="case-actions-row">
+                <button class="btn-case btn-x1" onclick="openCase('${caseId}', 1)" ${canAfford1 ? '' : 'disabled'}>×1</button>
+                <button class="btn-case btn-x3" onclick="openCase('${caseId}', 3)" ${canAfford3 ? '' : 'disabled'}>×3</button>
+                <button class="btn-case btn-x10" onclick="openCase('${caseId}', 10)" ${canAfford10 ? '' : 'disabled'}>×10</button>
+            </div>
+        `;
+
+        document.getElementById("content").innerHTML = html;
+    } catch (err) {
+        document.getElementById("content").innerHTML = `
+            <div class="error">❌ Ошибка: ${escapeHtml(err.message)}</div>
+            <button onclick="renderCaseList('${catId}')">⬅️ Назад</button>
+        `;
+    }
+}
+
+        
         function renderCaseList(catId) {
         const cat = casesData.find(c => c.id === catId);
         if (!cat) return;
@@ -5460,7 +6033,7 @@ const total = casePrice * count;
         updatePreloaderProgress(100, 100, "Готово!");
         await new Promise(r => setTimeout(r, 200));
         hidePreloader();
-        switchTab("profile");
+        switchTab("cases");
         startNotificationPolling();
         }
 
